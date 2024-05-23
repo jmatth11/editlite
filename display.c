@@ -11,19 +11,19 @@ int init_display(struct display* d, const struct win *w) {
   d->glyphs.size = 16;
   int err = init_char(&d->glyphs, w, "resources/SourceCodePro-Regular.ttf");
   if (err != 0) return err;
-  err = init_page_manager(&d->pages);
+  err = init_page_manager(&d->page_mgr);
   if (err != 0) return err;
   return 0;
 }
 
 int page_render(struct display *d, struct win *w) {
-  struct page cur_page = d->pages.buf.page_data[d->cur_buf];
+  struct page cur_page = d->page_mgr.pages.page_data[d->cur_buf];
   int width_offset=0;
   int height_offset=0;
   for (int line_idx = 0; line_idx < cur_page.lines.len; ++line_idx) {
     const struct line tmp_line = cur_page.lines.line_data[line_idx];
-    for (int char_idx = 0; char_idx < tmp_line.buffer.len; ++char_idx) {
-      char cur_char = tmp_line.buffer.char_data[char_idx];
+    for (int char_idx = 0; char_idx < tmp_line.chars.len; ++char_idx) {
+      char cur_char = tmp_line.chars.char_data[char_idx];
       SDL_Texture *glyph = get_glyph(&d->glyphs, cur_char);
       int outw, outh;
       SDL_QueryTexture(glyph, NULL, NULL, &outw, &outh);
@@ -49,5 +49,5 @@ int page_render(struct display *d, struct win *w) {
 
 void free_display(struct display* d) {
   free_char(&d->glyphs);
-  free_page_manager(&d->pages);
+  free_page_manager(&d->page_mgr);
 }
