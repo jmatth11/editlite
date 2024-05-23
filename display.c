@@ -18,29 +18,32 @@ int init_display(struct display* d, const struct win *w) {
 
 int page_render(struct display *d, struct win *w) {
   struct page cur_page = d->pages.buf.page_data[d->cur_buf];
-  const struct line tmp_line = cur_page.lines.line_data[0];
   int width_offset=0;
   int height_offset=0;
-  for (int i = 0; i < tmp_line.buffer.len; ++i) {
-    char cur_char = tmp_line.buffer.char_data[i];
-    SDL_Texture *glyph = get_glyph(&d->glyphs, cur_char);
-    int outw, outh;
-    SDL_QueryTexture(glyph, NULL, NULL, &outw, &outh);
-    SDL_Rect r = {
-      .x = width_offset,
-      .y = height_offset,
-      .w = outw,
-      .h = outh
-    };
-    SDL_RenderCopy(
-      w->renderer,
-      glyph,
-      NULL,
-      &r
-    );
-    width_offset += outw + CHARACTER_PADDING;
+  for (int line_idx = 0; line_idx < cur_page.lines.len; ++line_idx) {
+    const struct line tmp_line = cur_page.lines.line_data[line_idx];
+    for (int char_idx = 0; char_idx < tmp_line.buffer.len; ++char_idx) {
+      char cur_char = tmp_line.buffer.char_data[char_idx];
+      SDL_Texture *glyph = get_glyph(&d->glyphs, cur_char);
+      int outw, outh;
+      SDL_QueryTexture(glyph, NULL, NULL, &outw, &outh);
+      SDL_Rect r = {
+        .x = width_offset,
+        .y = height_offset,
+        .w = outw,
+        .h = outh
+      };
+      SDL_RenderCopy(
+        w->renderer,
+        glyph,
+        NULL,
+        &r
+      );
+      width_offset += outw + CHARACTER_PADDING;
+    }
+    width_offset = 0;
+    height_offset += d->glyphs.max_height + CHARACTER_PADDING;
   }
-  height_offset += d->glyphs.max_height + CHARACTER_PADDING;
   return 0;
 }
 
