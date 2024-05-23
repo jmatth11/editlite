@@ -9,6 +9,7 @@ struct characters {
   SDL_Texture* glyphs[96];
   SDL_Color color;
   size_t size;
+  size_t max_height;
 };
 
 int init_char(struct characters *ch, const struct win *w, const char* ttf_file);
