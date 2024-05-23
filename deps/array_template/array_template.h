@@ -39,11 +39,11 @@
       N = 1;                                                                   \
     arr->array_template_data(name) = (type *)malloc(N * sizeof(type));         \
     if (arr->array_template_data(name) == NULL) {                              \
-      return 0;                                                                \
+      return 1;                                                                \
     }                                                                          \
     arr->len = 0;                                                              \
     arr->cap = N;                                                              \
-    return 1;                                                                  \
+    return 0;                                                                  \
   }
 
 /**
@@ -78,12 +78,12 @@
       type *newArr = (type *)realloc(arr->array_template_data(name),           \
                                      arr->cap * sizeof(type));                 \
       if (newArr == NULL) {                                                    \
-        return 0;                                                              \
+        return 1;                                                              \
       }                                                                        \
       arr->array_template_data(name) = newArr;                                 \
     }                                                                          \
     arr->array_template_data(name)[arr->len++] = obj;                          \
-    return 1;                                                                  \
+    return 0;                                                                  \
   }
 
 /**
