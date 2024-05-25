@@ -24,6 +24,10 @@ SDL_Texture * handle_characters(struct display *d, const char cur_char) {
   return get_glyph(&d->glyphs, cur_char);
 }
 
+void reset_cursor_screen_pos(struct display *d) {
+  d->cursor.screen_pos = d->cursor.pos;
+}
+
 int page_render(struct display *d, struct win *w) {
   if (d->page_mgr.pages.len < 1) {
     return 0;
@@ -33,12 +37,16 @@ int page_render(struct display *d, struct win *w) {
   get_page_dim(d, w, &dims);
   int width_offset=0;
   int height_offset=0;
+  reset_cursor_screen_pos(d);
   const int line_start = cur_page.row_offset;
   const int line_end = MIN(cur_page.lines.len, dims.row + cur_page.row_offset);
   for (int line_idx = line_start; line_idx < line_end; ++line_idx) {
     const struct line tmp_line = cur_page.lines.line_data[line_idx];
     const int char_start = cur_page.col_offset;
     const int char_len = MIN(tmp_line.chars.len, dims.col + cur_page.col_offset);
+    if (d->cursor.pos.row == line_idx && d->cursor.pos.col >= char_len) {
+      d->cursor.screen_pos.col = char_len - 1;
+    }
     for (int char_idx = char_start; char_idx < char_len; ++char_idx) {
       char cur_char = tmp_line.chars.char_data[char_idx];
       SDL_Texture *glyph = handle_characters(d, cur_char);
@@ -47,14 +55,14 @@ int page_render(struct display *d, struct win *w) {
         if (cur_char != 10) {
           printf("cur_char: %d\n", cur_char);
           printf("glyph was null\n");
-        } else if (d->cursor.dim.row == line_idx && d->cursor.dim.col == char_idx ) {
+        } else if (d->cursor.screen_pos.row == line_idx && d->cursor.screen_pos.col == char_idx ) {
           SDL_Rect boxFill = {
             .x = width_offset,
             .y = height_offset,
             .w = d->glyphs.max_width,
             .h = d->glyphs.max_height,
           };
-          SDL_SetRenderDrawColor(w->renderer, 0x77, 0x77, 0x77, 0x77);
+          SDL_SetRenderDrawColor(w->renderer, 0xAA, 0xAA, 0xAA, 0x77);
           SDL_RenderFillRect(w->renderer, &boxFill);
         }
         continue;
@@ -67,7 +75,7 @@ int page_render(struct display *d, struct win *w) {
         .w = outw,
         .h = outh
       };
-      if (d->cursor.dim.row == line_idx && d->cursor.dim.col == char_idx) {
+      if (d->cursor.screen_pos.row == line_idx && d->cursor.screen_pos.col == char_idx) {
         SDL_SetRenderDrawColor(w->renderer, 0x77, 0x77, 0x77, 0x77);
         SDL_RenderFillRect(w->renderer, &r);
       }
