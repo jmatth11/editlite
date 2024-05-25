@@ -35,15 +35,20 @@ int page_manager_read(struct page *buf, const char *file_name) {
       }
       struct line *line_buf = &buf->lines.line_data[line_idx];
       insert_char_array(&line_buf->chars, cur_char);
-      char_idx++;
       if (cur_char == '\n') {
         line_idx++;
+        line_buf->load_pos = char_idx + buf->file_offset_pos;
         struct line tmp_line;
         init_line(&tmp_line);
+        tmp_line.start_pos = (char_idx + 1) + buf->file_offset_pos;
+        tmp_line.load_pos = tmp_line.start_pos;
         insert_line_array(&buf->lines, tmp_line);
         char_idx = 0;
+      } else {
+        char_idx++;
       }
     }
+    buf->file_offset_pos += n;
   }
   return 0;
 }
@@ -61,7 +66,9 @@ void free_line(struct line *l) {
 
 int init_page(struct page *p) {
   int err = init_line_array(&p->lines, LINE_CHAR_BUFF_SIZE);
-  p->load_pos = 0;
+  p->file_offset_pos = 0;
+  p->col_offset = 0;
+  p->row_offset = 0;
   p->fp = NULL;
   return err;
 }

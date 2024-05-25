@@ -20,7 +20,9 @@ generate_array_template(line, struct line)
 
 struct page {
   FILE *fp;
-  size_t load_pos;
+  size_t file_offset_pos;
+  int col_offset;
+  int row_offset;
   line_array lines;
 };
 
