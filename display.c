@@ -47,6 +47,15 @@ int page_render(struct display *d, struct win *w) {
         if (cur_char != 10) {
           printf("cur_char: %d\n", cur_char);
           printf("glyph was null\n");
+        } else if (d->cursor.dim.row == line_idx && d->cursor.dim.col == char_idx ) {
+          SDL_Rect boxFill = {
+            .x = width_offset,
+            .y = height_offset,
+            .w = d->glyphs.max_width,
+            .h = d->glyphs.max_height,
+          };
+          SDL_SetRenderDrawColor(w->renderer, 0x77, 0x77, 0x77, 0x77);
+          SDL_RenderFillRect(w->renderer, &boxFill);
         }
         continue;
       }
