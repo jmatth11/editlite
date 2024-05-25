@@ -30,18 +30,22 @@ void keydown_handler(struct display *d, struct win *w, SDL_Event *e) {
   get_page_dim(d, w, &dims);
   switch (e->key.keysym.sym) {
     case SDLK_j:
+    case SDLK_DOWN:
       d->cursor.pos.row++;
       handle_row_scroll(d, dims);
       break;
     case SDLK_k:
+    case SDLK_UP:
       d->cursor.pos.row = MAX(0, d->cursor.pos.row - 1);
       handle_row_scroll(d, dims);
       break;
     case SDLK_l:
+    case SDLK_RIGHT:
       d->cursor.pos.col++;
       handle_col_scroll(d, dims);
       break;
     case SDLK_h:
+    case SDLK_LEFT:
       if (d->cursor.pos.col != d->cursor.screen_pos.col) d->cursor.pos.col = d->cursor.screen_pos.col;
       d->cursor.pos.col = MAX(0, d->cursor.pos.col - 1);
       handle_col_scroll(d, dims);
