@@ -5,9 +5,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define CHAR_START_RANGE 32
-#define CHAR_END_RANGE 127
-
 int init_char(struct characters *ch, const struct win *w, const char* ttf_file) {
   ch->font = TTF_OpenFont(ttf_file, ch->size);
   ch->max_width = 0;

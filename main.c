@@ -62,7 +62,11 @@ int main(int argc, char **argv) {
     exit(1);
   }
   insert_page_array(&pm.pages, test_buffer);
-  if (pm.read_file(&pm.pages.page_data[0], file) != 0) {
+  if (pm.open(&pm.pages.page_data[0], file) != 0) {
+    printf("Could not open file.\n");
+    exit(1);
+  }
+  if (pm.read(&pm.pages.page_data[0]) != 0) {
     printf("Could not read file.\n");
     exit(1);
   }

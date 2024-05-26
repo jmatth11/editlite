@@ -4,9 +4,8 @@
 #include "page.h"
 #include "util.h"
 
-#define CHARACTER_PADDING 0
-
 int init_display(struct display* d, const struct win *w) {
+  d->mode = NORMAL;
   d->cursor.pos = (struct display_dim){0, 0};
   d->cursor.screen_pos = d->cursor.pos;
   d->cur_buf = 0;
@@ -69,7 +68,8 @@ int page_render(struct display *d, struct win *w) {
         if (cur_char != 10) {
           printf("cur_char: %d\n", cur_char);
           printf("glyph was null\n");
-        } else if (d->cursor.screen_pos.row == line_idx && d->cursor.screen_pos.col == char_idx ) {
+        } else if (d->cursor.screen_pos.row == line_idx &&
+          d->cursor.screen_pos.col == char_idx ) {
           draw_cursor(d, w, &r);
         }
         continue;
@@ -83,10 +83,10 @@ int page_render(struct display *d, struct win *w) {
         NULL,
         &r
       );
-      width_offset += d->glyphs.max_width + CHARACTER_PADDING;
+      width_offset += d->glyphs.max_width;
     }
     width_offset = 0;
-    height_offset += d->glyphs.max_height + CHARACTER_PADDING;
+    height_offset += d->glyphs.max_height;
   }
   return 0;
 }
