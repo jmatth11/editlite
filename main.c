@@ -1,5 +1,6 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_events.h>
+#include <SDL2/SDL_keycode.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_ttf.h>
@@ -80,8 +81,9 @@ int main(int argc, char **argv) {
       if (e.type == SDL_QUIT) {
         quit = 1;
       } else if (e.type == SDL_KEYDOWN) {
-        keydown_handler(&d, &w, &e);
+        handle_simple_keypresses(&d, &w, &e);
       }
+      handle_state_keypresses(&d, &w, &e);
     }
     SDL_SetRenderDrawColor(w.renderer, 0, 0, 0, 0xFF);
     SDL_RenderClear(w.renderer);
