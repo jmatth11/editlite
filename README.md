@@ -11,5 +11,6 @@ TODO
 - [x] navigating the document.
 - [x] Loading more of the file in memory when navigating.
 - [ ] Edit the document.
-- [ ] Searching through document.
+- [ ] Implement "command" mode.
 - [ ] Command to load another file.
+- [ ] Searching through document.
