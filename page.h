@@ -4,13 +4,12 @@
 #include <stdio.h>
 #include <stddef.h>
 #include "deps/array_template/array_template.h"
-
-generate_array_template(char, char)
+#include "gap_buffer.h"
 
 struct line {
   size_t start_pos;
   size_t load_pos;
-  char_array chars;
+  struct gap_buffer chars;
 };
 
 int init_line(struct line *l);
