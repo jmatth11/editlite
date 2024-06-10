@@ -39,6 +39,10 @@ int linked_list_insert(struct linked_list *ll, size_t pos, struct line value) {
   linked_list_init(tmp);
   tmp->prev = obj;
   tmp->value = value;
+  if (obj->next != NULL) {
+    obj->next->prev = tmp;
+    tmp->next = obj->next;
+  }
   obj->next = tmp;
   return 0;
 }
@@ -78,8 +82,12 @@ int linked_list_delete(struct linked_list *ll, size_t pos) {
 
 int linked_list_delete_node(struct linked_list *ll) {
   if (ll == NULL) return 1;
-  ll->prev->next = ll->next;
-  ll->next->prev = ll->prev;
+  if (ll->prev != NULL) {
+    ll->prev->next = ll->next;
+  }
+  if (ll->next != NULL) {
+    ll->next->prev = ll->prev;
+  }
   linked_list_free(ll);
   return 0;
 }
