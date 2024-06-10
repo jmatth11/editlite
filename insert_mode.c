@@ -1,6 +1,7 @@
 #include "insert_mode.h"
 #include "display.h"
 #include "gap_buffer.h"
+#include "linked_list.h"
 #include "page.h"
 #include "scrolling.h"
 #include <SDL2/SDL_keycode.h>
@@ -150,8 +151,8 @@ void handle_insert_mode(struct display *d, struct win *w, SDL_Event *e) {
     return;
   }
   struct page *cur_page = &d->page_mgr.pages.page_data[d->cur_buf];
-  struct line *cur_line = &cur_page->lines.line_data[d->cursor.pos.row];
-  struct gap_buffer *cur_gb = &cur_line->chars;
+  struct linked_list *cur_line = linked_list_get_pos(cur_page->lines, d->cursor.pos.row);
+  struct gap_buffer *cur_gb = &cur_line->value.chars;
   struct display_dim dim;
   get_page_dim(d, w, &dim);
 
@@ -178,7 +179,7 @@ void handle_insert_mode(struct display *d, struct win *w, SDL_Event *e) {
 
 void prepare_insert_mode(struct display *d, struct win *w) {
   struct page *cur_page = &d->page_mgr.pages.page_data[d->cur_buf];
-  struct line *cur_line = &cur_page->lines.line_data[d->cursor.pos.row];
-  struct gap_buffer *cur_gb = &cur_line->chars;
+  struct linked_list *cur_line = linked_list_get_pos(cur_page->lines, d->cursor.pos.row);
+  struct gap_buffer *cur_gb = &cur_line->value.chars;
   gap_buffer_move_cursor(cur_gb, d->cursor.pos.col);
 }

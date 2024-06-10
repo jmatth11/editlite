@@ -4,7 +4,6 @@
 #ifndef BUFSIZ
 #define BUFSIZ 8192
 #endif
-#define LINE_CHAR_BUFF_SIZE 10
 #define BUFFER_LIMIT BUFSIZ * 4
 
 static char buffer[BUFSIZ];
@@ -23,10 +22,15 @@ int page_manager_open(struct page *buf, const char *file_name) {
 int page_manager_read(struct page *buf) {
   int done = 0;
   int char_idx = 0;
-  int line_idx = buf->lines.len;
+  struct linked_list *cur_line = linked_list_get_end(buf->lines);
   struct line tmp_line;
   init_line(&tmp_line);
-  insert_line_array(&buf->lines, tmp_line);
+  if (cur_line->prev == NULL) {
+    cur_line->value = tmp_line;
+  } else {
+    linked_list_append(cur_line, tmp_line);
+    cur_line = cur_line->next;
+  }
   while (!done) {
     size_t n = fread(buffer, sizeof(char), BUFSIZ, buf->fp);
     if (n < BUFSIZ) {
@@ -34,15 +38,14 @@ int page_manager_read(struct page *buf) {
     }
     for (int i = 0; i < n; ++i) {
       char cur_char = buffer[i];
-      struct line *line_buf = &buf->lines.line_data[line_idx];
-      gap_buffer_insert(&line_buf->chars, cur_char);
+      gap_buffer_insert(&cur_line->value.chars, cur_char);
       if (cur_char == '\n') {
-        line_idx++;
-        line_buf->load_pos = char_idx + buf->file_offset_pos;
+        cur_line->value.load_pos = char_idx + buf->file_offset_pos;
         init_line(&tmp_line);
         tmp_line.start_pos = (char_idx + 1) + buf->file_offset_pos;
         tmp_line.load_pos = tmp_line.start_pos;
-        insert_line_array(&buf->lines, tmp_line);
+        linked_list_append(cur_line, tmp_line);
+        cur_line = cur_line->next;
         char_idx = 0;
       } else {
         char_idx++;
@@ -56,19 +59,9 @@ int page_manager_read(struct page *buf) {
   return 0;
 }
 
-int init_line(struct line *l) {
-  if (!gap_buffer_init(&l->chars, LINE_CHAR_BUFF_SIZE)) return 1;
-  l->load_pos = 0;
-  l->start_pos = 0;
-  return 0;
-}
-
-void free_line(struct line *l) {
-  gap_buffer_free(&l->chars);
-}
-
 int init_page(struct page *p) {
-  int err = init_line_array(&p->lines, LINE_CHAR_BUFF_SIZE);
+  p->lines = (struct linked_list*)malloc(sizeof(struct linked_list));
+  int err = linked_list_init(p->lines);
   p->file_size = 0;
   p->file_offset_pos = 0;
   p->col_offset = 0;
@@ -78,10 +71,7 @@ int init_page(struct page *p) {
 }
 
 void free_page(struct page *p) {
-  for (int i = 0; i < p->lines.len; ++i) {
-    free_line(&p->lines.line_data[i]);
-  }
-  free_line_array(&p->lines);
+  linked_list_free_all(p->lines);
 }
 
 int init_page_manager(struct page_manager *pm) {

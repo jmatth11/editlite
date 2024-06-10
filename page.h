@@ -4,18 +4,7 @@
 #include <stdio.h>
 #include <stddef.h>
 #include "deps/array_template/array_template.h"
-#include "gap_buffer.h"
-
-struct line {
-  size_t start_pos;
-  size_t load_pos;
-  struct gap_buffer chars;
-};
-
-int init_line(struct line *l);
-void free_line(struct line *l);
-
-generate_array_template(line, struct line)
+#include "linked_list.h"
 
 struct page {
   FILE *fp;
@@ -23,7 +12,7 @@ struct page {
   size_t file_size;
   int col_offset;
   int row_offset;
-  line_array lines;
+  struct linked_list *lines;
 };
 
 int init_page(struct page* p);
