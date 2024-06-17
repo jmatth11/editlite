@@ -217,5 +217,9 @@ void prepare_insert_mode(struct display *d, struct win *w) {
   struct page *cur_page = &d->page_mgr.pages.page_data[d->cur_buf];
   struct linked_list *cur_line = linked_list_get_pos(cur_page->lines, d->cursor.pos.row);
   struct gap_buffer *cur_gb = &cur_line->value.chars;
+  const size_t cur_gb_len = gap_buffer_get_len(cur_gb);
+  if (d->cursor.pos.col >= cur_gb_len) {
+    d->cursor.pos.col = cur_gb_len - 1;
+  }
   gap_buffer_move_cursor(cur_gb, d->cursor.pos.col);
 }
