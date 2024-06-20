@@ -11,8 +11,7 @@ struct win {
   int width;
 };
 
-int create_win(struct win *);
-int clear(struct win *w, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
-void free_win(struct win *);
+int win_init(struct win *);
+void win_free(struct win *);
 
 #endif

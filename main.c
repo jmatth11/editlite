@@ -44,7 +44,7 @@ int main(int argc, char **argv) {
     .height = 480,
     .width = 640
   };
-  create_win(&w);
+  win_init(&w);
   struct config config;
   init_config(&config);
   struct command_prompt cmd;
@@ -52,7 +52,7 @@ int main(int argc, char **argv) {
   cmd.height = 60;
   struct display d;
   d.config = config;
-  if (init_display(&d, &w) != 0) {
+  if (display_init(&d, &w) != 0) {
     printf("Display could not initialize.\n");
     exit(1);
   }
@@ -90,7 +90,7 @@ int main(int argc, char **argv) {
     }
     SDL_SetRenderDrawColor(w.renderer, 0, 0, 0, 0xFF);
     SDL_RenderClear(w.renderer);
-    page_render(&d, &w);
+    display_page_render(&d, &w);
     if (d.mode == COMMAND) {
       display_command_prompt(&cmd, &d, &w);
     }
@@ -102,8 +102,8 @@ int main(int argc, char **argv) {
       SDL_Delay(delay);
     }
   }
-  free_display(&d);
-  free_win(&w);
+  display_free(&d);
+  win_free(&w);
   deinit();
   return 0;
 }

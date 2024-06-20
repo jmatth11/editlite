@@ -5,7 +5,7 @@
 #include "page.h"
 #include "util.h"
 
-int init_display(struct display* d, const struct win *w) {
+int display_init(struct display* d, const struct win *w) {
   d->mode = NORMAL;
   d->cursor.pos = (struct display_dim){0, 0};
   d->cursor.screen_pos = d->cursor.pos;
@@ -36,13 +36,13 @@ void draw_cursor(struct display *d, struct win *w, SDL_Rect *rect) {
   SDL_RenderFillRect(w->renderer, rect);
 }
 
-int page_render(struct display *d, struct win *w) {
+int display_page_render(struct display *d, struct win *w) {
   if (d->page_mgr.pages.len < 1) {
     return 0;
   }
   struct page cur_page = d->page_mgr.pages.page_data[d->cur_buf];
   struct display_dim dims;
-  get_page_dim(d, w, &dims);
+  display_get_page_dim(d, w, &dims);
   int width_offset=0;
   int height_offset=0;
   reset_cursor_screen_pos(d);
@@ -101,14 +101,25 @@ int page_render(struct display *d, struct win *w) {
   return 0;
 }
 
-void get_page_dim(struct display *d, struct win *w, struct display_dim *out) {
+bool display_get_cur_page(struct display *d, struct page *out) {
+  if (d->page_mgr.pages.len == 0) {
+    // TODO create empty page.
+  }
+  if (d->cur_buf >= 0 && d->cur_buf < d->page_mgr.pages.len) {
+    *out = d->page_mgr.pages.page_data[d->cur_buf];
+    return true;
+  }
+  return false;
+}
+
+void display_get_page_dim(struct display *d, struct win *w, struct display_dim *out) {
   int winh, winw;
   SDL_GetWindowSize(w->window, &winw, &winh);
   out->row = (int)winh / d->glyphs.max_height;
   out->col = ((int)winw / d->glyphs.max_width);
 }
 
-void free_display(struct display* d) {
+void display_free(struct display* d) {
   free_char(&d->glyphs);
   free_page_manager(&d->page_mgr);
 }
