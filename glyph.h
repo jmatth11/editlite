@@ -19,5 +19,6 @@ struct glyphs {
 int init_char(struct glyphs *ch, const struct win *w, const char* ttf_file);
 SDL_Texture* get_glyph(struct glyphs *ch, const char c);
 void free_char(struct glyphs *);
+char sanitize_character(SDL_Keycode keycode);
 
 #endif
