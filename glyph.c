@@ -10,7 +10,7 @@ int init_char(struct glyphs *ch, const struct win *w, const char* ttf_file) {
   ch->max_width = 0;
   ch->max_height = 0;
   if (ch->font == NULL) {
-    printf("TTF font could not initialize.\n");
+    fprintf(stderr, "TTF font could not initialize.\n");
     exit(1);
   }
   char glyph_buf[2];
@@ -19,7 +19,7 @@ int init_char(struct glyphs *ch, const struct win *w, const char* ttf_file) {
     glyph_buf[0] = i;
     SDL_Surface *s = TTF_RenderText_Solid(ch->font, glyph_buf, ch->color);
     if (s == NULL) {
-      printf("rendering TTF surface failed. %s\n", SDL_GetError());
+      fprintf(stderr, "rendering TTF surface failed. %s\n", SDL_GetError());
     }
     if (s->h > ch->max_height) {
       ch->max_height = s->h;
@@ -29,7 +29,7 @@ int init_char(struct glyphs *ch, const struct win *w, const char* ttf_file) {
     }
     SDL_Texture *new_glyph = SDL_CreateTextureFromSurface(w->renderer, s);
     if (new_glyph == NULL) {
-      printf("error with glyph: %s\n", SDL_GetError());
+      fprintf(stderr, "error with glyph: %s\n", SDL_GetError());
     } else {
       ch->glyphs[i - CHAR_START_RANGE] = new_glyph;
     }
