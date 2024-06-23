@@ -140,6 +140,8 @@ bool page_init(struct page *p) {
   p->file_offset_pos = 0;
   p->col_offset = 0;
   p->row_offset = 0;
+  p->x_offset = 0;
+  p->y_offset = 0;
   p->file_name = NULL;
   p->fp = NULL;
   p->handle_backspace = page_handle_backspace;
