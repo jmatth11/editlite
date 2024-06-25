@@ -8,7 +8,9 @@ void execute_command(struct display *d) {
   struct plugin_interface plugin;
   plugin_interface_init(&plugin);
   plugin.__internal = d;
-  cmd->action(&plugin);
+  if (!cmd->action(&plugin)) {
+    fprintf(stderr, "plugin failed action: \"%s\"\n", cmd->shared_library);
+  }
 }
 
 void handle_command_mode(struct display *d, struct win *w, SDL_Event *e) {
@@ -19,6 +21,7 @@ void handle_command_mode(struct display *d, struct win *w, SDL_Event *e) {
     case SDLK_RETURN:
       execute_command(d);
       break;
+    // TODO implement action to reload plugins
   }
 }
 
