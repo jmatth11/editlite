@@ -1,5 +1,6 @@
 #include "command_mode.h"
 #include "command_prompt.h"
+#include "display.h"
 #include "plugin_interface.h"
 #include <SDL2/SDL_keycode.h>
 
@@ -21,7 +22,9 @@ void handle_command_mode(struct display *d, struct win *w, SDL_Event *e) {
     case SDLK_RETURN:
       execute_command(d);
       break;
-    // TODO implement action to reload plugins
+    case SDLK_r:
+      display_reload_plugins(d);
+      break;
   }
 }
 

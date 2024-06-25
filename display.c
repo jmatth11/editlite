@@ -42,6 +42,22 @@ bool display_load_plugins(struct display* d) {
   return true;
 }
 
+bool display_reload_plugins(struct display *d) {
+  for (int i = 0; i < d->cmds.len; ++i) {
+    struct command *cmd = &d->cmds.command_data[i];
+    if (!command_unload(cmd)) {
+      fprintf(stderr, "failed command load.\n");
+    };
+  }
+  for (int i = 0; i < d->cmds.len; ++i) {
+    struct command *cmd = &d->cmds.command_data[i];
+    if (!command_load(cmd)) {
+      fprintf(stderr, "failed command load.\n");
+    };
+  }
+  return true;
+}
+
 SDL_Texture * handle_characters(struct display *d, const char cur_char) {
   if (cur_char == '\t') {
     return get_glyph(&d->glyphs, ' ');
