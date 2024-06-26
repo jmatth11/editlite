@@ -9,5 +9,6 @@ void config_init(struct config *c) {
   if (init_string_array(&c->plugins, 1) != 0) {
     fprintf(stderr, "plugin array could not be initialized.\n");
   }
+  insert_string_array(&c->plugins, "plugins/save/libsave.so");
   insert_string_array(&c->plugins, "plugins/quit/libquit.so");
 }
