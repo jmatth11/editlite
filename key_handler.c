@@ -75,8 +75,11 @@ void handle_simple_keypresses(struct display *d, struct win *w, SDL_Event *e) {
       d->mode = NORMAL;
       break;
     case SDLK_i: {
-      d->mode = INSERT;
-      prepare_insert_mode(d, w);
+      prepare_insert_mode(d, w, INSERT_AT);
+      break;
+    }
+    case SDLK_a: {
+      prepare_insert_mode(d, w, INSERT_AFTER);
       break;
     }
     case SDLK_g: {
@@ -95,6 +98,8 @@ void handle_state_keypresses(struct display *d, struct win *w, SDL_Event *e) {
   const Uint8 rshift =key_states[SDL_SCANCODE_RSHIFT];
   const Uint8 k4 = key_states[SDL_SCANCODE_4];
   const Uint8 kg = key_states[SDL_SCANCODE_G];
+  const Uint8 ki = key_states[SDL_SCANCODE_I];
+  const Uint8 ka = key_states[SDL_SCANCODE_A];
   const Uint8 colon = key_states[SDL_SCANCODE_SEMICOLON];
   if (!lshift && !rshift) {
     handle_simple_keypresses(d, w, e);
@@ -106,6 +111,12 @@ void handle_state_keypresses(struct display *d, struct win *w, SDL_Event *e) {
     if (kg) {
       // TODO jump to end.
       // Will need to force a read of the file and then update row position.
+    }
+    if (ki) {
+      prepare_insert_mode(d, w, INSERT_BEGIN);
+    }
+    if (ka) {
+      prepare_insert_mode(d, w, INSERT_END);
     }
     if (colon) {
       d->mode = COMMAND;

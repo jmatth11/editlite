@@ -78,24 +78,23 @@ bool page_manager_open(struct page *buf) {
     return false;
   }
   buf->fp = fopen(buf->file_name, "r+");
-  if (buf->fp == NULL) {
-    buf->fp = fopen(buf->file_name, "w+");
+  if (buf->fp != NULL) {
+    fseek(buf->fp, 0L, SEEK_END);
+    buf->file_size = ftell(buf->fp);
+    fseek(buf->fp, 0L, SEEK_SET);
   }
-  fseek(buf->fp, 0L, SEEK_END);
-  buf->file_size = ftell(buf->fp);
-  fseek(buf->fp, 0L, SEEK_SET);
   return true;
 }
 
 bool page_manager_read(struct page *buf) {
-  int done = 0;
+  bool done = buf->fp == NULL;
   int char_idx = 0;
   struct linked_list *cur_line = linked_list_get_end(buf->lines);
   struct line tmp_line;
-  init_line(&tmp_line);
   if (cur_line->prev == NULL) {
-    cur_line->value = tmp_line;
+    tmp_line = cur_line->value;
   } else {
+    init_line(&tmp_line);
     linked_list_append(cur_line, tmp_line);
     cur_line = cur_line->next;
   }
@@ -103,7 +102,7 @@ bool page_manager_read(struct page *buf) {
   while (!done) {
     size_t n = fread(buffer, sizeof(char), BUFSIZ, buf->fp);
     if (n < BUFSIZ) {
-      done = 1;
+      done = true;
     }
     for (int i = 0; i < n; ++i) {
       // create new line entry on the next go so we don't have empty lines
@@ -128,7 +127,7 @@ bool page_manager_read(struct page *buf) {
     }
     buf->file_offset_pos += n;
     if (buf->file_offset_pos >= BUFFER_LIMIT) {
-      done = 1;
+      done = true;
     }
   }
   return true;
@@ -150,12 +149,14 @@ bool page_manager_write(struct page* buf) {
   }
   // grab the position for our new file.
   size_t fp_idx = ftell(tmpFile);
-  // copy the rest of the contents
-  copyFile(buf->fp, tmpFile);
+  if (buf->fp != NULL) {
+    // copy the rest of the contents
+    copyFile(buf->fp, tmpFile);
+    // close and reopen existing file to delete all prior content.
+    fclose(buf->fp);
+  }
   // safety flush
   fflush(tmpFile);
-  // close and reopen existing file to delete all prior content.
-  fclose(buf->fp);
   buf->fp = fopen(buf->file_name, "w+");
   // seek to beginning of tmpFile
   fseek(tmpFile, 0, SEEK_SET);
