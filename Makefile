@@ -1,6 +1,6 @@
 CC=gcc
-CFLAGS=-Wall
-LIBS=-lSDL2 -lSDL2_ttf -lm
+CFLAGS=-Wall -std=c11
+LIBS=-L./deps/tomlc99/ -lSDL2 -lSDL2_ttf -lm -ltoml
 INCLUDES=
 OBJ=obj
 BIN=bin
