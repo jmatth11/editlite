@@ -146,8 +146,8 @@ bool display_page_render(struct display *d, struct win *w) {
       );
       width_offset += d->glyphs.max_width;
     }
+    // this is for empty lines
     if (d->cursor.screen_pos.row == line_idx && d->cursor.screen_pos.col == char_len) {
-      r.x = width_offset;
       draw_cursor(d, w, &r);
     }
     width_offset = 0;
