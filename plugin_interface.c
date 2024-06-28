@@ -2,6 +2,7 @@
 #include "display.h"
 #include "menu.h"
 #include "page.h"
+#include <string.h>
 
 void pi_get_cur_page(struct plugin_interface* pi, struct page *p){
   struct display *d = (struct display*)pi->__internal;
@@ -50,9 +51,11 @@ void pi_dispatch(
         fprintf(stderr, "error handling page: \"%s\"\n", filename);
         break;
       }
-      p.file_name = filename;
+      p.file_name = malloc(sizeof(char)*strlen(filename));
+      strcpy(p.file_name, filename);
       insert_page_array(&d->page_mgr.pages, p);
       d->cur_buf = d->page_mgr.pages.len - 1;
+      d->mode = NORMAL;
       break;
     }
     default:
@@ -64,4 +67,9 @@ void pi_dispatch(
 void plugin_interface_init(struct plugin_interface* pi) {
   pi->get_cur_page = pi_get_cur_page;
   pi->dispatch = pi_dispatch;
+}
+
+void plugin_interface_from_display(struct plugin_interface* pi, struct display* d) {
+  plugin_interface_init(pi);
+  pi->__internal = d;
 }

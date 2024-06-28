@@ -7,10 +7,7 @@
 
 bool execute_command(struct display *d, void *ctx) {
   struct command *cmd = (struct command *)ctx;
-  struct plugin_interface plugin;
-  plugin_interface_init(&plugin);
-  plugin.__internal = d;
-  if (!cmd->action(&plugin)) {
+  if (!cmd->action(&d->pi)) {
     fprintf(stderr, "plugin failed action: \"%s\"\n", cmd->shared_library);
     return false;
   }

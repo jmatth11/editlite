@@ -1,5 +1,6 @@
 #include "files.h"
-#include "page.h"
+#include <page.h>
+#include <display.h>
 #include <menu.h>
 #include <stddef.h>
 #include <unistd.h>
@@ -30,8 +31,7 @@ bool setup(struct plugin_interface* pi) {
 
 bool file_selected(struct display *d, void *ctx) {
   char *filename = (char*)ctx;
-  fprintf(stdout, "openning file: \"%s\"\n", filename);
-  // TODO figure out how to rework this to include the plugin manager.
+  d->pi.dispatch(&d->pi, DISPATCH_NEW_PAGE, filename);
   return true;
 }
 
