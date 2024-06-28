@@ -55,14 +55,18 @@ bool is_dir(const char *path) {
 bool file_selected(struct display *d, void *ctx) {
   char *filename = (char*)ctx;
   size_t cur_dir_len = strlen(dir_t.cur_dir);
-  char *full_path = malloc(sizeof(char) * (cur_dir_len + strlen(filename) + 1));
+  // add 2 for path separator and null-terminator
+  char *full_path = (char*)malloc((sizeof(char) * (cur_dir_len + strlen(filename))) + 2);
+  if (full_path == NULL) {
+    fprintf(stderr, "malloc failed for path\n");
+    return false;
+  }
   sprintf(full_path, "%s%c%s", dir_t.cur_dir, '/', filename);
-  // TODO handle more than top level directory
   if (is_dir(full_path)) {
-    // free previous path if it was not the base path
     if (dir_t.base != dir_t.cur_dir) {
       free(dir_t.cur_dir);
     }
+    // free previous path if it was not the base path
     dir_t.cur_dir = full_path;
     if (!gen_items_from_dir(full_path, &buffer)) {
       return false;
