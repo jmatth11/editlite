@@ -1,5 +1,6 @@
 #include "plugin_interface.h"
 #include "display.h"
+#include "menu.h"
 #include "page.h"
 
 void pi_get_cur_page(struct plugin_interface* pi, struct page *p){
@@ -26,6 +27,20 @@ void pi_dispatch(
         fprintf(stderr, "write failed for file \"%s\"\n", p->file_name);
       }
       d->mode = NORMAL;
+      break;
+    }
+    case DISPATCH_MENU: {
+      d->mode = COMMAND;
+      if (d->menu.items.menu_item_data != NULL) {
+        menu_free(&d->menu);
+      }
+      menu_init(&d->menu);
+
+      menu_item_array *items = (menu_item_array*)context;
+      // copy all values.
+      for (int i = 0; i < items->len; ++i) {
+        insert_menu_item_array(&d->menu.items, items->menu_item_data[i]);
+      }
       break;
     }
     default:

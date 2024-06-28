@@ -94,17 +94,19 @@ void handle_state_keypresses(struct display *d, struct win *w, SDL_Event *e) {
   struct display_dim dims;
   display_get_page_dim(d, w, &dims);
   const Uint8* key_states = SDL_GetKeyboardState(NULL);
-  const Uint8 lshift = key_states[SDL_SCANCODE_LSHIFT];
-  const Uint8 rshift =key_states[SDL_SCANCODE_RSHIFT];
+  const Uint8 shift = key_states[SDL_SCANCODE_LSHIFT] || key_states[SDL_SCANCODE_RSHIFT];
+  const Uint8 ctrl = key_states[SDL_SCANCODE_LCTRL] || key_states[SDL_SCANCODE_RCTRL];
   const Uint8 k4 = key_states[SDL_SCANCODE_4];
   const Uint8 kg = key_states[SDL_SCANCODE_G];
   const Uint8 ki = key_states[SDL_SCANCODE_I];
   const Uint8 ka = key_states[SDL_SCANCODE_A];
+  const Uint8 kd = key_states[SDL_SCANCODE_D];
+  const Uint8 ku = key_states[SDL_SCANCODE_U];
   const Uint8 colon = key_states[SDL_SCANCODE_SEMICOLON];
-  if (!lshift && !rshift) {
+  if (!shift || !ctrl) {
     handle_simple_keypresses(d, w, e);
   }
-  if (lshift || rshift) {
+  if (shift) {
     if (k4) {
       handle_jump_commands(d, dims);
     }
@@ -120,7 +122,15 @@ void handle_state_keypresses(struct display *d, struct win *w, SDL_Event *e) {
     }
     if (colon) {
       d->mode = COMMAND;
-      prepare_command_mode(d, w);
+      prepare_command_mode(d);
+    }
+  } else if (ctrl) {
+    if (kd) {
+      d->cursor.pos.row += (dims.row / 2);
+      handle_row_scroll(d, dims);
+    } else if (ku) {
+      d->cursor.pos.row -= (dims.row / 2);
+      handle_row_scroll(d, dims);
     }
   }
 }
