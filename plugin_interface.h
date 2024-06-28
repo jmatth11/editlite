@@ -7,6 +7,7 @@ enum dispatch_calls {
   DISPATCH_EXIT = 0,
   DISPATCH_SAVE,
   DISPATCH_MENU,
+  DISPATCH_NEW_PAGE,
 };
 
 struct plugin_interface {

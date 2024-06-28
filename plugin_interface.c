@@ -43,6 +43,10 @@ void pi_dispatch(
       }
       break;
     }
+    case DISPATCH_NEW_PAGE: {
+      // TODO maybe implement or could do it all in the plugin
+      break;
+    }
     default:
       fprintf(stderr, "not implemented dispatch call.\n");
       break;
