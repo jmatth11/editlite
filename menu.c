@@ -13,16 +13,16 @@ bool menu_init(struct menu *m) {
   return true;
 }
 
-void draw_select(struct display *d, struct win *w, SDL_Rect *rect) {
+void draw_select(struct display *d, SDL_Rect *rect) {
   const SDL_Color c = d->config.cursor_color;
-  SDL_SetRenderDrawColor(w->renderer, c.r, c.g, c.b, c.a);
-  SDL_RenderFillRect(w->renderer, rect);
+  SDL_SetRenderDrawColor(d->w.renderer, c.r, c.g, c.b, c.a);
+  SDL_RenderFillRect(d->w.renderer, rect);
 }
 
-bool menu_display(struct display *d, struct win *w) {
+bool menu_display(struct display *d) {
   // TODO would love to clean up a lot of these variables/calulations
   int win_h, win_w;
-  SDL_GetWindowSize(w->window, &win_w, &win_h);
+  SDL_GetWindowSize(d->w.window, &win_w, &win_h);
   const int total_row_pixel_height = d->menu.items.len * d->glyphs.height;
   const int width = win_w - 50;
   const int height = MIN(total_row_pixel_height, win_h - 20);
@@ -39,8 +39,8 @@ bool menu_display(struct display *d, struct win *w) {
     .h = height,
     .w = width,
   };
-  SDL_SetRenderDrawColor(w->renderer, 0x35, 0x35, 0x35, 0xff);
-  SDL_RenderFillRect(w->renderer, &r);
+  SDL_SetRenderDrawColor(d->w.renderer, 0x35, 0x35, 0x35, 0xff);
+  SDL_RenderFillRect(d->w.renderer, &r);
   size_t item_len = MIN(d->menu.items.len, row_offset + rows_showing);
   int width_offset = x_offset;
   int height_offset = y_offset;
@@ -52,7 +52,7 @@ bool menu_display(struct display *d, struct win *w) {
       .h = d->glyphs.height,
     };
     if (d->menu.idx == i) {
-      draw_select(d, w, &r);
+      draw_select(d, &r);
     }
     struct menu_item *item = &d->menu.items.menu_item_data[i];
     for (size_t char_idx = 0; char_idx < strlen(item->name); ++char_idx) {
@@ -67,7 +67,7 @@ bool menu_display(struct display *d, struct win *w) {
         .h = d->glyphs.height,
       };
       SDL_RenderCopy(
-        w->renderer,
+        d->w.renderer,
         glyph,
         NULL,
         &r

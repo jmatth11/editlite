@@ -14,7 +14,7 @@ bool execute_command(struct display *d, void *ctx) {
   return true;
 }
 
-void handle_command_mode(struct display *d, struct win *w, SDL_Event *e) {
+void handle_command_mode(struct display *d, SDL_Event *e) {
   switch (e->key.keysym.sym) {
     case SDLK_ESCAPE:
       d->mode = NORMAL;
