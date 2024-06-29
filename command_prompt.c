@@ -7,6 +7,7 @@ bool command_init(struct command *cmd) {
   cmd->shared_library = NULL;
   cmd->action = NULL;
   cmd->render = NULL;
+  cmd->event = NULL;
   cmd->get_display_prompt = NULL;
   cmd->setup = NULL;
   cmd->cleanup = NULL;
