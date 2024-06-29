@@ -40,16 +40,16 @@ int main(int argc, char **argv) {
   if (argc > 1) {
     file = argv[1];
   }
-  struct win w = {
-    .window = NULL,
-    .renderer = NULL,
-    .height = 480,
-    .width = 640
-  };
-  win_init(&w);
   struct config config;
   config_init(&config);
   parse_config(&config);
+  struct win w = {
+    .window = NULL,
+    .renderer = NULL,
+    .height = config.win_height,
+    .width = config.win_width
+  };
+  win_init(&w);
   struct display d;
   d.config = config;
   if (display_init(&d, &w) != 0) {

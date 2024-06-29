@@ -11,9 +11,12 @@ struct glyphs {
   TTF_Font *font;
   SDL_Texture* glyphs[CHAR_END_RANGE - CHAR_START_RANGE];
   SDL_Color color;
-  size_t size;
-  size_t max_height;
-  size_t max_width;
+  size_t point;
+  double scale;
+  size_t orig_height;
+  size_t orig_width;
+  size_t height;
+  size_t width;
 };
 
 int init_char(struct glyphs *ch, const struct win *w, const char* ttf_file);
