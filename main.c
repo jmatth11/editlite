@@ -95,6 +95,20 @@ int main(int argc, char **argv) {
     if (d.mode == COMMAND) {
       menu_display(&d, &w);
     }
+    if (d.cmds.len > 0) {
+      struct display_dim dim;
+      display_get_page_dim(&d, &w, &dim);
+      for (int i = 0; i < d.cmds.len; ++i) {
+        struct command *cmd = &d.cmds.command_data[i];
+        if (cmd->render != NULL) {
+          if (!cmd->render(w.renderer, &d, &dim)) {
+            const char *name;
+            cmd->get_display_prompt(&name);
+            fprintf(stderr, "plugin render failed: \"%s\"\n", name);
+          }
+        }
+      }
+    }
     SDL_RenderPresent(w.renderer);
     double cur_exec_time = ((clock() - init) / (double)CLOCKS_PER_SEC);
     double tick = 1000.0 / 60.0;
