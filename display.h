@@ -8,6 +8,7 @@
 #include "plugin_interface.h"
 #include <stdbool.h>
 #include "menu.h"
+#include "win.h"
 
 enum display_mode {
   NORMAL = 0,
@@ -27,6 +28,7 @@ struct cursor {
 
 struct display {
   enum display_mode mode;
+  struct win w;
   bool running;
   size_t cur_buf;
   struct cursor cursor;
@@ -38,7 +40,7 @@ struct display {
   struct plugin_interface pi;
 };
 
-int display_init(struct display* d, const struct win *w);
+int display_init(struct display* d);
 bool display_load_plugins(struct display* d);
 bool display_reload_plugins(struct display *d);
 bool display_page_render(struct display *d, struct win *w);

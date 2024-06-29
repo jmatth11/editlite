@@ -7,8 +7,9 @@
 #include "plugin_interface.h"
 #include "util.h"
 #include "display.h"
+#include "win.h"
 
-int display_init(struct display* d, const struct win *w) {
+int display_init(struct display* d) {
   // we do not initialize the menu in here because we initialize it on the fly
   // when we enter command mode
   d->mode = NORMAL;
@@ -24,7 +25,7 @@ int display_init(struct display* d, const struct win *w) {
   d->menu.items.cap = 0;
   plugin_interface_init(&d->pi);
   d->pi.__internal = d;
-  int err = init_char(&d->glyphs, w, d->config.font_file);
+  int err = init_char(&d->glyphs, &d->w, d->config.font_file);
   if (err != 0) return err;
   err = page_manager_init(&d->page_mgr);
   if (err != 0) return err;
@@ -221,4 +222,5 @@ void display_free(struct display* d) {
   free_char(&d->glyphs);
   page_manager_free(&d->page_mgr);
   free_command_array(&d->cmds);
+  win_free(&d->w);
 }
