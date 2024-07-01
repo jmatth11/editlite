@@ -32,7 +32,7 @@ void handle_keydown(struct display *d, SDL_Event *e) {
       handle_command_mode(d, e);
       break;
     }
-    case PLUGIN_TEXTINPUT: {
+    case PLUGIN_INPUT: {
       handle_plugin_textinput_mode(d, e);
       break;
     }

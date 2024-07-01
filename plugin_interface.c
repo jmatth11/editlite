@@ -75,8 +75,8 @@ void pi_dispatch(
       d->mode = NORMAL;
       break;
     }
-    case DISPATCH_PLUGIN_TEXTINPUT: {
-      d->mode = PLUGIN_TEXTINPUT;
+    case DISPATCH_PLUGIN_INPUT: {
+      d->mode = PLUGIN_INPUT;
       break;
     }
     default:
