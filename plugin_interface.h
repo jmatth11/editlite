@@ -8,6 +8,7 @@ enum dispatch_calls {
   DISPATCH_SAVE,
   DISPATCH_MENU,
   DISPATCH_NEW_PAGE,
+  DISPATCH_PLUGIN_TEXTINPUT,
 };
 
 struct plugin_interface {

@@ -75,6 +75,10 @@ void pi_dispatch(
       d->mode = NORMAL;
       break;
     }
+    case DISPATCH_PLUGIN_TEXTINPUT: {
+      d->mode = PLUGIN_TEXTINPUT;
+      break;
+    }
     default:
       fprintf(stderr, "not implemented dispatch call.\n");
       break;

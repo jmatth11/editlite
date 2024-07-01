@@ -10,6 +10,14 @@
 #include <SDL2/SDL_scancode.h>
 #include <SDL2/SDL_stdinc.h>
 
+void handle_plugin_textinput_mode(struct display*d, SDL_Event*e) {
+  switch (e->key.keysym.sym) {
+    case SDLK_ESCAPE:
+      d->mode = NORMAL;
+      break;
+  }
+}
+
 void handle_keydown(struct display *d, SDL_Event *e) {
   switch(d->mode) {
     case NORMAL: {
@@ -22,6 +30,10 @@ void handle_keydown(struct display *d, SDL_Event *e) {
     }
     case COMMAND:{
       handle_command_mode(d, e);
+      break;
+    }
+    case PLUGIN_TEXTINPUT: {
+      handle_plugin_textinput_mode(d, e);
       break;
     }
     default:
