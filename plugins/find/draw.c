@@ -59,7 +59,10 @@ void draw_options(struct display *d, struct find_info *op,
   for (int i = 0; i < op->locs.len; ++i) {
     struct find_loc *loc = &op->locs.location_data[i];
     for (int j =0; j<loc->preview_size; ++j) {
-      SDL_Texture *char_ren = d->texture_from_char(d, loc->preview[i]);
+      char cur_char = loc->preview[j];
+      // skip special chars
+      if (cur_char == '\n' || cur_char == '\t') continue;
+      SDL_Texture *char_ren = d->texture_from_char(d, cur_char);
       if (char_ren == NULL) {
         char_ren = d->texture_from_char(d, '?');
       }
