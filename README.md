@@ -2,10 +2,15 @@
 
 A simple text editor for learning purposes.
 
-I'm hoping to have simple features of displaying text, scrolling, editing, searching.
-I'd also like to have it dynamically load long lines and files so I don't have to load the entire thing in memory at once.
-
-Not sure how configurable I will allow it, but I will try to make it customizable with the basic features.
+Currently supports:
+    - Viewing a file.
+    - Editing/saving files.
+    - incrementally loading a file that you are viewing (so it's not all in memory at once)
+    - file traversing to a different file.
+    - searching for text within the currently loaded file.
+    - plugins to add extra functionality.
+    - some vim motions
+    - configuration through toml file
 
 ## Demo
 
@@ -32,6 +37,6 @@ TODO
 - [ ] Implement some more basic vim motions.
     - [x] implement jumping with ctrl-d/u
     - [ ] jump between words
-- [ ] Searching through document.
+- [x] Searching through document.
 - [ ] Run in "memory limited" mode for memory constrained systems.
 - [ ] allow rendering callback for plugins.

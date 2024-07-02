@@ -85,6 +85,7 @@ void pi_dispatch(
       d->cursor.pos = *dim;
       struct display_dim win_dim;
       display_get_page_dim(d, &win_dim);
+      // row needs to be first in case we need to load in more of the file
       handle_row_scroll(d, win_dim);
       handle_col_scroll(d, win_dim);
       break;
