@@ -17,6 +17,7 @@ struct config {
   SDL_Color cursor_color;
   int win_height;
   int win_width;
+  size_t read_size;
   char leader;
   char *font_file;
   string_array plugins;
