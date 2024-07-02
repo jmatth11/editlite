@@ -14,13 +14,9 @@ Currently supports:
 
 ## Demo
 
-Normal traversing of file and editing.
+Basic usage: editing, file traversing, and searching through file.
 
-https://github.com/jmatth11/editlite/assets/5776125/ccb72b91-3f02-45f0-9bcf-7f2b041c1613
-
-Using plugins loaded through dynamic libraries to handle commands (save/quit/files).
-
-https://github.com/jmatth11/editlite/assets/5776125/589983fb-8f68-4c3b-b5cd-6a51018833d9
+https://github.com/jmatth11/editlite/assets/5776125/bb694295-c093-403a-8afd-08701b4fd3f3
 
 
 TODO
