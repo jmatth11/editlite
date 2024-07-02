@@ -30,6 +30,8 @@ bool command_load(struct command *cmd) {
   // these functions aren't necessary
   cmd->setup = dlsym(handle, "setup");
   cmd->cleanup = dlsym(handle, "cleanup");
+  cmd->render = dlsym(handle, "render");
+  cmd->event = dlsym(handle, "event");
   // these functions are required
   cmd->action = dlsym(handle, "action");
   if (cmd->action == NULL) {
