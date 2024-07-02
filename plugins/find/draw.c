@@ -73,3 +73,14 @@ void draw_options(struct display *d, struct find_info *op,
     char_rect.y += char_h;
   }
 }
+
+void draw_select_box(struct display *d, int x, int y, int w, int h) {
+  SDL_Rect r = {
+    .x = x,
+    .y = y,
+    .w = w,
+    .h = h,
+  };
+  SDL_SetRenderDrawColor(d->w.renderer, 0xff, 0xff, 0xff, 0xff);
+  SDL_RenderDrawRect(d->w.renderer, &r);
+}
