@@ -43,7 +43,7 @@ void draw_textinput(struct display *d, const char *val, const int val_size,
   }
 }
 
-void draw_options(struct display *d, struct find_info *op,
+void draw_options(struct display *d, struct find_info *op, size_t len,
                   int x, int y, int w, int h) {
 
   int x_offset = x;
@@ -56,7 +56,9 @@ void draw_options(struct display *d, struct find_info *op,
     .w = char_w,
     .h = char_h,
   };
-  for (int i = 0; i < op->locs.len; ++i) {
+  int options_len = op->visual_offset + len;
+  if (options_len > op->locs.len) options_len = op->locs.len;
+  for (int i = op->visual_offset; i < options_len; ++i) {
     struct find_loc *loc = &op->locs.location_data[i];
     for (int j =0; j<loc->preview_size; ++j) {
       char cur_char = loc->preview[j];
