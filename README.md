@@ -37,7 +37,7 @@ plugins=["plugins/files/libfiles.so", "plugins/find/libfind.so"]
 
 Plugins are still in flux but you can find examples of them in `plugins/` directory.
 
-Plugins are done in C are anything that can generate a C structured shared library.
+Plugins are done in C or anything that can generate a C structured shared library.
 
 Current API:
 ```c
