@@ -1,5 +1,6 @@
 #include <SDL2/SDL_render.h>
 #include <string.h>
+#include "config.h"
 #include "gap_buffer.h"
 #include "glyph.h"
 #include "menu.h"
@@ -37,23 +38,26 @@ int display_init(struct display* d) {
 }
 
 bool display_load_plugins(struct display* d) {
+  size_t plugin_path_len = strlen(d->config.plugin_path);
   for (int i = 0; i < d->config.plugins.len; ++i) {
     struct command cmd;
     command_init(&cmd);
-    cmd.shared_library = d->config.plugins.string_data[i];
-    insert_command_array(&d->cmds, cmd);
-  }
-  for (int i = 0; i < d->cmds.len; ++i) {
-    struct command *cmd = &d->cmds.command_data[i];
-    if (!command_load(cmd)) {
-      fprintf(stderr, "failed command load.\n");
-    };
-    if (cmd->setup != NULL) {
-      if (!cmd->setup(&d->pi)) {
-        const char *prompt;
-        cmd->get_display_prompt(&prompt);
-        fprintf(stderr, "plugin setup failed: \"%s\"\n", prompt);
+    const char *plugin_str = d->config.plugins.string_data[i];
+    size_t plugin_len = strlen(plugin_str);
+    cmd.shared_library = malloc(sizeof(char) * (plugin_path_len + plugin_len + 2));
+    sprintf(cmd.shared_library, "%s%c%s", d->config.plugin_path, '/', plugin_str);
+    cmd.shared_library[plugin_path_len + plugin_len + 1] = '\0';
+    if (command_load(&cmd)) {
+      if (cmd.setup != NULL) {
+        if (!cmd.setup(&d->pi)) {
+          const char *prompt;
+          cmd.get_display_prompt(&prompt);
+          fprintf(stderr, "plugin setup failed: \"%s\"\n", prompt);
+        }
       }
+      insert_command_array(&d->cmds, cmd);
+    } else {
+      fprintf(stderr, "failed command load: \"%s\"\n", cmd.shared_library);
     }
   }
   return true;
@@ -218,7 +222,9 @@ void display_free(struct display* d) {
         fprintf(stderr, "clean up for command failed: \"%s\"\n", prompt);
       }
     }
+    free(cmd->shared_library);
   }
+  config_free(&d->config);
   free_command_array(&d->cmds);
   free_char(&d->glyphs);
   page_manager_free(&d->page_mgr);
