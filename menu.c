@@ -9,6 +9,7 @@ bool menu_init(struct menu *m) {
   m->x = 0;
   m->y = 0;
   m->idx = 0;
+  m->visual_offset = 0;
   if (init_menu_item_array(&m->items, 1) != 0) return false;
   return true;
 }
@@ -29,9 +30,16 @@ bool menu_display(struct display *d) {
   const int x_offset = (win_w / 2) - (width / 2);
   const int y_offset = (win_h /2) - (height / 2);
   const int rows_showing = ((double)height / (double)total_row_pixel_height) * d->menu.items.len;
-  int row_offset = 0;
-  if (rows_showing != d->menu.items.len && d->menu.idx >= rows_showing - 1) {
-    row_offset = MIN((d->menu.idx - (rows_showing - 1)), (d->menu.items.len - 1));
+  if (rows_showing != d->menu.items.len &&
+    d->menu.idx >= (d->menu.visual_offset + (rows_showing - 1))) {
+    d->menu.visual_offset = d->menu.idx - (rows_showing - 1);
+  }
+  if (d->menu.idx < d->menu.visual_offset) {
+    if (d->menu.idx == 0) {
+      d->menu.visual_offset = 0;
+    } else {
+      d->menu.visual_offset -= (d->menu.visual_offset - d->menu.idx);
+    }
   }
   SDL_Rect r = {
     .x = x_offset,
@@ -41,10 +49,10 @@ bool menu_display(struct display *d) {
   };
   SDL_SetRenderDrawColor(d->w.renderer, 0x35, 0x35, 0x35, 0xff);
   SDL_RenderFillRect(d->w.renderer, &r);
-  size_t item_len = MIN(d->menu.items.len, row_offset + rows_showing);
+  size_t item_len = MIN(d->menu.items.len, d->menu.visual_offset + rows_showing);
   int width_offset = x_offset;
   int height_offset = y_offset;
-  for (size_t i = row_offset; i < item_len; ++i) {
+  for (size_t i = d->menu.visual_offset; i < item_len; ++i) {
     r = (SDL_Rect){
       .x = width_offset,
       .y = height_offset,

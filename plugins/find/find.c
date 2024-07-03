@@ -45,6 +45,7 @@ bool render(struct display *d, struct display_dim *dim) {
     draw_background(d, 0, winh - op.height, winw, op.height);
     draw_textinput(d, op.value, op.value_size, 0, winh - op.height, winw, line_height);
     draw_options(d, &op, menu_len, 0, options_y_offset, winw, line_height);
+    // TODO this is not being computed properly
     size_t select_offset = op.idx < (menu_max_height-1) ? op.idx : (menu_max_height-1);
     size_t select_box_y_offset = (line_height * select_offset) + options_y_offset;
     draw_select_box(d, 0, select_box_y_offset, winw, line_height);
@@ -81,7 +82,8 @@ bool event(SDL_Event *e, struct display *d, struct display_dim *dim) {
       if (op.idx == 0) {
         op.visual_offset = 0;
       } else {
-        op.visual_offset = op.visual_offset - op.idx;
+        printf("op.visual_offset:%d, op.idx:%d\n", op.visual_offset, op.idx);
+        op.visual_offset -= (op.visual_offset - op.idx);
       }
     }
     if (ky) {
