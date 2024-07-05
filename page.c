@@ -1,6 +1,9 @@
-#include "page.h"
-#include <stdbool.h>
 #include <stdio.h>
+
+#include "linked_list.h"
+#include "page.h"
+#include "types/size_types.h"
+#include "types/page_types.h"
 #include "display.h"
 #include "glyph.h"
 #include "file_ops.h"
@@ -12,13 +15,13 @@
 
 static char buffer[BUFSIZ];
 
-bool page_handle_backspace(struct page *p, struct display *d) {
-  struct linked_list *cur_line = linked_list_get_pos(p->lines, d->cursor.pos.row);
+bool page_handle_backspace(struct page *p) {
+  struct linked_list *cur_line = linked_list_get_pos(p->lines, p->cursor.pos.row);
   struct gap_buffer *cur_gb = &cur_line->value.chars;
-  if (d->cursor.pos.col > 0) {
+  if (p->cursor.pos.col > 0) {
     gap_buffer_delete(cur_gb);
-    d->cursor.pos.col--;
-  } else if (d->cursor.pos.row != 0) {
+    p->cursor.pos.col--;
+  } else if (p->cursor.pos.row != 0) {
     struct linked_list *prev_line = cur_line->prev;
     struct gap_buffer *prev_gb = &prev_line->value.chars;
     gap_buffer_move_cursor(prev_gb, gap_buffer_get_len(prev_gb));
@@ -30,43 +33,47 @@ bool page_handle_backspace(struct page *p, struct display *d) {
       gap_buffer_get_char(cur_gb, i, &tmp);
       gap_buffer_insert(prev_gb, tmp);
     }
-    d->cursor.pos.row--;
-    d->cursor.pos.col = gap_buffer_get_len(prev_gb) - cur_gb_len;
-    gap_buffer_move_cursor(prev_gb, d->cursor.pos.col);
+    p->cursor.pos.row--;
+    p->cursor.pos.col = gap_buffer_get_len(prev_gb) - cur_gb_len;
+    gap_buffer_move_cursor(prev_gb, p->cursor.pos.col);
     linked_list_delete_node(cur_line);
   }
   return true;
 }
 
-bool page_handle_keystroke(struct page *p, struct display *d, SDL_Event *e) {
-  struct linked_list *cur_line = linked_list_get_pos(p->lines, d->cursor.pos.row);
+void page_reset_screen_cursor(struct page *p) {
+  p->cursor.screen_pos = p->cursor.pos;
+}
+
+bool page_handle_keystroke(struct page *p, SDL_Event *e) {
+  struct linked_list *cur_line = linked_list_get_pos(p->lines, p->cursor.pos.row);
   struct gap_buffer *cur_gb = &cur_line->value.chars;
   const char received_char = sanitize_character(e->key.keysym.sym);
   if (received_char != '\0') {
     if (received_char == '\n') {
       gap_buffer_insert(cur_gb, received_char);
-      d->cursor.pos.col++;
+      p->cursor.pos.col++;
       struct line new_line;
       init_line(&new_line);
       struct gap_buffer *next_gb = &new_line.chars;
       gap_buffer_move_cursor(next_gb, 0);
-      size_t cur_col = d->cursor.pos.col;
+      size_t cur_col = p->cursor.pos.col;
       size_t gb_len = gap_buffer_get_len(cur_gb);
       for (; cur_col < gb_len; ++cur_col) {
         char tmp = ' ';
         gap_buffer_get_char(cur_gb, cur_col, &tmp);
         gap_buffer_insert(next_gb, tmp);
       }
-      cur_col = d->cursor.pos.col;
+      cur_col = p->cursor.pos.col;
       gap_buffer_move_cursor(cur_gb, gb_len - 1);
       gap_buffer_delete_seq(cur_gb, gb_len - cur_col);
-      d->cursor.pos.col = 0;
-      d->cursor.pos.row++;
-      gap_buffer_move_cursor(next_gb, d->cursor.pos.col);
+      p->cursor.pos.col = 0;
+      p->cursor.pos.row++;
+      gap_buffer_move_cursor(next_gb, p->cursor.pos.col);
       linked_list_insert(cur_line, 0, new_line);
     } else {
       gap_buffer_insert(cur_gb, received_char);
-      d->cursor.pos.col++;
+      p->cursor.pos.col++;
     }
   }
   return true;
@@ -177,12 +184,12 @@ bool page_init(struct page *p) {
   int err = linked_list_init(p->lines);
   p->file_size = 0;
   p->file_offset_pos = 0;
-  p->col_offset = 0;
-  p->row_offset = 0;
-  p->x_offset = 0;
-  p->y_offset = 0;
+  p->page_offset = (struct display_dim){0,0};
+  p->position_offset = (struct SDL_Point){0,0};
   p->file_name = NULL;
   p->fp = NULL;
+  p->cursor.pos = (struct display_dim){0,0};
+  p->cursor.screen_pos = p->cursor.pos;
   p->handle_backspace = page_handle_backspace;
   p->handle_keystroke = page_handle_keystroke;
   return err == 0;

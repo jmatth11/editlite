@@ -1,14 +1,19 @@
-#include "plugin_interface.h"
+#include <string.h>
+
 #include "display.h"
 #include "menu.h"
 #include "page.h"
+#include "plugin_interface.h"
 #include "scrolling.h"
-#include <string.h>
+#include "state.h"
+#include "types/display_type.h"
+#include "types/plugin_interface_types.h"
+#include "types/page_types.h"
 
 void pi_get_cur_page(struct plugin_interface* pi, struct page *p){
   struct display *d = (struct display*)pi->__internal;
   struct page *out;
-  display_get_cur_page(d, &out);
+  state_get_cur_page(&d->state, &out);
   *p = *out;
 }
 
@@ -20,12 +25,12 @@ void pi_dispatch(
   struct display *d = (struct display*)pi->__internal;
   switch (dc) {
     case DISPATCH_EXIT:
-      d->running = false;
+      d->state.running = false;
       break;
     case DISPATCH_SAVE: {
       struct page *p;
-      display_get_cur_page(d, &p);
-      if (!d->page_mgr.write(p)) {
+      state_get_cur_page(&d->state, &p);
+      if (!d->state.page_mgr.write(p)) {
         fprintf(stderr, "write failed for file \"%s\"\n", p->file_name);
       }
       d->mode = NORMAL;
@@ -33,15 +38,15 @@ void pi_dispatch(
     }
     case DISPATCH_MENU: {
       d->mode = COMMAND;
-      if (d->menu.items.menu_item_data != NULL) {
-        menu_free(&d->menu);
+      if (d->state.menu.items.menu_item_data != NULL) {
+        menu_free(&d->state.menu);
       }
-      menu_init(&d->menu);
+      menu_init(&d->state.menu);
 
       menu_item_array *items = (menu_item_array*)context;
       // copy all values.
       for (int i = 0; i < items->len; ++i) {
-        insert_menu_item_array(&d->menu.items, items->menu_item_data[i]);
+        insert_menu_item_array(&d->state.menu.items, items->menu_item_data[i]);
       }
       break;
     }
@@ -53,11 +58,11 @@ void pi_dispatch(
         break;
       }
       bool found = false;
-      for (int i = 0; i < d->page_mgr.pages.len; ++i) {
-        struct page *tmp = &d->page_mgr.pages.page_data[i];
+      for (int i = 0; i < d->state.page_mgr.pages.len; ++i) {
+        struct page *tmp = &d->state.page_mgr.pages.page_data[i];
         if (tmp->file_name != NULL) {
           if (strcmp(tmp->file_name, filename)==0) {
-            d->cur_buf = i;
+            d->state.cur_buf = i;
             found = true;
             break;
           }
@@ -66,12 +71,8 @@ void pi_dispatch(
       if (!found) {
         p.file_name = malloc(sizeof(char)*strlen(filename));
         strcpy(p.file_name, filename);
-        insert_page_array(&d->page_mgr.pages, p);
-        d->cur_buf = d->page_mgr.pages.len - 1;
-        // TODO think about moving the cursor to the page level so
-        // we can remember where we left off.
-        d->cursor.pos.col = 0;
-        d->cursor.pos.row = 0;
+        insert_page_array(&d->state.page_mgr.pages, p);
+        d->state.cur_buf = d->state.page_mgr.pages.len - 1;
       }
       d->mode = NORMAL;
       break;
@@ -82,9 +83,14 @@ void pi_dispatch(
     }
     case DISPATCH_UPDATE_CURSOR: {
       struct display_dim *dim = (struct display_dim*)context;
-      d->cursor.pos = *dim;
+      struct page *cur_page;
+      if (!state_get_cur_page(&d->state, &cur_page)) {
+        fprintf(stderr, "could not get current page for handle_insert_mode.\n");
+        return;
+      }
+      cur_page->cursor.pos = *dim;
       struct display_dim win_dim;
-      display_get_page_dim(d, &win_dim);
+      state_get_page_dim(&d->state, &win_dim);
       // row needs to be first in case we need to load in more of the file
       handle_row_scroll(d, win_dim);
       handle_col_scroll(d, win_dim);

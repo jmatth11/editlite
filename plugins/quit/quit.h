@@ -2,13 +2,18 @@
 #define EDITLITE_PLUGIN_EXIT_H
 
 #ifdef __cplusplus
-extern "C"
+extern "C" {
 #endif
 
 #include <stdbool.h>
-#include <plugin_interface.h>
+
+struct plugin_interface;
 
 bool action(struct plugin_interface *d);
 void get_display_prompt(const char **out);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

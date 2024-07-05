@@ -1,8 +1,9 @@
 #ifndef EDITLITE_KEY_HANDLER_H
 #define EDITLITE_KEY_HANDLER_H
 
-#include "display.h"
-#include <stdint.h>
+#include <SDL2/SDL_events.h>
+
+struct display;
 
 void handle_keydown(struct display *d, SDL_Event *e);
 void handle_simple_keypresses(struct display *d, SDL_Event *e);
