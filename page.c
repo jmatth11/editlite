@@ -1,7 +1,9 @@
 #include <stdio.h>
 
+#include "line.h"
 #include "linked_list.h"
 #include "page.h"
+#include "types/line_types.h"
 #include "types/size_types.h"
 #include "types/page_types.h"
 #include "display.h"

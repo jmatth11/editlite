@@ -2,7 +2,7 @@
 #define EDITLITE_LINKED_LIST_H
 
 #include <stddef.h>
-#include "line.h"
+#include "types/line_types.h"
 
 #ifdef __cplusplus
 extern "C" {
