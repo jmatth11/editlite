@@ -1,10 +1,14 @@
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "line.h"
 #include "linked_list.h"
 
 int linked_list_init(struct linked_list *ll) {
-  init_line(&ll->value);
+  if (init_line(&ll->value) != 0) {
+    fprintf(stderr, "linked list line could not initialize\n");
+    return 1;
+  }
   ll->next = NULL;
   ll->prev = NULL;
   return 0;

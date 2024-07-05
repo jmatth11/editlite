@@ -59,25 +59,22 @@ int main(int argc, char **argv) {
     fprintf(stderr, "Display could not initialize.\n");
     exit(1);
   }
-  struct page_manager pm;
-  if (page_manager_init(&pm) != 0) {
-    fprintf(stderr, "Page Manager could not initialize.\n");
-    exit(1);
-  }
+  // page_mgr expects at least one page in it
   struct page test_buffer;
   if (!page_init(&test_buffer)) {
     fprintf(stderr, "Page could not initialize.\n");
     exit(1);
   }
+  // if the user supplies a file, load it in
   if (file != NULL) {
     test_buffer.file_name = malloc(sizeof(char) * strlen(file));
     strcpy(test_buffer.file_name, file);
   }
-  if (insert_page_array(&pm.pages, test_buffer) != 0) {
+  // insert our first page
+  if (!insert_page_array(&d.state.page_mgr.pages, test_buffer)) {
     fprintf(stderr, "error inserting page into page manager.\n");
     exit(1);
   }
-  d.state.page_mgr = pm;
 
   clock_t init;
   SDL_Event e;

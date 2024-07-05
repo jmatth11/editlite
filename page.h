@@ -10,7 +10,7 @@ bool page_init(struct page* p);
 void page_reset_screen_cursor(struct page *p);
 void page_free(struct page* p);
 
-int page_manager_init(struct page_manager* pm);
+bool page_manager_init(struct page_manager* pm);
 void page_manager_free(struct page_manager* pm);
 
 #endif

@@ -13,7 +13,7 @@ bool menu_init(struct menu *m) {
   m->y = 0;
   m->idx = 0;
   m->visual_offset = 0;
-  if (init_menu_item_array(&m->items, 1) != 0) return false;
+  if (!init_menu_item_array(&m->items, 1)) return false;
   return true;
 }
 
