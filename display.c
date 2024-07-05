@@ -72,7 +72,7 @@ bool display_page_render(struct display *d) {
   page_reset_screen_cursor(cur_page);
   const struct font_size font_size = d->state.glyphs.scaled_size;
   const int line_start = cur_page->page_offset.row;
-  const int line_end = dims.row + cur_page->page_offset.row;
+  const int line_end = dims.row + line_start;
   struct linked_list *cur_line = linked_list_get_pos(cur_page->lines, line_start);
   struct cursor *cursor = &cur_page->cursor;
   for (int line_idx = line_start; line_idx < line_end; ++line_idx) {

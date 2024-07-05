@@ -14,6 +14,10 @@ void handle_row_scroll(struct display *d, struct display_dim dim) {
   if (cur_page->cursor.pos.row < 0) {
     cur_page->cursor.pos.row = 0;
   }
+  if (cur_page->file_offset_pos >= cur_page->file_size &&
+    cur_page->cursor.pos.row > (page_len - 1)) {
+    cur_page->cursor.pos.row = page_len - 1;
+  }
   const size_t c_row = cur_page->cursor.pos.row;
   if (cur_page->fp != NULL && (c_row+10) >= page_len &&
     cur_page->file_offset_pos < cur_page->file_size) {
