@@ -2,10 +2,10 @@
 #define EDITLITE_LINKED_LIST_H
 
 #include <stddef.h>
-#include "line.h"
+#include "types/line_types.h"
 
 #ifdef __cplusplus
-extern "C"
+extern "C" {
 #endif
 
 struct linked_list {
@@ -24,5 +24,9 @@ int linked_list_delete(struct linked_list *ll, size_t pos);
 int linked_list_delete_node(struct linked_list *ll);
 void linked_list_free(struct linked_list *ll);
 void linked_list_free_all(struct linked_list *ll);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

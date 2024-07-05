@@ -1,3 +1,6 @@
+#include <types/plugin_interface_types.h>
+#include <stddef.h>
+
 #include "quit.h"
 
 const char *prompt = "quit application";

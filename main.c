@@ -9,14 +9,17 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include "command_prompt.h"
+
 #include "config.h"
+#include "display.h"
 #include "key_handler.h"
 #include "menu.h"
 #include "page.h"
-#include "util.h"
+#include "types/config_types.h"
+#include "types/display_type.h"
+#include "types/win_types.h"
+#include "state.h"
 #include "win.h"
-#include "display.h"
 
 void init() {
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -44,14 +47,14 @@ int main(int argc, char **argv) {
   config_init(&config);
   parse_config(&config);
   struct display d;
-  d.config = config;
-  d.w = (struct win){
+  d.state.config = config;
+  d.state.w = (struct win){
     .window = NULL,
     .renderer = NULL,
     .height = config.win_height,
     .width = config.win_width
   };
-  win_init(&d.w);
+  win_init(&d.state.w);
   if (display_init(&d) != 0) {
     fprintf(stderr, "Display could not initialize.\n");
     exit(1);
@@ -74,32 +77,32 @@ int main(int argc, char **argv) {
     fprintf(stderr, "error inserting page into page manager.\n");
     exit(1);
   }
-  d.page_mgr = pm;
+  d.state.page_mgr = pm;
 
   clock_t init;
   SDL_Event e;
-  while(d.running) {
+  while(d.state.running) {
     init = clock();
     while(SDL_PollEvent(&e)) {
       if (e.type == SDL_QUIT) {
-        d.running = false;
+        d.state.running = false;
       } else if (e.type == SDL_KEYDOWN) {
         handle_keydown(&d, &e);
       }
     }
-    SDL_SetRenderDrawColor(d.w.renderer, 0, 0, 0, 0xFF);
-    SDL_RenderClear(d.w.renderer);
+    SDL_SetRenderDrawColor(d.state.w.renderer, 0, 0, 0, 0xFF);
+    SDL_RenderClear(d.state.w.renderer);
     if (!display_page_render(&d)) {
       fprintf(stderr, "page render failed.\n");
     }
     if (d.mode == COMMAND) {
       menu_display(&d);
     }
-    if (d.cmds.len > 0) {
+    if (d.state.cmds.len > 0) {
       struct display_dim dim;
-      display_get_page_dim(&d, &dim);
-      for (int i = 0; i < d.cmds.len; ++i) {
-        struct command *cmd = &d.cmds.command_data[i];
+      state_get_page_dim(&d.state, &dim);
+      for (int i = 0; i < d.state.cmds.len; ++i) {
+        struct command *cmd = &d.state.cmds.command_data[i];
         if (cmd->render != NULL) {
           if (!cmd->render(&d, &dim)) {
             const char *name;
@@ -109,9 +112,9 @@ int main(int argc, char **argv) {
         }
       }
     }
-    SDL_RenderPresent(d.w.renderer);
+    SDL_RenderPresent(d.state.w.renderer);
     double cur_exec_time = ((clock() - init) / (double)CLOCKS_PER_SEC);
-    double tick = 1000.0 / d.config.fps;
+    double tick = 1000.0 / d.state.config.fps;
     if (cur_exec_time < tick) {
       double delay = tick - cur_exec_time;
       SDL_Delay(delay);

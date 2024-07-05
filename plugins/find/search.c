@@ -1,9 +1,12 @@
-#include "search.h"
-#include "page.h"
-#include "find.h"
+#include <linked_list.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
+#include <types/display_type.h>
+#include <types/page_types.h>
+
+#include "find.h"
+#include "search.h"
 
 char cur_buffer[BUFSIZ];
 
@@ -53,7 +56,7 @@ void search_word_options(struct display *d, struct display_dim *dim, struct find
     free_location_array(&op->locs);
   }
   init_location_array(&op->locs, 1);
-  struct page *cur_page = &d->page_mgr.pages.page_data[d->cur_buf];
+  struct page *cur_page = &d->state.page_mgr.pages.page_data[d->state.cur_buf];
   struct linked_list *cur_line = cur_page->lines;
   size_t line_idx = 0;
   while (cur_line != NULL) {

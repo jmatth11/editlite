@@ -1,13 +1,15 @@
-#include "files.h"
-#include <page.h>
-#include <display.h>
-#include <menu.h>
+#include <dirent.h>
+#include <errno.h>
 #include <stddef.h>
 #include <stdio.h>
-#include <unistd.h>
-#include <errno.h>
-#include <dirent.h>
+#include <string.h>
 #include <sys/stat.h>
+#include <types/display_type.h>
+#include <types/menu_types.h>
+#include <types/plugin_interface_types.h>
+#include <unistd.h>
+
+#include "files.h"
 
 struct dir_info {
   char *base;
@@ -71,10 +73,10 @@ bool file_selected(struct display *d, void *ctx) {
     if (!gen_items_from_dir(full_path, &buffer)) {
       return false;
     }
-    d->pi.dispatch(&d->pi, DISPATCH_MENU, &buffer);
+    d->state.pi.dispatch(&d->state.pi, DISPATCH_MENU, &buffer);
     free_menu_item_array(&buffer);
   } else {
-    d->pi.dispatch(&d->pi, DISPATCH_NEW_PAGE, full_path);
+    d->state.pi.dispatch(&d->state.pi, DISPATCH_NEW_PAGE, full_path);
   }
   return true;
 }

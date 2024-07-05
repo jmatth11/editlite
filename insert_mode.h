@@ -1,8 +1,9 @@
 #ifndef EDITLITE_INSERT_MODE_H
 #define EDITLITE_INSERT_MODE_H
 
-#include "display.h"
-#include "win.h"
+#include <SDL2/SDL_events.h>
+
+struct display;
 
 enum insert_mode_t {
   INSERT_AT = 0,

@@ -1,3 +1,6 @@
+#include <types/plugin_interface_types.h>
+#include <stddef.h>
+
 #include "save.h"
 
 const char *prompt = "save application";
