@@ -22,7 +22,7 @@ debug: deps debugsrc
 
 .PHONY: debugsrc
 debugsrc: $(DEBUG_OBJECTS)
-	$(CC) $(patsubst %.o, $(OBJ)/%.o, $(notdir $^)) -ggdb $(CFLAGS) $(LIBS) -o $(BIN)/$(TARGET)
+	$(CC) $^ -ggdb $(CFLAGS) $(LIBS) -o $(BIN)/$(TARGET)
 
 $(OBJ)/%.o: %.c
 	@mkdir -p $(dir $@)
@@ -30,7 +30,7 @@ $(OBJ)/%.o: %.c
 	$(CC) -c -o $@ $< $(CFLAGS) $(INCLUDES)
 
 $(OBJ)/%-debug.o: %.c
-	@mkdir -p $(OBJ)
+	@mkdir -p $(dir $@)
 	@mkdir -p $(BIN)
 	$(CC) -ggdb -c -o $@ $< $(CFLAGS) $(INCLUDES)
 
