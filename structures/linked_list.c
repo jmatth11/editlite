@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "line.h"
+#include <pages/line.h>
 #include "linked_list.h"
 
 int linked_list_init(struct linked_list *ll) {

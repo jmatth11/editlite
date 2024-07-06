@@ -4,7 +4,7 @@
 #include "menu.h"
 #include "types/menu_types.h"
 #include "types/display_type.h"
-#include "util.h"
+#include "helpers/util.h"
 
 bool menu_init(struct menu *m) {
   m->w = 50;

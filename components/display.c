@@ -1,19 +1,19 @@
 #include <string.h>
 
-#include "command_prompt.h"
-#include "config.h"
+#include "commands/command.h"
+#include "helpers/config.h"
 #include "display.h"
-#include "gap_buffer.h"
+#include "structures/gap_buffer.h"
 #include "glyph.h"
-#include "linked_list.h"
+#include "structures/linked_list.h"
 #include "menu.h"
-#include "page.h"
-#include "plugin_interface.h"
-#include "state.h"
+#include "pages/page.h"
+#include "commands/plugin_interface.h"
+#include "states/state.h"
 #include "types/cursor_types.h"
 #include "types/display_type.h"
 #include "types/size_types.h"
-#include "util.h"
+#include "helpers/util.h"
 #include "win.h"
 
 
