@@ -1,7 +1,7 @@
-#include "display.h"
-#include "linked_list.h"
+#include "components/display.h"
+#include "structures/linked_list.h"
 #include "scrolling.h"
-#include "state.h"
+#include "states/state.h"
 #include "types/display_type.h"
 
 void handle_row_scroll(struct display *d, struct display_dim dim) {

@@ -1,7 +1,7 @@
 CC=gcc
 CFLAGS=-Wall -std=c11
 LIBS=-L./deps/tomlc99/ -lSDL2 -lSDL2_ttf -lm -l:libtoml.a
-INCLUDES=
+INCLUDES=-I./
 OBJ=obj
 BIN=bin
 SOURCES=$(shell find . -name '*.c' -not -path './plugins/*' -not -path './deps/*')
@@ -15,7 +15,7 @@ all: deps src
 
 .PHONY: src
 src: $(OBJECTS)
-	$(CC) $(patsubst %.o, $(OBJ)/%.o, $(notdir $^)) -O2 $(CFLAGS) $(LIBS) -o $(BIN)/$(TARGET)
+	$(CC) $^ -O2 $(CFLAGS) $(LIBS) -o $(BIN)/$(TARGET)
 
 .PHONY: debug
 debug: deps debugsrc
@@ -25,7 +25,7 @@ debugsrc: $(DEBUG_OBJECTS)
 	$(CC) $(patsubst %.o, $(OBJ)/%.o, $(notdir $^)) -ggdb $(CFLAGS) $(LIBS) -o $(BIN)/$(TARGET)
 
 $(OBJ)/%.o: %.c
-	@mkdir -p $(OBJ)
+	@mkdir -p $(dir $@)
 	@mkdir -p $(BIN)
 	$(CC) -c -o $@ $< $(CFLAGS) $(INCLUDES)
 
@@ -36,8 +36,8 @@ $(OBJ)/%-debug.o: %.c
 
 .PHONY: clean
 clean:
-	@rm $(OBJ)/* 2> /dev/null
-	@rm $(BIN)/* 2> /dev/null
+	@rm -rf $(OBJ)/* 2> /dev/null
+	@rm -f $(BIN)/* 2> /dev/null
 
 .PHONY: clean_deps
 clean_deps:
