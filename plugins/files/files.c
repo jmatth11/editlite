@@ -50,8 +50,7 @@ bool setup(struct plugin_interface* pi) {
 bool is_dir(const char *path) {
   struct stat stats;
   stat(path, &stats);
-  if (S_ISDIR(stats.st_mode)) return true;
-  return false;
+  return S_ISDIR(stats.st_mode);
 }
 
 bool file_selected(struct display *d, void *ctx) {

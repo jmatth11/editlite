@@ -9,6 +9,7 @@
 #include "types/display_type.h"
 #include "types/plugin_interface_types.h"
 #include "types/page_types.h"
+#include "types/state_types.h"
 
 void pi_get_cur_page(struct plugin_interface* pi, struct page *p){
   struct display *d = (struct display*)pi->__internal;
@@ -30,6 +31,12 @@ void pi_dispatch(
     case DISPATCH_SAVE: {
       struct page *p;
       state_get_cur_page(&d->state, &p);
+      const char* filename = (char*)context;
+      if (filename != NULL) {
+        const size_t len = strlen(filename);
+        p->file_name = malloc(sizeof(char)*len);
+        strcpy(p->file_name, filename);
+      }
       if (!d->state.page_mgr.write(p)) {
         fprintf(stderr, "write failed for file \"%s\"\n", p->file_name);
       }
@@ -94,6 +101,14 @@ void pi_dispatch(
       // row needs to be first in case we need to load in more of the file
       handle_row_scroll(d, win_dim);
       handle_col_scroll(d, win_dim);
+      break;
+    }
+    case DISPATCH_ERROR_MESSAGE: {
+      // TODO add proper support for error messages
+      const char *err = (char*)context;
+      if (err != NULL) {
+        fprintf(stderr, "error: %s\n", err);
+      }
       break;
     }
     default:
