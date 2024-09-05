@@ -67,8 +67,10 @@ int main(int argc, char **argv) {
   }
   // if the user supplies a file, load it in
   if (file != NULL) {
-    test_buffer.file_name = malloc(sizeof(char) * strlen(file));
-    strcpy(test_buffer.file_name, file);
+    size_t file_len = strlen(file);
+    test_buffer.file_name = malloc(sizeof(char) * file_len + 1);
+    strncpy(test_buffer.file_name, file, file_len);
+    test_buffer.file_name[file_len] = '\0';
   }
   // insert our first page
   if (!insert_page_array(&d.state.page_mgr.pages, test_buffer)) {
