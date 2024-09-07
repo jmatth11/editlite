@@ -50,6 +50,7 @@ int init_char(struct glyphs *ch, const struct win *w, const char* ttf_file) {
 
 SDL_Texture* get_glyph(struct glyphs *ch, const char c) {
   int idx = (int)c - CHAR_START_RANGE;
+  // TODO allow out of range character generation for unicode
   if (idx >= 0 && idx < CHAR_END_RANGE - CHAR_START_RANGE) {
     return ch->glyphs[idx];
   }
@@ -77,6 +78,8 @@ char sanitize_character(SDL_Keycode keycode) {
     return result;
   }
   // force to char size
+  // TODO switch to using <unicode/uchar.h>
+  // u_isUAlphabetic, u_isalpha etc.
   char c = (char)keycode;
   switch (c) {
     case SDLK_MINUS: {
