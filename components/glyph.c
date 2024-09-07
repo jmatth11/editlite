@@ -33,6 +33,7 @@ int init_char(struct glyphs *ch, const struct win *w, const char* ttf_file) {
     }
     SDL_Texture *new_glyph = SDL_CreateTextureFromSurface(w->renderer, s);
     if (new_glyph == NULL) {
+      ch->glyphs[i - CHAR_START_RANGE] = NULL;
       fprintf(stderr, "error with glyph: %s\n", SDL_GetError());
     } else {
       ch->glyphs[i - CHAR_START_RANGE] = new_glyph;
