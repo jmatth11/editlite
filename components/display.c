@@ -16,6 +16,17 @@
 #include "helpers/util.h"
 #include "win.h"
 
+struct draw_info {
+  struct display *d;
+  struct page *cur_page;
+  struct linked_list *cur_line;
+  struct cursor *cursor;
+  struct display_dim dims;
+  size_t line_idx;
+  size_t width_offset;
+  size_t height_offset;
+  struct font_size font_size;
+};
 
 int display_init(struct display* d) {
   // we do not initialize the menu in here because we initialize it on the fly
@@ -63,6 +74,71 @@ static void inline draw_cursor(struct display *d, SDL_Rect *rect) {
   SDL_RenderFillRect(d->state.w.renderer, rect);
 }
 
+static struct character_display inline generate_character_display(struct draw_info di, size_t char_idx) {
+  struct character_display cd;
+  char cur_char = ' ';
+  gap_buffer_get_char(&di.cur_line->value.chars, char_idx, &cur_char);
+  cd.buf[0] = cur_char;
+  cd.buf[1] = '\n';
+  cd.glyph = handle_characters(di.d, cur_char);
+  cd.display_pos = (SDL_Rect){
+    .x = di.width_offset,
+    .y = di.height_offset,
+    .w = di.font_size.width,
+    .h = di.font_size.height,
+  };
+  cd.row = di.line_idx;
+  cd.col = char_idx;
+  return cd;
+}
+
+// TODO I'm not sure I like this yet. might be nicer to just build up buffer of display characters then operate on them
+// and pass them to plugins
+static void inline draw_line(struct draw_info d) {
+  const int char_start = d.cur_page->page_offset.col;
+  const int gap_buffer_len = gap_buffer_get_len(&d.cur_line->value.chars);
+  const int char_len = MIN(gap_buffer_len, d.dims.col + d.cur_page->page_offset.col);
+    if (d.cursor->pos.row == d.line_idx && d.cursor->pos.col > char_len) {
+      d.cursor->screen_pos.col = char_len;
+    }
+  for (int char_idx = char_start; char_idx < char_len; ++char_idx) {
+    struct character_display cd = generate_character_display(d, char_idx);
+    if (cd.glyph == NULL) {
+      // ignore newline character and carriage return
+      if (cd.buf[0] != 10 && cd.buf[0] != 13) {
+        fprintf(stderr, "cur_char: %s\n", cd.buf);
+        fprintf(stderr, "glyph was null\n");
+        // display question mark for unknown chars
+        cd.glyph = handle_characters(d.d, '?');
+      } else if (d.cursor->screen_pos.row == d.line_idx &&
+        d.cursor->screen_pos.col == char_idx ) {
+        draw_cursor(d.d, &cd.display_pos);
+        continue;
+      }
+    }
+    if (d.cursor->screen_pos.row == d.line_idx && d.cursor->screen_pos.col == char_idx) {
+      draw_cursor(d.d, &cd.display_pos);
+    }
+    SDL_RenderCopy(
+      d.d->state.w.renderer,
+      cd.glyph,
+      NULL,
+      &cd.display_pos
+    );
+    d.width_offset += d.font_size.width;
+  }
+  // this is for empty lines
+  SDL_Rect r = {
+    .x = d.width_offset - d.font_size.width,
+    .y = d.height_offset,
+    .w = d.font_size.width,
+    .h = d.font_size.height
+  };
+  if (d.cursor->screen_pos.row == d.line_idx && d.cursor->screen_pos.col == char_len) {
+    draw_cursor(d.d, &r);
+  }
+}
+
 bool display_page_render(struct display *d) {
   if (d->state.page_mgr.pages.len < 1) {
     fprintf(stderr, "page mgr has no pages.\n");
@@ -85,52 +161,18 @@ bool display_page_render(struct display *d) {
   struct cursor *cursor = &cur_page->cursor;
   for (int line_idx = line_start; line_idx < line_end; ++line_idx) {
     if (cur_line == NULL) break;
-    const int char_start = cur_page->page_offset.col;
-    const int gap_buffer_len = gap_buffer_get_len(&cur_line->value.chars);
-    const int char_len = MIN(gap_buffer_len, dims.col + cur_page->page_offset.col);
-    if (cursor->pos.row == line_idx && cursor->pos.col > char_len) {
-      cursor->screen_pos.col = char_len;
-    }
-    SDL_Rect r;
-    for (int char_idx = char_start; char_idx < char_len; ++char_idx) {
-      char cur_char = ' ';
-      gap_buffer_get_char(&cur_line->value.chars, char_idx, &cur_char);
-      SDL_Texture *glyph = handle_characters(d, cur_char);
-      r = (SDL_Rect){
-        .x = width_offset,
-        .y = height_offset,
-        .w = font_size.width,
-        .h = font_size.height,
-      };
-      if (glyph == NULL) {
-        // ignore newline character and carriage return
-        if (cur_char != 10 && cur_char != 13) {
-          fprintf(stderr, "cur_char: %d\n", cur_char);
-          fprintf(stderr, "glyph was null\n");
-          // display question mark for unknown chars
-          glyph = handle_characters(d, '?');
-        } else if (cursor->screen_pos.row == line_idx &&
-          cursor->screen_pos.col == char_idx ) {
-          draw_cursor(d, &r);
-          continue;
-        }
-      }
-      if (cursor->screen_pos.row == line_idx && cursor->screen_pos.col == char_idx) {
-        draw_cursor(d, &r);
-      }
-      SDL_RenderCopy(
-        d->state.w.renderer,
-        glyph,
-        NULL,
-        &r
-      );
-      width_offset += font_size.width;
-    }
-    // this is for empty lines
-    if (cursor->screen_pos.row == line_idx && cursor->screen_pos.col == char_len) {
-      draw_cursor(d, &r);
-    }
-    width_offset = cur_page->position_offset.x;
+    struct draw_info di = {
+      .d = d,
+      .cur_page = cur_page,
+      .cur_line = cur_line,
+      .cursor = cursor,
+      .dims = dims,
+      .line_idx = line_idx,
+      .width_offset = width_offset,
+      .height_offset = height_offset,
+      .font_size = font_size,
+    };
+    draw_line(di);
     height_offset += font_size.height;
     cur_line = cur_line->next;
   }

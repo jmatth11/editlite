@@ -20,4 +20,13 @@ struct display {
   SDL_Texture *(*texture_from_char)(struct display *, const char);
 };
 
+struct character_display {
+  // reserve 5 for future utf-8 work
+  char buf[5];
+  SDL_Texture *glyph;
+  SDL_Rect display_pos;
+  size_t row;
+  size_t col;
+};
+
 #endif
