@@ -130,7 +130,7 @@ bool display_page_render(struct display *d) {
     if (cursor->screen_pos.row == line_idx && cursor->screen_pos.col == char_len) {
       draw_cursor(d, &r);
     }
-    width_offset = 0;
+    width_offset = cur_page->position_offset.x;
     height_offset += font_size.height;
     cur_line = cur_line->next;
   }
