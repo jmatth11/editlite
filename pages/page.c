@@ -108,6 +108,7 @@ bool page_manager_read(struct page *buf, size_t limit) {
     cur_line = cur_line->next;
   }
   bool create_new_line = false;
+  size_t next_buffer_limit = buf->file_offset_pos + BUFFER_LIMIT;
   while (!done) {
     size_t n = fread(buffer, sizeof(char), BUFSIZ, buf->fp);
     if (n < BUFSIZ) {
@@ -135,7 +136,7 @@ bool page_manager_read(struct page *buf, size_t limit) {
       }
     }
     buf->file_offset_pos += n;
-    if (buf->file_offset_pos >= BUFFER_LIMIT) {
+    if (buf->file_offset_pos >= next_buffer_limit) {
       done = true;
     }
   }
