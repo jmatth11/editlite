@@ -5,10 +5,12 @@
 #include "pages/page.h"
 #include "plugin_interface.h"
 #include "inputs/scrolling.h"
+#include "states/registry.h"
 #include "states/state.h"
 #include "types/display_type.h"
 #include "types/plugin_interface_types.h"
 #include "types/page_types.h"
+#include "types/registered_functions.h"
 #include "types/state_types.h"
 
 void pi_get_cur_page(struct plugin_interface* pi, struct page *p){
@@ -34,8 +36,9 @@ void pi_dispatch(
       const char* filename = (char*)context;
       if (filename != NULL) {
         const size_t len = strlen(filename);
-        p->file_name = malloc(sizeof(char)*len);
-        strcpy(p->file_name, filename);
+        p->file_name = malloc(sizeof(char)*len + 1);
+        strncpy(p->file_name, filename, len);
+        p->file_name[len] = '\0';
       }
       if (!d->state.page_mgr.write(p)) {
         fprintf(stderr, "write failed for file \"%s\"\n", p->file_name);
@@ -59,16 +62,12 @@ void pi_dispatch(
     }
     case DISPATCH_NEW_PAGE: {
       char *filename = (char*)context;
-      struct page p;
-      if (!page_init(&p)) {
-        fprintf(stderr, "error handling page: \"%s\"\n", filename);
-        break;
-      }
+      size_t filename_len = strlen(filename);
       bool found = false;
       for (int i = 0; i < d->state.page_mgr.pages.len; ++i) {
         struct page *tmp = &d->state.page_mgr.pages.page_data[i];
         if (tmp->file_name != NULL) {
-          if (strcmp(tmp->file_name, filename)==0) {
+          if (strncmp(tmp->file_name, filename, filename_len)==0) {
             d->state.cur_buf = i;
             found = true;
             break;
@@ -76,12 +75,27 @@ void pi_dispatch(
         }
       }
       if (!found) {
-        p.file_name = malloc(sizeof(char)*strlen(filename));
-        strcpy(p.file_name, filename);
+        struct page p;
+        if (!page_init(&p)) {
+          fprintf(stderr, "error handling page: \"%s\"\n", filename);
+          break;
+        }
+        p.file_name = malloc(sizeof(char)*filename_len +1);
+        strncpy(p.file_name, filename, filename_len);
+        p.file_name[filename_len] = '\0';
         insert_page_array(&d->state.page_mgr.pages, p);
         d->state.cur_buf = d->state.page_mgr.pages.len - 1;
       }
       d->mode = NORMAL;
+      page_change_func_array events = d->state.registry.page_change_funcs;
+      if (events.len > 0) {
+        for (int i = 0; i < events.len; ++i) {
+          page_change callback = events.page_change_func_data[i];
+          if (callback != NULL) {
+            callback(d);
+          }
+        }
+      }
       break;
     }
     case DISPATCH_PLUGIN_INPUT: {
@@ -108,6 +122,13 @@ void pi_dispatch(
       const char *err = (char*)context;
       if (err != NULL) {
         fprintf(stderr, "error: %s\n", err);
+      }
+      break;
+    }
+    case DISPATCH_REGISTER_FUNCTION: {
+      const struct registry_entry* entry = (struct registry_entry*)context;
+      if (!registry_add(&d->state.registry, entry)) {
+        fprintf(stderr, "error adding plugins registry entry.\n");
       }
       break;
     }

@@ -11,6 +11,7 @@
 #include "states/state.h"
 #include "types/display_type.h"
 #include "helpers/util.h"
+#include "types/registered_functions.h"
 
 void handle_plugin_textinput_mode(struct display*d, SDL_Event*e) {
   switch (e->key.keysym.sym) {
@@ -43,6 +44,14 @@ void handle_keydown(struct display *d, SDL_Event *e) {
     }
     case INSERT:{
       handle_insert_mode(d, e);
+      if (d->state.registry.insert_funcs.len > 0) {
+        for (int i = 0; i < d->state.registry.insert_funcs.len; ++i) {
+          insert_event event = d->state.registry.insert_funcs.insert_func_data[i];
+          if (event != NULL) {
+            event(d, e);
+          }
+        }
+      }
       break;
     }
     case COMMAND:{

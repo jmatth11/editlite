@@ -3,6 +3,7 @@
 #include "commands/command.h"
 #include "helpers/config.h"
 #include "display.h"
+#include "states/registry.h"
 #include "structures/gap_buffer.h"
 #include "glyph.h"
 #include "structures/linked_list.h"
@@ -12,6 +13,7 @@
 #include "states/state.h"
 #include "types/cursor_types.h"
 #include "types/display_type.h"
+#include "types/registered_functions.h"
 #include "types/size_types.h"
 #include "helpers/util.h"
 #include "win.h"
@@ -50,6 +52,10 @@ int display_init(struct display* d) {
   }
   if(!init_command_array(&d->state.cmds, 1)) {
     fprintf(stderr, "command array init failed\n");
+    return 1;
+  }
+  if (!registry_init(&d->state.registry)) {
+    fprintf(stderr, "error initializing registry.\n");
     return 1;
   }
   if (!state_load_plugins(&d->state)) {
@@ -92,15 +98,14 @@ static struct character_display inline generate_character_display(struct draw_in
   return cd;
 }
 
-// TODO I'm not sure I like this yet. might be nicer to just build up buffer of display characters then operate on them
-// and pass them to plugins
 static void inline draw_line(struct draw_info d) {
   const int char_start = d.cur_page->page_offset.col;
   const int gap_buffer_len = gap_buffer_get_len(&d.cur_line->value.chars);
   const int char_len = MIN(gap_buffer_len, d.dims.col + d.cur_page->page_offset.col);
-    if (d.cursor->pos.row == d.line_idx && d.cursor->pos.col > char_len) {
-      d.cursor->screen_pos.col = char_len;
-    }
+  const render_glyph_func_array plugin_render_glyph = d.d->state.registry.render_glyph_funcs;
+  if (d.cursor->pos.row == d.line_idx && d.cursor->pos.col > char_len) {
+    d.cursor->screen_pos.col = char_len;
+  }
   for (int char_idx = char_start; char_idx < char_len; ++char_idx) {
     struct character_display cd = generate_character_display(d, char_idx);
     if (cd.glyph == NULL) {
@@ -118,6 +123,14 @@ static void inline draw_line(struct draw_info d) {
     }
     if (d.cursor->screen_pos.row == d.line_idx && d.cursor->screen_pos.col == char_idx) {
       draw_cursor(d.d, &cd.display_pos);
+    }
+    if (plugin_render_glyph.len > 0) {
+      for (int render_idx = 0; render_idx < plugin_render_glyph.len; ++render_idx) {
+        render_glyph render_func = plugin_render_glyph.render_glyph_func_data[render_idx];
+        if (render_func != NULL) {
+          render_func(&cd);
+        }
+      }
     }
     SDL_RenderCopy(
       d.d->state.w.renderer,
@@ -193,6 +206,7 @@ void display_free(struct display* d) {
   }
   config_free(&d->state.config);
   free_command_array(&d->state.cmds);
+  registry_free(&d->state.registry);
   free_char(&d->state.glyphs);
   page_manager_free(&d->state.page_mgr);
   free_command_array(&d->state.cmds);
