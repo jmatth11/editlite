@@ -1,11 +1,7 @@
 const std = @import("std");
-const testing = std.testing;
 
-const sdl = @cImport({
+const c = @cImport({
     @cInclude("SDL2/SDL.h");
-});
-
-const editlite = @cImport({
     @cInclude("types/plugin_interface_types.h");
     @cInclude("types/display_type.h");
     @cInclude("types/registered_functions.h");
@@ -13,45 +9,50 @@ const editlite = @cImport({
 
 const name = "Colorscheme";
 
-export fn insert_event(d: *editlite.display, e: *const sdl.SDL_Event) void {
+fn insert_event(d: *c.display, e: *const c.SDL_Event) void {
     _ = d;
     _ = e;
     std.debug.print("insert event happened\n", .{});
 }
-export fn render_glyph(cd: *editlite.character_display) void {
-    _ = cd;
+fn render_glyph(cd: *c.character_display) void {
+    if (cd.glyph == null) {
+        return;
+    }
+    if (c.SDL_SetTextureColorMod(cd.glyph, 100, 0, 0) == -1) {
+        std.debug.print("texture color mod not supported.\n", .{});
+    }
 }
-export fn page_change(d: *editlite.display) void {
+fn page_change(d: *c.display) void {
     _ = d;
     std.debug.print("page change event happened\n", .{});
 }
 
-export fn setup(pi: *editlite.plugin_interface) bool {
-    const insert_func: editlite.registry_entry = .{
+export fn setup(pi: *c.plugin_interface) bool {
+    const insert_func: c.registry_entry = .{
         .callback = @constCast(&insert_event),
-        .type = editlite.REG_INSERT,
+        .type = c.REG_INSERT,
     };
-    pi.dispatch.?(pi, editlite.DISPATCH_REGISTER_FUNCTION, @constCast(&insert_func));
-    const render_func: editlite.registry_entry = .{
+    pi.dispatch.?(pi, c.DISPATCH_REGISTER_FUNCTION, @constCast(&insert_func));
+    const render_func: c.registry_entry = .{
         .callback = @constCast(&render_glyph),
-        .type = editlite.REG_RENDER_GLYPH,
+        .type = c.REG_RENDER_GLYPH,
     };
     pi.dispatch.?(
         pi,
-        editlite.DISPATCH_REGISTER_FUNCTION,
+        c.DISPATCH_REGISTER_FUNCTION,
         @constCast(&render_func),
     );
-    const page_func: editlite.registry_entry = .{
+    const page_func: c.registry_entry = .{
         .callback = @constCast(&page_change),
-        .type = editlite.REG_PAGE_CHANGE,
+        .type = c.REG_PAGE_CHANGE,
     };
-    pi.dispatch.?(pi, editlite.DISPATCH_REGISTER_FUNCTION, @constCast(&page_func));
+    pi.dispatch.?(pi, c.DISPATCH_REGISTER_FUNCTION, @constCast(&page_func));
     return true;
 }
 
-export fn action(pi: *editlite.plugin_interface) bool {
+export fn action(pi: *c.plugin_interface) bool {
     std.debug.print("action called\n", .{});
-    pi.dispatch.?(pi, editlite.DISPATCH_NORMAL, null);
+    pi.dispatch.?(pi, c.DISPATCH_NORMAL, null);
     return true;
 }
 
@@ -59,7 +60,7 @@ export fn get_display_prompt(out: *[*:0]const u8) void {
     out.* = name.ptr;
 }
 
-export fn cleanup(pi: *editlite.plugin_interface) bool {
+export fn cleanup(pi: *c.plugin_interface) bool {
     _ = pi;
     return true;
 }

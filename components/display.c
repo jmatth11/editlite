@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <string.h>
 
 #include "commands/command.h"
@@ -107,6 +108,7 @@ static void inline draw_line(struct draw_info d) {
     d.cursor->screen_pos.col = char_len;
   }
   for (int char_idx = char_start; char_idx < char_len; ++char_idx) {
+    bool mutated = false;
     struct character_display cd = generate_character_display(d, char_idx);
     if (cd.glyph == NULL) {
       // ignore newline character and carriage return
@@ -127,7 +129,8 @@ static void inline draw_line(struct draw_info d) {
     if (plugin_render_glyph.len > 0) {
       for (int render_idx = 0; render_idx < plugin_render_glyph.len; ++render_idx) {
         render_glyph render_func = plugin_render_glyph.render_glyph_func_data[render_idx];
-        if (render_func != NULL) {
+        if (render_func != NULL && cd.glyph != NULL) {
+          mutated = true;
           render_func(&cd);
         }
       }
@@ -138,6 +141,12 @@ static void inline draw_line(struct draw_info d) {
       NULL,
       &cd.display_pos
     );
+    // if the character was possibly mutated, change it back.
+    // TODO maybe need to revisit because there might be more attributes we will need to reset.
+    if (mutated) {
+      const SDL_Color orig_color = d.d->state.glyphs.color;
+      SDL_SetTextureColorMod(cd.glyph, orig_color.r, orig_color.g, orig_color.b);
+    }
     d.width_offset += d.font_size.width;
   }
   // this is for empty lines
