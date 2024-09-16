@@ -43,7 +43,6 @@ void pi_dispatch(
       if (!d->state.page_mgr.write(p)) {
         fprintf(stderr, "write failed for file \"%s\"\n", p->file_name);
       }
-      d->mode = NORMAL;
       break;
     }
     case DISPATCH_MENU: {
@@ -132,8 +131,13 @@ void pi_dispatch(
       }
       break;
     }
+    case DISPATCH_NORMAL: {
+      d->mode = NORMAL;
+      break;
+    }
     default:
       fprintf(stderr, "not implemented dispatch call.\n");
+      d->mode = NORMAL;
       break;
   }
 }

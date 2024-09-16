@@ -58,6 +58,7 @@ bool action(struct plugin_interface *d) {
     showDialog = true;
   } else {
     d->dispatch(d, DISPATCH_SAVE, NULL);
+    d->dispatch(d, DISPATCH_NORMAL, NULL);
   }
   return true;
 }
@@ -113,9 +114,11 @@ bool event(SDL_Event *e, struct display *d, struct display_dim *dim) {
         dialog.value[dialog.value_size] = '\0';
       }
       d->state.pi.dispatch(&d->state.pi, DISPATCH_SAVE, dialog.value);
+      d->state.pi.dispatch(&d->state.pi, DISPATCH_NORMAL, NULL);
       showDialog = false;
     } else {
       d->state.pi.dispatch(&d->state.pi, DISPATCH_ERROR_MESSAGE, dialog.err);
+      d->state.pi.dispatch(&d->state.pi, DISPATCH_NORMAL, NULL);
     }
   } else {
     char input_c = d->state.glyphs.sanitize_character(e->key.keysym.sym);

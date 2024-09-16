@@ -12,6 +12,7 @@ enum dispatch_calls {
   DISPATCH_UPDATE_CURSOR,
   DISPATCH_ERROR_MESSAGE,
   DISPATCH_REGISTER_FUNCTION,
+  DISPATCH_NORMAL,
 };
 
 struct plugin_interface {

@@ -24,6 +24,7 @@ bool action(struct plugin_interface *pi) {
   op.idx = 0;
   op.value_size = 0;
   op.visual_offset = 0;
+  // change to PLUGIN_INPUT mode
   pi->dispatch(pi, DISPATCH_PLUGIN_INPUT, NULL);
   showMenu = true;
   return true;
@@ -91,7 +92,7 @@ bool event(SDL_Event *e, struct display *d, struct display_dim *dim) {
       new_pos.col = loc->beg;
       showMenu = false;
       d->state.pi.dispatch(&d->state.pi, DISPATCH_UPDATE_CURSOR, &new_pos);
-      d->mode = NORMAL;
+      d->state.pi.dispatch(&d->state.pi, DISPATCH_NORMAL, NULL);
     }
   } else {
     if (e->key.keysym.sym == SDLK_BACKSPACE) {

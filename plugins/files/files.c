@@ -121,6 +121,7 @@ bool action(struct plugin_interface *d) {
   if (!gen_items_from_dir(dir_t.base, &buffer)) {
     return false;
   }
+  // dispatch menu changes to COMMAND mode
   d->dispatch(d, DISPATCH_MENU, &buffer);
   free_menu_item_array(&buffer);
   return true;
