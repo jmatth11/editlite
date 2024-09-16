@@ -26,10 +26,6 @@ export fn page_change(d: *editlite.display) void {
     std.debug.print("page change event happened\n", .{});
 }
 
-//var insert_event_ptr: *anyopaque = @ptrCast(&insert_event);
-//var render_glyph_ptr: *anyopaque = @ptrCast(&render_glyph);
-//var page_change_ptr: *anyopaque = @ptrCast(&page_change);
-
 export fn setup(pi: *editlite.plugin_interface) bool {
     const insert_func: editlite.registry_entry = .{
         .callback = @constCast(&insert_event),
@@ -63,16 +59,6 @@ export fn get_display_prompt(out: *[*:0]const u8) void {
     out.* = name.ptr;
 }
 
-//export fn render(d: *editlite.display, dim: *editlite.display_dim) bool {
-//
-//    return true;
-//}
-//
-//export fn event(e: *sdl.SDL_Event, d: *editlite.display, dim: *editlite.display_dim) bool {
-//
-//    return true;
-//}
-//
 export fn cleanup(pi: *editlite.plugin_interface) bool {
     _ = pi;
     return true;
