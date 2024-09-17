@@ -25,6 +25,11 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    const utf8_lib = std.Build.LazyPath{
+        .cwd_relative = "../../deps/utf8-zig/src/",
+    };
+    lib.addIncludePath(utf8_lib);
+
     // allow editlite files to be included
     const type_headers = std.Build.LazyPath{
         .cwd_relative = "../../",

@@ -2,11 +2,11 @@
 leader="\\"
 win_height=720
 win_width=1024
-plugin_path="/home/jmatth11/git/jmatth11/editlite"
+plugin_path="/home/jmatthews/git/jmatth11/editlite"
 fps=120
 font_point=64
 font_scale=0.3
 cursor_color=[170,170,170,119]
 font_color=[255,255,255,255]
-font_file="/home/jmatth11/git/jmatth11/editlite/resources/RobotoMono-Regular.ttf"
-plugins=["plugins/files/libfiles.so", "plugins/find/libfind.so"]
+font_file="/home/jmatthews/git/jmatth11/editlite/resources/RobotoMono-Regular.ttf"
+plugins=["plugins/files/libfiles.so", "plugins/find/libfind.so", "plugins/colorscheme/zig-out/lib/libcolorscheme.so"]
