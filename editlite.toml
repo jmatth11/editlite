@@ -9,4 +9,4 @@ font_scale=0.3
 cursor_color=[170,170,170,119]
 font_color=[255,255,255,255]
 font_file="/home/jmatthews/git/jmatth11/editlite/resources/RobotoMono-Regular.ttf"
-plugins=["plugins/files/libfiles.so", "plugins/find/libfind.so", "plugins/colorscheme/zig-out/lib/libcolorscheme.so"]
+plugins=["plugins/files/libfiles.so", "plugins/colorscheme/zig-out/lib/libcolorscheme.so"]

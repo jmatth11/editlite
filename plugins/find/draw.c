@@ -3,6 +3,7 @@
 
 #include "draw.h"
 #include "find.h"
+#include "types/unicode_types.h"
 
 void draw_background(struct display *d, int x, int y, int w, int h) {
   SDL_Rect box = {
@@ -45,6 +46,7 @@ void draw_textinput(struct display *d, const char *val, const int val_size,
   }
 }
 
+// TODO rework all of this to support utf8
 void draw_options(struct display *d, struct find_info *op, size_t len,
                   int x, int y, int w, int h) {
 

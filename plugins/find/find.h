@@ -19,7 +19,7 @@ extern "C" {
 
 struct find_loc {
   int preview_size;
-  char preview[FIND_INFO_PREVIEW_SIZE];
+  uint8_t preview[FIND_INFO_PREVIEW_SIZE];
   size_t line;
   size_t beg;
   size_t end;
@@ -32,7 +32,7 @@ struct find_info {
   int visual_offset;
   int height;
   int value_size;
-  char value[FIND_INFO_VALUE_SIZE];
+  uint8_t value[FIND_INFO_VALUE_SIZE];
   location_array locs;
 };
 

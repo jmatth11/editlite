@@ -1,7 +1,7 @@
 CC=gcc
 CFLAGS=-Wall -std=c11
-LIBS=-L./deps/tomlc99/ -lSDL2 -lSDL2_ttf -lm -l:libtoml.a
-INCLUDES=-I./
+LIBS=-L./deps/tomlc99/ -L./deps/utf8-zig/zig-out/lib -lSDL2 -lSDL2_ttf -lm -l:libtoml.a -l:libutf8-zig.a -licuuc
+INCLUDES=-I./ -I./deps/utf8-zig/headers
 OBJ=obj
 BIN=bin
 SOURCES=$(shell find . -name '*.c' -not -path './plugins/*' -not -path './deps/*')

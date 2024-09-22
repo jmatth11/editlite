@@ -6,6 +6,7 @@
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_video.h>
 #include "state_types.h"
+#include "types/unicode_types.h"
 
 enum display_mode {
   NORMAL = 0,
@@ -17,12 +18,11 @@ enum display_mode {
 struct display {
   enum display_mode mode;
   struct app_state state;
-  SDL_Texture *(*texture_from_char)(struct display *, const char);
+  SDL_Texture *(*texture_from_char)(struct display *, const code_point_t);
 };
 
 struct character_display {
-  // reserve 5 for future utf-8 work
-  char buf[5];
+  code_point_t buf;
   SDL_Texture *glyph;
   SDL_Rect display_pos;
   size_t row;

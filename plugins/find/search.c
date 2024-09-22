@@ -4,13 +4,16 @@
 #include <string.h>
 #include <types/display_type.h>
 #include <types/page_types.h>
+#include <wchar.h>
 
 #include "find.h"
 #include "search.h"
+#include "types/unicode_types.h"
+#include "utf8.h"
 
-char cur_buffer[BUFSIZ];
+uint8_t cur_buffer[BUFSIZ];
 
-bool check_and_add(struct display_dim *dim, const char *src, size_t src_len, const char *val, size_t val_size, struct find_loc *out) {
+bool check_and_add(struct display_dim *dim, const uint8_t *src, size_t src_len, const uint8_t *val, size_t val_size, struct find_loc *out) {
   if (src_len < val_size) return false;
   size_t found_idx = 0;
   bool result = false;
@@ -29,14 +32,14 @@ bool check_and_add(struct display_dim *dim, const char *src, size_t src_len, con
       out->end = val_end;
       out->preview_size = max_len;
       if (max_len < dim->col) {
-        strncpy(out->preview, src, max_len);
+        memcpy(out->preview, src, max_len);
       } else if (src_len > dim->col) {
         // if the value is bigger than our buffer, just show as much of the value as possible.
         if ((val_size + FIND_INFO_PREVIEW_PADDING) > max_len) {
-          strncpy(out->preview, val, max_len);
+          memcpy(out->preview, val, max_len);
         } else {
           size_t src_start = (max_len - FIND_INFO_PREVIEW_PADDING) - val_start;
-          strncpy(out->preview, &src[src_start], max_len);
+          memcpy(out->preview, &src[src_start], max_len);
         }
       }
       result = true;
@@ -61,14 +64,21 @@ void search_word_options(struct display *d, struct display_dim *dim, struct find
   size_t line_idx = 0;
   while (cur_line != NULL) {
     struct gap_buffer *gb = &cur_line->value.chars;
-    char *buf = gb->get_str(gb);
-    size_t buf_len = strlen(buf);
+    code_point_t *buf = gb->get_str(gb);
+    const size_t buf_len = gb->get_len(gb);
+    const size_t byte_len = code_point_to_utf8_len(buf, buf_len);
+    uint8_t *byte_array = malloc(sizeof(uint8_t)*byte_len);
+    size_t byte_idx = 0;
+    for (int i =0; i < buf_len; ++i) {
+      byte_idx += utf8_write_code_point(byte_array, byte_len, byte_idx, buf[i]);
+    }
     struct find_loc loc;
-    if (check_and_add(dim, buf, buf_len, op->value, op->value_size, &loc)) {
+    if (check_and_add(dim, byte_array, byte_len, op->value, op->value_size, &loc)) {
       loc.line = line_idx;
       insert_location_array(&op->locs, loc);
     }
     free(buf);
+    free(byte_array);
     cur_line = cur_line->next;
     ++line_idx;
   }
@@ -86,7 +96,7 @@ void search_word_options(struct display *d, struct display_dim *dim, struct find
   bool done = false;
   ++line_idx;
   while (!done) {
-    n = fread(cur_buffer, sizeof(char), BUFSIZ, fp);
+    n = fread(cur_buffer, sizeof(uint8_t), BUFSIZ, fp);
     if (n < BUFSIZ) {
       done = true;
     }

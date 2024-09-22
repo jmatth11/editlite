@@ -67,12 +67,12 @@ int display_init(struct display* d) {
   return 0;
 }
 
-SDL_Texture * handle_characters(struct display *d, const char cur_char) {
+SDL_Texture * handle_characters(struct display *d, const code_point_t cur_char) {
   // TODO properly handle tabs at some point
   if (cur_char == '\t') {
-    return get_glyph(&d->state.glyphs, ' ');
+    return get_glyph(&d->state.glyphs, &d->state.w, ' ');
   }
-  return get_glyph(&d->state.glyphs, cur_char);
+  return get_glyph(&d->state.glyphs, &d->state.w, cur_char);
 }
 
 static void inline draw_cursor(struct display *d, SDL_Rect *rect) {
@@ -83,10 +83,9 @@ static void inline draw_cursor(struct display *d, SDL_Rect *rect) {
 
 static struct character_display inline generate_character_display(struct draw_info di, size_t char_idx) {
   struct character_display cd;
-  char cur_char = ' ';
+  code_point_t cur_char = ' ';
   gap_buffer_get_char(&di.cur_line->value.chars, char_idx, &cur_char);
-  cd.buf[0] = cur_char;
-  cd.buf[1] = '\n';
+  cd.buf = cur_char;
   cd.glyph = handle_characters(di.d, cur_char);
   cd.display_pos = (SDL_Rect){
     .x = di.width_offset,
@@ -112,8 +111,8 @@ static void inline draw_line(struct draw_info d) {
     struct character_display cd = generate_character_display(d, char_idx);
     if (cd.glyph == NULL) {
       // ignore newline character and carriage return
-      if (cd.buf[0] != 10 && cd.buf[0] != 13) {
-        fprintf(stderr, "cur_char: %s\n", cd.buf);
+      if (cd.buf != 10 && cd.buf != 13) {
+        fprintf(stderr, "cur_char: %c\n", cd.buf);
         fprintf(stderr, "glyph was null\n");
         // display question mark for unknown chars
         cd.glyph = handle_characters(d.d, '?');

@@ -8,6 +8,7 @@
 #include "types/display_type.h"
 #include "inputs/scrolling.h"
 #include "states/state.h"
+#include "types/unicode_types.h"
 
 void handle_insert_mode(struct display *d, SDL_Event *e) {
   if (e->key.keysym.sym == SDLK_ESCAPE) {
@@ -59,7 +60,7 @@ void prepare_insert_mode(struct display *d, enum insert_mode_t mode) {
     }
   }
   if (cur_page->cursor.pos.col >= cur_gb_len) {
-    char tmp = ' ';
+    code_point_t tmp = ' ';
     gap_buffer_get_char(cur_gb, cur_gb_len - 1, &tmp);
     if (tmp == '\n') {
       cur_page->cursor.pos.col = cur_gb_len - 1;
