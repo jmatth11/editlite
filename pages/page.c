@@ -1,3 +1,4 @@
+#include <SDL2/SDL_keycode.h>
 #include <stdint.h>
 #include <stdio.h>
 
@@ -46,6 +47,32 @@ bool page_handle_backspace(struct page *p) {
   return true;
 }
 
+bool page_handle_newline(struct page *p) {
+  struct linked_list *cur_line = linked_list_get_pos(p->lines, p->cursor.pos.row);
+  struct gap_buffer *cur_gb = &cur_line->value.chars;
+  gap_buffer_insert(cur_gb, '\n');
+  p->cursor.pos.col++;
+  struct line new_line;
+  init_line(&new_line);
+  struct gap_buffer *next_gb = &new_line.chars;
+  gap_buffer_move_cursor(next_gb, 0);
+  size_t cur_col = p->cursor.pos.col;
+  size_t gb_len = gap_buffer_get_len(cur_gb);
+  for (; cur_col < gb_len; ++cur_col) {
+    code_point_t tmp = ' ';
+    gap_buffer_get_char(cur_gb, cur_col, &tmp);
+    gap_buffer_insert(next_gb, tmp);
+  }
+  cur_col = p->cursor.pos.col;
+  gap_buffer_move_cursor(cur_gb, gb_len - 1);
+  gap_buffer_delete_seq(cur_gb, gb_len - cur_col);
+  p->cursor.pos.col = 0;
+  p->cursor.pos.row++;
+  gap_buffer_move_cursor(next_gb, p->cursor.pos.col);
+  linked_list_insert(cur_line, 0, new_line);
+  return true;
+}
+
 void page_reset_screen_cursor(struct page *p) {
   p->cursor.screen_pos = p->cursor.pos;
 }
@@ -53,33 +80,17 @@ void page_reset_screen_cursor(struct page *p) {
 bool page_handle_keystroke(struct page *p, SDL_Event *e) {
   struct linked_list *cur_line = linked_list_get_pos(p->lines, p->cursor.pos.row);
   struct gap_buffer *cur_gb = &cur_line->value.chars;
-  const code_point_t received_char = sanitize_character(e->key.keysym.sym);
+  code_point_t key = 0;
+  const struct code_point point = utf8_next((uint8_t*)e->text.text, 32, 0);
+  if (point.type != OCT_INVALID && (point.val != 0 && point.val != 1)) {
+    key = point.val;
+  } else {
+    key = e->key.keysym.sym;
+  }
+  const code_point_t received_char = sanitize_character(key);
   if (received_char != '\0') {
-    if (received_char == '\n') {
-      gap_buffer_insert(cur_gb, received_char);
-      p->cursor.pos.col++;
-      struct line new_line;
-      init_line(&new_line);
-      struct gap_buffer *next_gb = &new_line.chars;
-      gap_buffer_move_cursor(next_gb, 0);
-      size_t cur_col = p->cursor.pos.col;
-      size_t gb_len = gap_buffer_get_len(cur_gb);
-      for (; cur_col < gb_len; ++cur_col) {
-        code_point_t tmp = ' ';
-        gap_buffer_get_char(cur_gb, cur_col, &tmp);
-        gap_buffer_insert(next_gb, tmp);
-      }
-      cur_col = p->cursor.pos.col;
-      gap_buffer_move_cursor(cur_gb, gb_len - 1);
-      gap_buffer_delete_seq(cur_gb, gb_len - cur_col);
-      p->cursor.pos.col = 0;
-      p->cursor.pos.row++;
-      gap_buffer_move_cursor(next_gb, p->cursor.pos.col);
-      linked_list_insert(cur_line, 0, new_line);
-    } else {
-      gap_buffer_insert(cur_gb, received_char);
-      p->cursor.pos.col++;
-    }
+    gap_buffer_insert(cur_gb, received_char);
+    p->cursor.pos.col++;
   }
   return true;
 }
@@ -245,6 +256,7 @@ bool page_init(struct page *p) {
   p->cursor.screen_pos = p->cursor.pos;
   p->handle_backspace = page_handle_backspace;
   p->handle_keystroke = page_handle_keystroke;
+  p->handle_newline = page_handle_newline;
   return err == 0;
 }
 

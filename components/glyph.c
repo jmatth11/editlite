@@ -98,143 +98,15 @@ void free_char(struct glyphs *ch) {
   TTF_CloseFont(ch->font);
 }
 
-char sanitize_character(SDL_Keycode keycode) {
-  // TODO look into SDL_TextInputEvent to see if that can replace this logic
-
-  // SDL_StartTextInput use this for unicode input
-  code_point_t result = '\0';
-  if (keycode == SDLK_LSHIFT || keycode == SDLK_RSHIFT) return result;
-  const Uint8* key_states = SDL_GetKeyboardState(NULL);
-  bool is_upper = (key_states[SDL_SCANCODE_LSHIFT] || key_states[SDL_SCANCODE_RSHIFT]);
-  bool is_special_char = false;
-  // TODO handle keyboard properly since we swithced to unicode
-  code_point_t c = keycode;
-  if (u_ispunct(c)) {
-    switch (c) {
-      case SDLK_MINUS: {
-        result = c;
-        if (is_upper) {
-          result = '_';
-        }
-        is_special_char = true;
-        break;
-      }
-      case SDLK_EQUALS:{
-        result = c;
-        if (is_upper) {
-          result = '+';
-        }
-        is_special_char = true;
-        break;
-      }
-      case SDLK_LEFTBRACKET:{
-        result = c;
-        if (is_upper) {
-          result = '{';
-        }
-        is_special_char = true;
-        break;
-      }
-      case SDLK_RIGHTBRACKET:{
-        result = c;
-        if (is_upper) {
-          result = '}';
-        }
-        is_special_char = true;
-        break;
-      }
-      case SDLK_BACKSLASH:{
-        result = c;
-        if (is_upper) {
-          result = '|';
-        }
-        is_special_char = true;
-        break;
-      }
-      case SDLK_SEMICOLON:{
-        result = c;
-        if (is_upper) {
-          result = ':';
-        }
-        is_special_char = true;
-        break;
-      }
-      case SDLK_QUOTE:{
-        result = c;
-        if (is_upper) {
-          result = '"';
-        }
-        is_special_char = true;
-        break;
-      }
-      case SDLK_BACKQUOTE:{
-        result = c;
-        if (is_upper) {
-          result = '~';
-        }
-        is_special_char = true;
-        break;
-      }
-      case SDLK_COMMA:{
-        result = c;
-        if (is_upper) {
-          result = '<';
-        }
-        is_special_char = true;
-        break;
-      }
-      case SDLK_PERIOD:{
-        result = c;
-        if (is_upper) {
-          result = '>';
-        }
-        is_special_char = true;
-        break;
-      }
-      case SDLK_SLASH:{
-        result = c;
-        if (is_upper) {
-          result = '?';
-        }
-        is_special_char = true;
-        break;
-      }
-      case SDLK_ASTERISK:
-      case SDLK_PLUS:
-        result = c;
-        is_special_char = true;
-        break;
-    }
-  }
-  if (!is_special_char && u_isspace(c)) {
-    if (c == '\r' || c == '\n') {
+code_point_t sanitize_character(code_point_t keycode) {
+  code_point_t result = keycode;
+  if (u_isUWhiteSpace(keycode)) {
+    if (keycode == '\r' || keycode == '\n') {
       result = '\n';
     } else {
       result = ' ';
     }
-  } else if (!is_special_char && u_isdigit(c)) {
-    result = c;
-    if (is_upper) {
-      switch (c) {
-        case '1': result = '!'; break;
-        case '2': result = '@'; break;
-        case '3': result = '#'; break;
-        case '4': result = '$'; break;
-        case '5': result = '%'; break;
-        case '6': result = '^'; break;
-        case '7': result = '&'; break;
-        case '8': result = '*'; break;
-        case '9': result = '('; break;
-        case '0': result = ')'; break;
-      }
-    }
-  } else if (!is_special_char && u_isprint(c)) {
-    result = c;
-    if (is_upper) {
-      result = u_toupper(result);
-    }
   }
-  fprintf(stdout, "result = %c c=%c\n", result, c);
   return result;
 }
 

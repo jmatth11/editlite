@@ -46,7 +46,7 @@ void pi_dispatch(
       break;
     }
     case DISPATCH_MENU: {
-      d->mode = COMMAND;
+      display_set_mode(d, COMMAND);
       if (d->state.menu.items.menu_item_data != NULL) {
         menu_free(&d->state.menu);
       }
@@ -85,7 +85,7 @@ void pi_dispatch(
         insert_page_array(&d->state.page_mgr.pages, p);
         d->state.cur_buf = d->state.page_mgr.pages.len - 1;
       }
-      d->mode = NORMAL;
+      display_set_mode(d, NORMAL);
       page_change_func_array events = d->state.registry.page_change_funcs;
       if (events.len > 0) {
         for (int i = 0; i < events.len; ++i) {
@@ -98,7 +98,7 @@ void pi_dispatch(
       break;
     }
     case DISPATCH_PLUGIN_INPUT: {
-      d->mode = PLUGIN_INPUT;
+      display_set_mode(d, PLUGIN_INPUT);
       break;
     }
     case DISPATCH_UPDATE_CURSOR: {
@@ -132,12 +132,12 @@ void pi_dispatch(
       break;
     }
     case DISPATCH_NORMAL: {
-      d->mode = NORMAL;
+      display_set_mode(d, NORMAL);
       break;
     }
     default:
       fprintf(stderr, "not implemented dispatch call.\n");
-      d->mode = NORMAL;
+      display_set_mode(d, NORMAL);
       break;
   }
 }

@@ -21,6 +21,7 @@ struct page {
   SDL_Point position_offset;
   bool (*handle_backspace)(struct page *);
   bool (*handle_keystroke)(struct page *, SDL_Event *e);
+  bool (*handle_newline)(struct page *);
   struct linked_list *lines;
 };
 

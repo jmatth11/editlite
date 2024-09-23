@@ -10,9 +10,11 @@
 struct display;
 struct display_dim;
 struct page;
+enum display_mode;
 
 int display_init(struct display* d);
 bool display_page_render(struct display *d);
+void display_set_mode(struct display *d, enum display_mode mode);
 SDL_Texture * handle_characters(struct display *d, const code_point_t cur_char);
 struct plugin_interface display_plugin_interface(struct display *d);
 void display_free(struct display *d);

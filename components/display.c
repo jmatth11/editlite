@@ -1,3 +1,5 @@
+#include <SDL2/SDL_events.h>
+#include <SDL2/SDL_keyboard.h>
 #include <stdbool.h>
 #include <string.h>
 
@@ -35,6 +37,7 @@ int display_init(struct display* d) {
   // we do not initialize the menu in here because we initialize it on the fly
   // when we enter command mode
   d->mode = NORMAL;
+  d->switching_mode = false;
   d->state.cur_buf = 0;
   d->state.glyphs.color = d->state.config.font_color;
   d->state.glyphs.point = d->state.config.font_point;
@@ -73,6 +76,16 @@ SDL_Texture * handle_characters(struct display *d, const code_point_t cur_char) 
     return get_glyph(&d->state.glyphs, &d->state.w, ' ');
   }
   return get_glyph(&d->state.glyphs, &d->state.w, cur_char);
+}
+
+void display_set_mode(struct display *d, enum display_mode mode) {
+  if (d->mode != INSERT && mode == INSERT) {
+    SDL_StartTextInput();
+  } else if (d->mode == INSERT && mode != INSERT) {
+    SDL_StopTextInput();
+  }
+  d->mode = mode;
+  d->switching_mode = true;
 }
 
 static void inline draw_cursor(struct display *d, SDL_Rect *rect) {

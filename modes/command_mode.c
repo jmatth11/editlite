@@ -18,7 +18,7 @@ bool execute_command(struct display *d, void *ctx) {
 void handle_command_mode(struct display *d, SDL_Event *e) {
   switch (e->key.keysym.sym) {
     case SDLK_ESCAPE:
-      d->mode = NORMAL;
+      display_set_mode(d, NORMAL);
       break;
     case SDLK_RETURN: {
       struct menu_item *mi = &d->state.menu.items.menu_item_data[d->state.menu.idx];

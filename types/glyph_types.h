@@ -29,7 +29,7 @@ struct glyphs {
   struct font_size scaled_size;
   TTF_Font *font;
   struct hash_map* glyphs;
-  char (*sanitize_character)(SDL_Keycode);
+  code_point_t (*sanitize_character)(code_point_t);
 };
 
 

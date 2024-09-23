@@ -7,7 +7,8 @@ BIN=bin
 SOURCES=$(shell find . -name '*.c' -not -path './plugins/*' -not -path './deps/*')
 OBJECTS=$(addprefix $(OBJ)/,$(SOURCES:%.c=%.o))
 DEBUG_OBJECTS=$(patsubst %.c, $(OBJ)/%-debug.o, $(SOURCES))
-DEPS=$(shell find . -name Makefile -printf '%h\n' | grep -v 'unittest' | grep -v '^.$$')
+UTF_DEP=./deps/utf8-zig
+DEPS=$(shell find . -name Makefile -printf '%h\n' | grep -v 'unittest' | grep -v '^.$$' | grep -v 'utf8-zig')
 TARGET=editlite
 
 .PHONY: all
@@ -42,18 +43,23 @@ clean:
 .PHONY: clean_deps
 clean_deps:
 	$(foreach dir, $(DEPS), $(shell cd $(dir) && $(MAKE) clean))
+	$(shell cd $(UTF_DEP) && $(MAKE) clean)
 
 .PHONY: clean_all
 clean_all: clean clean_deps
 
+.PHONY: unicode_dep
+unicode_dep:
+	cd $(UTF_DEP) && $(MAKE) && cd -;\
+
 .PHONY: deps
-deps:
+deps: unicode_dep
 	@for i in $(DEPS); do\
 		cd $${i} && $(MAKE) && cd -;\
 	done
 
 .PHONY: deps_debug
-deps_debug:
+deps_debug: unicode_dep
 	@for i in $(DEPS); do\
 		cd $${i} && ($(MAKE) debug || $(MAKE)) && cd -;\
 	done

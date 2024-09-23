@@ -16,7 +16,7 @@
 void handle_plugin_textinput_mode(struct display*d, SDL_Event*e) {
   switch (e->key.keysym.sym) {
     case SDLK_ESCAPE:
-      d->mode = NORMAL;
+      display_set_mode(d, NORMAL);
       break;
   }
   struct display_dim dims;
@@ -60,6 +60,26 @@ void handle_keydown(struct display *d, SDL_Event *e) {
     }
     case PLUGIN_INPUT: {
       handle_plugin_textinput_mode(d, e);
+      break;
+    }
+    default:
+    break;
+  }
+}
+
+void handle_input(struct display *d, SDL_Event *e) {
+  switch (d->mode) {
+    case INSERT: {
+      if (d->switching_mode) break;
+      handle_input_mode(d, e);
+      if (d->state.registry.insert_funcs.len > 0) {
+        for (int i = 0; i < d->state.registry.insert_funcs.len; ++i) {
+          insert_event event = d->state.registry.insert_funcs.insert_func_data[i];
+          if (event != NULL) {
+            event(d, e);
+          }
+        }
+      }
       break;
     }
     default:
@@ -119,7 +139,7 @@ void handle_simple_keypresses(struct display *d, SDL_Event *e) {
       d->state.page_mgr.pages.page_data[d->state.cur_buf].page_offset.col = 0;
       break;
     case SDLK_ESCAPE:
-      d->mode = NORMAL;
+      display_set_mode(d, NORMAL);
       break;
     case SDLK_i: {
       prepare_insert_mode(d, INSERT_AT);
@@ -175,7 +195,7 @@ void handle_state_keypresses(struct display *d, SDL_Event *e) {
       prepare_insert_mode(d, INSERT_END);
     }
     if (colon) {
-      d->mode = COMMAND;
+      display_set_mode(d, COMMAND);
       prepare_command_mode(d);
     }
   } else if (ctrl) {
