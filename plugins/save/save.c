@@ -54,7 +54,7 @@ bool action(struct plugin_interface *d) {
   struct page p;
   d->get_cur_page(d, &p);
   if (p.file_name == NULL) {
-    d->dispatch(d, DISPATCH_PLUGIN_INPUT, NULL);
+    d->dispatch(d, DISPATCH_PLUGIN_INSERT, NULL);
     showDialog = true;
   } else {
     d->dispatch(d, DISPATCH_SAVE, NULL);

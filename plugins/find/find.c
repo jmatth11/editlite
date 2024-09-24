@@ -24,8 +24,8 @@ bool action(struct plugin_interface *pi) {
   op.idx = 0;
   op.value_size = 0;
   op.visual_offset = 0;
-  // change to PLUGIN_INPUT mode
-  pi->dispatch(pi, DISPATCH_PLUGIN_INPUT, NULL);
+  // change to PLUGIN_INSERT mode
+  pi->dispatch(pi, DISPATCH_PLUGIN_INSERT, NULL);
   showMenu = true;
   return true;
 }
@@ -54,6 +54,7 @@ bool render(struct display *d, struct display_dim *dim) {
 }
 
 bool event(SDL_Event *e, struct display *d, struct display_dim *dim) {
+  // TODO change this to switch on d->mode for INSERT and INPUT modes to support Unicode
   if (e->key.keysym.sym == SDLK_ESCAPE) {
     showMenu = false;
   }

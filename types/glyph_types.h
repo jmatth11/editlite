@@ -30,6 +30,7 @@ struct glyphs {
   TTF_Font *font;
   struct hash_map* glyphs;
   code_point_t (*sanitize_character)(code_point_t);
+  code_point_t (*parse_sdl_input)(SDL_Event *);
 };
 
 

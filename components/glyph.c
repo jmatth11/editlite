@@ -12,6 +12,7 @@
 #include "types/glyph_types.h"
 #include "types/unicode_types.h"
 #include "types/win_types.h"
+#include "utf8.h"
 
 static SDL_Texture* create_glyph_texture(struct glyphs *ch, const struct win *w, const code_point_t point) {
   SDL_Surface *s = TTF_RenderGlyph32_Solid(ch->font, point, ch->color);
@@ -65,6 +66,7 @@ int init_char(struct glyphs *ch, const struct win *w, const char* ttf_file) {
   ch->scaled_size.width = (double)ch->unscaled_size.width * ch->scale;
   ch->scaled_size.height = (double)ch->unscaled_size.height * ch->scale;
   ch->sanitize_character = sanitize_character;
+  ch->parse_sdl_input = code_point_from_sdl_input;
   return 0;
 }
 
@@ -96,6 +98,17 @@ SDL_Texture* get_glyph(struct glyphs *ch, const struct win *w, const code_point_
 void free_char(struct glyphs *ch) {
   hash_map_destroy(ch->glyphs);
   TTF_CloseFont(ch->font);
+}
+
+code_point_t code_point_from_sdl_input(SDL_Event *e) {
+  code_point_t key = 0;
+  const struct code_point point = utf8_next((uint8_t*)e->text.text, 32, 0);
+  if (point.type != OCT_INVALID && (point.val != 0 && point.val != 1)) {
+    key = point.val;
+  } else {
+    key = e->key.keysym.sym;
+  }
+  return sanitize_character(key);
 }
 
 code_point_t sanitize_character(code_point_t keycode) {

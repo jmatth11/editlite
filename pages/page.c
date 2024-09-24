@@ -80,14 +80,7 @@ void page_reset_screen_cursor(struct page *p) {
 bool page_handle_keystroke(struct page *p, SDL_Event *e) {
   struct linked_list *cur_line = linked_list_get_pos(p->lines, p->cursor.pos.row);
   struct gap_buffer *cur_gb = &cur_line->value.chars;
-  code_point_t key = 0;
-  const struct code_point point = utf8_next((uint8_t*)e->text.text, 32, 0);
-  if (point.type != OCT_INVALID && (point.val != 0 && point.val != 1)) {
-    key = point.val;
-  } else {
-    key = e->key.keysym.sym;
-  }
-  const code_point_t received_char = sanitize_character(key);
+  const code_point_t received_char = code_point_from_sdl_input(e);
   if (received_char != '\0') {
     gap_buffer_insert(cur_gb, received_char);
     p->cursor.pos.col++;

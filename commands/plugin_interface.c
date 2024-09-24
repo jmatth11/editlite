@@ -97,8 +97,8 @@ void pi_dispatch(
       }
       break;
     }
-    case DISPATCH_PLUGIN_INPUT: {
-      display_set_mode(d, PLUGIN_INPUT);
+    case DISPATCH_PLUGIN_INSERT: {
+      display_set_mode(d, PLUGIN_INSERT);
       break;
     }
     case DISPATCH_UPDATE_CURSOR: {

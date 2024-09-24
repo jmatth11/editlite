@@ -12,7 +12,7 @@ enum display_mode {
   NORMAL = 0,
   INSERT,
   COMMAND,
-  PLUGIN_INPUT,
+  PLUGIN_INSERT,
 };
 
 struct display {
