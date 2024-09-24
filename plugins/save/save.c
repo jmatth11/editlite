@@ -8,6 +8,7 @@
 #include <unistd.h>
 
 #include "save.h"
+#include "types/unicode_types.h"
 
 #define FILENAME_LIMIT 4000
 #define ERROR_LIMIT 200
@@ -15,8 +16,8 @@
 
 struct save_info {
   int value_size;
-  char value[FILENAME_LIMIT];
-  char err[ERROR_LIMIT];
+  code_point_t value[FILENAME_LIMIT];
+   err[ERROR_LIMIT];
 };
 
 const char *prompt = "save application";
@@ -36,6 +37,7 @@ static void draw_text(struct display *d, const char *text, const int len, const 
 }
 
 static bool validate_filename(struct save_info *si) {
+  // convert value to utf8
   if (access(si->value, F_OK) == 0) {
     strncpy(si->err, "File already exists.\0", 21);
     return false;
