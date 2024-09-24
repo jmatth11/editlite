@@ -33,12 +33,11 @@ void pi_dispatch(
     case DISPATCH_SAVE: {
       struct page *p;
       state_get_cur_page(&d->state, &p);
-      const char* filename = (char*)context;
+      const struct message_t* filename = (struct message_t*)context;
       if (filename != NULL) {
-        const size_t len = strlen(filename);
-        p->file_name = malloc(sizeof(char)*len + 1);
-        strncpy(p->file_name, filename, len);
-        p->file_name[len] = '\0';
+        p->file_name = malloc(sizeof(char)*filename->len + 1);
+        memcpy(p->file_name, filename->msg, filename->len);
+        p->file_name[filename->len] = '\0';
       }
       if (!d->state.page_mgr.write(p)) {
         fprintf(stderr, "write failed for file \"%s\"\n", p->file_name);
@@ -60,8 +59,9 @@ void pi_dispatch(
       break;
     }
     case DISPATCH_NEW_PAGE: {
-      char *filename = (char*)context;
-      size_t filename_len = strlen(filename);
+      struct message_t *filename = (struct message_t*)context;
+      size_t filename_len = filename->len;
+      // TODO convert message_t to utf8 encoded char *
       bool found = false;
       for (int i = 0; i < d->state.page_mgr.pages.len; ++i) {
         struct page *tmp = &d->state.page_mgr.pages.page_data[i];
@@ -118,9 +118,10 @@ void pi_dispatch(
     }
     case DISPATCH_ERROR_MESSAGE: {
       // TODO add proper support for error messages
-      const char *err = (char*)context;
+      const struct message_t *err = (struct message_t*)context;
       if (err != NULL) {
-        fprintf(stderr, "error: %s\n", err);
+        // TODO translate code point msg into utf8 encoded char*
+        fprintf(stderr, "error: %s\n", err->msg);
       }
       break;
     }

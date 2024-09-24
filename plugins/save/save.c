@@ -16,8 +16,19 @@
 
 struct save_info {
   int value_size;
+  int err_size;
   code_point_t value[FILENAME_LIMIT];
-   err[ERROR_LIMIT];
+  code_point_t err[ERROR_LIMIT];
+};
+
+struct message_t file_info = {
+  .msg = NULL,
+  .len = 0,
+};
+
+struct message_t error_info = {
+  .msg = NULL,
+  .len = 0,
 };
 
 const char *prompt = "save application";
@@ -39,12 +50,12 @@ static void draw_text(struct display *d, const char *text, const int len, const 
 static bool validate_filename(struct save_info *si) {
   // convert value to utf8
   if (access(si->value, F_OK) == 0) {
-    strncpy(si->err, "File already exists.\0", 21);
+    memcpy(si->err, "File already exists.\0", 21);
     return false;
   }
   FILE *fp = fopen(TEST_FILE, "w+");
   if (fp == NULL) {
-    strncpy(si->err, "File creation failed.\0", 22);
+    memcpy(si->err, "File creation failed.\0", 22);
     return false;
   }
   fclose(fp);
@@ -115,15 +126,19 @@ bool event(SDL_Event *e, struct display *d, struct display_dim *dim) {
       if (dialog.value_size < FILENAME_LIMIT) {
         dialog.value[dialog.value_size] = '\0';
       }
-      d->state.pi.dispatch(&d->state.pi, DISPATCH_SAVE, dialog.value);
+      file_info.msg = dialog.value;
+      file_info.len = dialog.value_size;
+      d->state.pi.dispatch(&d->state.pi, DISPATCH_SAVE, &file_info);
       d->state.pi.dispatch(&d->state.pi, DISPATCH_NORMAL, NULL);
       showDialog = false;
     } else {
-      d->state.pi.dispatch(&d->state.pi, DISPATCH_ERROR_MESSAGE, dialog.err);
+      error_info.msg = dialog.err;
+      error_info.len = dialog.value_size;
+      d->state.pi.dispatch(&d->state.pi, DISPATCH_ERROR_MESSAGE, &error_info);
       d->state.pi.dispatch(&d->state.pi, DISPATCH_NORMAL, NULL);
     }
   } else {
-    char input_c = d->state.glyphs.sanitize_character(e->key.keysym.sym);
+    code_point_t input_c = d->state.glyphs.sanitize_character(e->key.keysym.sym);
     if (input_c != '\0' && input_c != '\n' && input_c != '\t') {
       if (dialog.value_size < FILENAME_LIMIT) {
         dialog.value[dialog.value_size] = input_c;
