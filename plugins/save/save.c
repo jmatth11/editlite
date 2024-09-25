@@ -1,3 +1,4 @@
+#include <SDL2/SDL_events.h>
 #include <SDL2/SDL_rect.h>
 #include <SDL2/SDL_render.h>
 #include <stdio.h>
@@ -138,7 +139,7 @@ bool event(SDL_Event *e, struct display *d, struct display_dim *dim) {
   if (e->key.keysym.sym == SDLK_ESCAPE) {
     showDialog = false;
   }
-  if (e->type != SDL_KEYDOWN) return true;
+  if (e->type != SDL_KEYDOWN && e->type != SDL_TEXTINPUT) return true;
   if (e->key.keysym.sym == SDLK_BACKSPACE) {
     if (dialog.value_size > 0) {
       --dialog.value_size;
@@ -160,7 +161,7 @@ bool event(SDL_Event *e, struct display *d, struct display_dim *dim) {
       d->state.pi.dispatch(&d->state.pi, DISPATCH_ERROR_MESSAGE, &error_info);
       d->state.pi.dispatch(&d->state.pi, DISPATCH_NORMAL, NULL);
     }
-  } else {
+  } else if (e->type != SDL_KEYDOWN) {
     code_point_t input_c = d->state.glyphs.parse_sdl_input(e);
     if (input_c != '\0' && input_c != '\n' && input_c != '\t') {
       if (dialog.value_size < FILENAME_LIMIT) {

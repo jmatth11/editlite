@@ -1,4 +1,6 @@
 #include <SDL2/SDL_render.h>
+#include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <types/display_type.h>
 
@@ -72,6 +74,7 @@ void draw_options(struct display *d, struct find_info *op, size_t len,
         j++;
         continue;
       }
+      const size_t current_idx = j;
       j += octet_type_count(point.type);
       code_point_t cur_char = point.val;
       // skip special chars
@@ -80,7 +83,16 @@ void draw_options(struct display *d, struct find_info *op, size_t len,
       if (char_ren == NULL) {
         char_ren = d->texture_from_char(d, '?');
       }
+      bool mutated = false;
+      if (current_idx >= loc->beg && current_idx <= loc->end) {
+        SDL_SetTextureColorMod(char_ren, 70, 255, 70);
+        mutated = true;
+      }
       SDL_RenderCopy(d->state.w.renderer, char_ren, NULL, &char_rect);
+      if (mutated) {
+        const SDL_Color orig_color = d->state.glyphs.color;
+        SDL_SetTextureColorMod(char_ren, orig_color.r, orig_color.g, orig_color.b);
+      }
       char_rect.x += char_w;
     }
     char_rect.x = x_offset;

@@ -14,11 +14,6 @@
 #include "types/registered_functions.h"
 
 void handle_plugin_textinput_mode(struct display*d, SDL_Event*e) {
-  switch (e->key.keysym.sym) {
-    case SDLK_ESCAPE:
-      display_set_mode(d, NORMAL);
-      break;
-  }
   struct display_dim dims;
   state_get_page_dim(&d->state, &dims);
   // handle plugin events after our events
@@ -34,6 +29,11 @@ void handle_plugin_textinput_mode(struct display*d, SDL_Event*e) {
         }
       }
     }
+  }
+  switch (e->key.keysym.sym) {
+    case SDLK_ESCAPE:
+      display_set_mode(d, NORMAL);
+      break;
   }
 }
 
@@ -81,6 +81,10 @@ void handle_input(struct display *d, SDL_Event *e) {
           }
         }
       }
+      break;
+    }
+    case PLUGIN_INSERT: {
+      handle_plugin_textinput_mode(d, e);
       break;
     }
     default:

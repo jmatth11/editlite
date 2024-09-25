@@ -26,9 +26,9 @@ bool check_and_add(struct display_dim *dim, const uint8_t *src, size_t src_len, 
       size_t max_len = src_len;
       if (max_len > dim->col) {
         max_len = dim->col;
-        if (max_len > FIND_INFO_PREVIEW_SIZE) {
-          max_len = FIND_INFO_PREVIEW_SIZE;
-        }
+      }
+      if (max_len > FIND_INFO_PREVIEW_SIZE) {
+        max_len = FIND_INFO_PREVIEW_SIZE;
       }
       out->beg = val_start;
       out->end = val_end;

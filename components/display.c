@@ -85,7 +85,10 @@ void display_set_mode(struct display *d, enum display_mode mode) {
   } else if (d->mode == INSERT && mode != INSERT) {
     SDL_StopTextInput();
   }
-  if (d->mode == PLUGIN_INSERT && mode != PLUGIN_INSERT) {
+  if (d->mode != PLUGIN_INSERT && mode == PLUGIN_INSERT) {
+    SDL_StartTextInput();
+  } else if (d->mode == PLUGIN_INSERT && mode != PLUGIN_INSERT) {
+    SDL_StopTextInput();
     d->plugin_mode_name = NULL;
   }
   d->mode = mode;

@@ -1,8 +1,11 @@
+#include <SDL2/SDL_events.h>
 #include <SDL2/SDL_rect.h>
 #include <SDL2/SDL_scancode.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <types/display_type.h>
 #include <types/plugin_interface_types.h>
+#include <unicode/uchar.h>
 
 #include "draw.h"
 #include "find.h"
@@ -58,7 +61,7 @@ bool event(SDL_Event *e, struct display *d, struct display_dim *dim) {
     showMenu = false;
   }
   // only listen for keydown events
-  if (e->type != SDL_KEYDOWN) return true;
+  if (e->type != SDL_KEYDOWN && e->type != SDL_TEXTINPUT) return true;
   // - 1 for the text input row
   const int menu_max_height = (dim->row / 3.0f) - 1;
   const Uint8* key_states = SDL_GetKeyboardState(NULL);
@@ -103,9 +106,10 @@ bool event(SDL_Event *e, struct display *d, struct display_dim *dim) {
       search_word_options(d, dim, &op);
       op.visual_offset = 0;
       op.idx = 0;
-    } else {
+      // don't act on keydown events for text input
+    } else if (e->type != SDL_KEYDOWN) {
       code_point_t input_c = d->state.glyphs.parse_sdl_input(e);
-      if (input_c != '\0' && input_c != '\n' && input_c != '\t') {
+      if (input_c != '\0' && input_c != '\n' && input_c != '\t' && u_isprint(input_c)) {
         if (op.value_size < FIND_INFO_VALUE_SIZE) {
           op.value[op.value_size] = input_c;
           ++op.value_size;
