@@ -1,7 +1,10 @@
+#include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 
 #include "components/display.h"
 #include "components/menu.h"
+#include "helpers/util.h"
 #include "pages/page.h"
 #include "plugin_interface.h"
 #include "inputs/scrolling.h"
@@ -12,6 +15,7 @@
 #include "types/page_types.h"
 #include "types/registered_functions.h"
 #include "types/state_types.h"
+#include "utf8.h"
 
 void pi_get_cur_page(struct plugin_interface* pi, struct page *p){
   struct display *d = (struct display*)pi->__internal;
@@ -34,10 +38,8 @@ void pi_dispatch(
       struct page *p;
       state_get_cur_page(&d->state, &p);
       const struct message_t* filename = (struct message_t*)context;
-      if (filename != NULL) {
-        p->file_name = malloc(sizeof(char)*filename->len + 1);
-        memcpy(p->file_name, filename->msg, filename->len);
-        p->file_name[filename->len] = '\0';
+      if (filename != NULL && filename->msg != NULL) {
+        p->file_name = (char*)encode_to_utf8(filename->msg, filename->len);
       }
       if (!d->state.page_mgr.write(p)) {
         fprintf(stderr, "write failed for file \"%s\"\n", p->file_name);
@@ -60,13 +62,14 @@ void pi_dispatch(
     }
     case DISPATCH_NEW_PAGE: {
       struct message_t *filename = (struct message_t*)context;
-      size_t filename_len = filename->len;
-      // TODO convert message_t to utf8 encoded char *
+      uint8_t *name_buf = encode_to_utf8(filename->msg, filename->len);
+      const size_t name_buf_len = strlen((char*)name_buf);
+
       bool found = false;
       for (int i = 0; i < d->state.page_mgr.pages.len; ++i) {
         struct page *tmp = &d->state.page_mgr.pages.page_data[i];
         if (tmp->file_name != NULL) {
-          if (strncmp(tmp->file_name, filename, filename_len)==0) {
+          if (strncmp(tmp->file_name, (char*)name_buf, name_buf_len)==0) {
             d->state.cur_buf = i;
             found = true;
             break;
@@ -76,12 +79,10 @@ void pi_dispatch(
       if (!found) {
         struct page p;
         if (!page_init(&p)) {
-          fprintf(stderr, "error handling page: \"%s\"\n", filename);
+          fprintf(stderr, "error handling page: \"%s\"\n", name_buf);
           break;
         }
-        p.file_name = malloc(sizeof(char)*filename_len +1);
-        strncpy(p.file_name, filename, filename_len);
-        p.file_name[filename_len] = '\0';
+        p.file_name = (char*)name_buf;
         insert_page_array(&d->state.page_mgr.pages, p);
         d->state.cur_buf = d->state.page_mgr.pages.len - 1;
       }
@@ -117,11 +118,11 @@ void pi_dispatch(
       break;
     }
     case DISPATCH_ERROR_MESSAGE: {
-      // TODO add proper support for error messages
       const struct message_t *err = (struct message_t*)context;
+      uint8_t *msg = encode_to_utf8(err->msg, err->len);
       if (err != NULL) {
         // TODO translate code point msg into utf8 encoded char*
-        fprintf(stderr, "error: %s\n", err->msg);
+        fprintf(stderr, "error: %s\n", msg);
       }
       break;
     }
