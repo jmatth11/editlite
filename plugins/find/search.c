@@ -46,9 +46,12 @@ bool check_and_add(struct display_dim *dim, const uint8_t *src, size_t src_len, 
           out->display_beg = 0;
           out->display_end = max_len - 1;
         } else {
-          // TODO revisit
-          out->display_beg = labs((long)val_start - FIND_INFO_PREVIEW_PADDING);
-          size_t src_start = MAX(((long)val_start - FIND_INFO_PREVIEW_PADDING), (0));
+          out->display_beg = val_start;
+          size_t src_start = 0;
+          if (val_start > FIND_INFO_PREVIEW_PADDING) {
+            out->display_beg = FIND_INFO_PREVIEW_PADDING;
+            src_start = val_start - FIND_INFO_PREVIEW_PADDING;
+          }
           strncpy((char*)out->preview, (char*)&src[src_start], max_len);
           out->display_end = (out->display_beg + found_idx) - 1;
         }
