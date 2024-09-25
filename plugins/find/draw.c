@@ -50,7 +50,6 @@ void draw_textinput(struct display *d, code_point_t *const val, const int val_si
   }
 }
 
-// TODO rework all of this to support utf8
 void draw_options(struct display *d, struct find_info *op, size_t len,
                   int x, int y, int w, int h) {
 
