@@ -61,15 +61,13 @@ void pi_dispatch(
       break;
     }
     case DISPATCH_NEW_PAGE: {
-      struct message_t *filename = (struct message_t*)context;
-      uint8_t *name_buf = encode_to_utf8(filename->msg, filename->len);
-      const size_t name_buf_len = strlen((char*)name_buf);
-
+      char *filename = (char*)context;
+      const size_t filename_len = strlen(filename);
       bool found = false;
       for (int i = 0; i < d->state.page_mgr.pages.len; ++i) {
         struct page *tmp = &d->state.page_mgr.pages.page_data[i];
         if (tmp->file_name != NULL) {
-          if (strncmp(tmp->file_name, (char*)name_buf, name_buf_len)==0) {
+          if (strncmp(tmp->file_name, filename, filename_len)==0) {
             d->state.cur_buf = i;
             found = true;
             break;
@@ -79,10 +77,12 @@ void pi_dispatch(
       if (!found) {
         struct page p;
         if (!page_init(&p)) {
-          fprintf(stderr, "error handling page: \"%s\"\n", name_buf);
+          fprintf(stderr, "error handling page: \"%s\"\n", filename);
           break;
         }
-        p.file_name = (char*)name_buf;
+        p.file_name = (char*)malloc(sizeof(char)*filename_len+1);
+        strncpy(p.file_name, filename, filename_len);
+        p.file_name[filename_len] = '\0';
         insert_page_array(&d->state.page_mgr.pages, p);
         d->state.cur_buf = d->state.page_mgr.pages.len - 1;
       }

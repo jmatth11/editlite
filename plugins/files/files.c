@@ -26,6 +26,12 @@ struct dir_info dir_t = {
   .name = NULL,
   .dir = NULL,
 };
+
+struct message_t msg_payload = {
+  .msg = NULL,
+  .len = 0,
+};
+
 bool gen_items_from_dir(const char *wd, menu_item_array *buf);
 
 bool setup(struct plugin_interface* pi) {
