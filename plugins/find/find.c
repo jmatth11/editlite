@@ -7,6 +7,7 @@
 #include "draw.h"
 #include "find.h"
 #include "search.h"
+#include "types/unicode_types.h"
 
 const char *prompt = "find word";
 struct find_info op;
@@ -24,8 +25,7 @@ bool action(struct plugin_interface *pi) {
   op.idx = 0;
   op.value_size = 0;
   op.visual_offset = 0;
-  // change to PLUGIN_INSERT mode
-  pi->dispatch(pi, DISPATCH_PLUGIN_INSERT, NULL);
+  pi->dispatch(pi, DISPATCH_PLUGIN_INSERT, (void*)prompt);
   showMenu = true;
   return true;
 }
@@ -54,7 +54,6 @@ bool render(struct display *d, struct display_dim *dim) {
 }
 
 bool event(SDL_Event *e, struct display *d, struct display_dim *dim) {
-  // TODO change this to switch on d->mode for INSERT and INPUT modes to support Unicode
   if (e->key.keysym.sym == SDLK_ESCAPE) {
     showMenu = false;
   }
@@ -105,7 +104,7 @@ bool event(SDL_Event *e, struct display *d, struct display_dim *dim) {
       op.visual_offset = 0;
       op.idx = 0;
     } else {
-      char input_c = d->state.glyphs.sanitize_character(e->key.keysym.sym);
+      code_point_t input_c = d->state.glyphs.parse_sdl_input(e);
       if (input_c != '\0' && input_c != '\n' && input_c != '\t') {
         if (op.value_size < FIND_INFO_VALUE_SIZE) {
           op.value[op.value_size] = input_c;

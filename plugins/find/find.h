@@ -1,6 +1,7 @@
 #ifndef EDITLITE_FIND_PLUGIN_H
 #define EDITLITE_FIND_PLUGIN_H
 
+#include "types/unicode_types.h"
 #include <deps/array_template/array_template.h>
 #include <SDL2/SDL_events.h>
 #include <stdbool.h>
@@ -32,7 +33,7 @@ struct find_info {
   int visual_offset;
   int height;
   int value_size;
-  uint8_t value[FIND_INFO_VALUE_SIZE];
+  code_point_t value[FIND_INFO_VALUE_SIZE];
   location_array locs;
 };
 

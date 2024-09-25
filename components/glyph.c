@@ -1,3 +1,4 @@
+#include <SDL2/SDL_render.h>
 #include <ctype.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -17,9 +18,12 @@
 static SDL_Texture* create_glyph_texture(struct glyphs *ch, const struct win *w, const code_point_t point) {
   SDL_Surface *s = TTF_RenderGlyph32_Solid(ch->font, point, ch->color);
   if (s == NULL) {
-    fprintf(stderr, "rendering TTF surface failed. %s\n", SDL_GetError());
+    fprintf(stderr, "rendering TTF surface failed for code_point \"%d\". %s\n", point, SDL_GetError());
+    return NULL;
   }
-  return SDL_CreateTextureFromSurface(w->renderer, s);
+  SDL_Texture* result = SDL_CreateTextureFromSurface(w->renderer, s);
+  SDL_FreeSurface(s);
+  return result;
 }
 
 int init_char(struct glyphs *ch, const struct win *w, const char* ttf_file) {
@@ -39,6 +43,7 @@ int init_char(struct glyphs *ch, const struct win *w, const char* ttf_file) {
     SDL_Surface *s = TTF_RenderGlyph32_Solid(ch->font, i, ch->color);
     if (s == NULL) {
       fprintf(stderr, "rendering TTF surface failed. %s\n", SDL_GetError());
+      continue;
     }
     if (s->h > ch->unscaled_size.height) {
       ch->unscaled_size.height = s->h;
@@ -53,12 +58,26 @@ int init_char(struct glyphs *ch, const struct win *w, const char* ttf_file) {
     };
     if (new_glyph == NULL) {
       fprintf(stderr, "error with glyph: %s\n", SDL_GetError());
-    }
-    if (!hash_map_set(ch->glyphs, i, new_char)) {
-      fprintf(stderr, "failed to insert new glyph: \"%c\".\n", i);
-      return 0;
+    } else {
+      if (!hash_map_set(ch->glyphs, i, new_char)) {
+        fprintf(stderr, "failed to insert new glyph: \"%c\".\n", i);
+        return 0;
+      }
     }
     SDL_FreeSurface(s);
+  }
+  SDL_Texture *new_glyph = create_glyph_texture(ch, w, replacement_character);
+  const struct glyph_info new_char = {
+    .point = replacement_character,
+    .glyph = new_glyph,
+  };
+  if (new_glyph == NULL) {
+    fprintf(stderr, "error with glyph: %s\n", SDL_GetError());
+  } else {
+    if (!hash_map_set(ch->glyphs, replacement_character, new_char)) {
+      fprintf(stderr, "failed to insert new glyph: \"%c\".\n", replacement_character);
+      return 0;
+    }
   }
   if (ch->scale <= 0) {
     ch->scale = 1;
@@ -91,6 +110,9 @@ SDL_Texture* get_glyph(struct glyphs *ch, const struct win *w, const code_point_
     if (info->point == c) {
       return info->glyph;
     }
+  }
+  if (c != replacement_character) {
+    return get_glyph(ch, w, replacement_character);
   }
   return NULL;
 }

@@ -26,9 +26,10 @@ void handle_plugin_textinput_mode(struct display*d, SDL_Event*e) {
     for (int i = 0; i < d->state.cmds.len; ++i) {
       struct command *cmd = &d->state.cmds.command_data[i];
       if (cmd->event != NULL) {
-        if (!cmd->event(e, d, &dims)) {
-          const char *name;
-          cmd->get_display_prompt(&name);
+        const char *name;
+        const size_t name_len = strlen(name);
+        cmd->get_display_prompt(&name);
+        if (strncmp(name, d->plugin_mode_name, name_len) == 0 && !cmd->event(e, d, &dims)) {
           fprintf(stderr, "command event failed: \"%s\"\n", name);
         }
       }

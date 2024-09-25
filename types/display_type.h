@@ -19,6 +19,7 @@ struct display {
   struct app_state state;
   SDL_Texture *(*texture_from_char)(struct display *, const code_point_t);
   enum display_mode mode;
+  char *plugin_mode_name;
   bool switching_mode;
 };
 

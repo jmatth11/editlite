@@ -99,7 +99,9 @@ void pi_dispatch(
       break;
     }
     case DISPATCH_PLUGIN_INSERT: {
+      char *plugin_name = (char*)context;
       display_set_mode(d, PLUGIN_INSERT);
+      d->plugin_mode_name = plugin_name;
       break;
     }
     case DISPATCH_UPDATE_CURSOR: {

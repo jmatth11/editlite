@@ -37,6 +37,7 @@ int display_init(struct display* d) {
   // we do not initialize the menu in here because we initialize it on the fly
   // when we enter command mode
   d->mode = NORMAL;
+  d->plugin_mode_name = NULL;
   d->switching_mode = false;
   d->state.cur_buf = 0;
   d->state.glyphs.color = d->state.config.font_color;
@@ -83,6 +84,9 @@ void display_set_mode(struct display *d, enum display_mode mode) {
     SDL_StartTextInput();
   } else if (d->mode == INSERT && mode != INSERT) {
     SDL_StopTextInput();
+  }
+  if (d->mode == PLUGIN_INSERT && mode != PLUGIN_INSERT) {
+    d->plugin_mode_name = NULL;
   }
   d->mode = mode;
   d->switching_mode = true;
