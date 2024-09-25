@@ -1,4 +1,5 @@
 #include <SDL2/SDL_rect.h>
+#include <SDL2/SDL_render.h>
 
 #include "display.h"
 #include "menu.h"
@@ -98,12 +99,24 @@ bool menu_display(struct display *d) {
         .w = d->state.glyphs.scaled_size.width,
         .h = d->state.glyphs.scaled_size.height,
       };
+      bool mutated = false;
+      if (item->use_color) {
+        if (SDL_SetTextureColorMod(glyph, item->color.r, item->color.g, item->color.b) == -1) {
+          fprintf(stderr, "color modulation not supported on this machine.\n");
+        } else {
+          mutated = true;
+        }
+      }
       SDL_RenderCopy(
         d->state.w.renderer,
         glyph,
         NULL,
         &r
       );
+      if (mutated) {
+        const SDL_Color orig_color = d->state.glyphs.color;
+        SDL_SetTextureColorMod(glyph, orig_color.r, orig_color.g, orig_color.b);
+      }
       width_offset += d->state.glyphs.scaled_size.width;
     }
     height_offset += d->state.glyphs.scaled_size.height;

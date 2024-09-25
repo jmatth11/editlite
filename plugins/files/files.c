@@ -1,6 +1,7 @@
 #include <dirent.h>
 #include <errno.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -33,6 +34,19 @@ struct message_t msg_payload = {
 };
 
 bool gen_items_from_dir(const char *wd, menu_item_array *buf);
+
+static SDL_Color color_for_path_type(uint8_t d_type) {
+  switch (d_type) {
+    case DT_REG:
+      return (SDL_Color){255,255,255,255};
+    case DT_DIR:
+      return (SDL_Color){30,30, 255, 255};
+    case DT_LNK:
+      return (SDL_Color){30,255, 100, 255};
+    default:
+      return (SDL_Color){200,40, 0, 255};
+  }
+}
 
 bool setup(struct plugin_interface* pi) {
   size_t size = 1024;
@@ -111,6 +125,8 @@ bool gen_items_from_dir(const char *wd, menu_item_array *buf) {
       mi.name = dp->d_name;
       mi.selected = file_selected;
       mi.ctx = dp->d_name;
+      mi.use_color = true;
+      mi.color = color_for_path_type(dp->d_type);
       insert_menu_item_array(&buffer, mi);
     }
   } while (dp != NULL);

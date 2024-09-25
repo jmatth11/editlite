@@ -56,6 +56,7 @@ void prepare_command_mode(struct display *d) {
     cmd->get_display_prompt(&mi.name);
     mi.ctx = cmd;
     mi.selected = execute_command;
+    mi.use_color = false;
     insert_menu_item_array(&d->state.menu.items, mi);
   }
 }
