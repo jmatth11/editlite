@@ -148,10 +148,13 @@ TODO
 - [x] allow rendering callback for plugins.
 - [x] Searching through document.
 - [x] Add "home" path to look for config and plugins.
+- [x] Add Unicode support
+- [x] Add basic event listening callbacks for plugins.
+- [x] Prompt to add filename to unnamed pages.
 - [ ] Implement some more basic vim motions.
     - [x] implement jumping with ctrl-d/u
     - [ ] jump between words
-- [x] Prompt to add filename to unnamed pages.
 - [ ] Run in "memory limited" mode for memory constrained systems.
+- [ ] Add Copy/Paste
 - [ ] Support Windows
 - [ ] Update Makefile to make a release bundle
