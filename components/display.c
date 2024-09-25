@@ -134,8 +134,6 @@ static void inline draw_line(struct draw_info d) {
       if (cd.buf != 10 && cd.buf != 13) {
         fprintf(stderr, "cur_char: %d\n", cd.buf);
         fprintf(stderr, "glyph was null\n");
-        // display question mark for unknown chars
-        // TODO change to recommended unicode questions mark symbol
         cd.glyph = handle_characters(d.d, '?');
       } else if (d.cursor->screen_pos.row == d.line_idx &&
         d.cursor->screen_pos.col == char_idx ) {

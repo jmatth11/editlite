@@ -123,7 +123,6 @@ void pi_dispatch(
       const struct message_t *err = (struct message_t*)context;
       uint8_t *msg = encode_to_utf8(err->msg, err->len);
       if (err != NULL) {
-        // TODO translate code point msg into utf8 encoded char*
         fprintf(stderr, "error: %s\n", msg);
       }
       break;
