@@ -6,18 +6,29 @@
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_video.h>
 #include "state_types.h"
+#include "types/unicode_types.h"
 
 enum display_mode {
   NORMAL = 0,
   INSERT,
   COMMAND,
-  PLUGIN_INPUT,
+  PLUGIN_INSERT,
 };
 
 struct display {
-  enum display_mode mode;
   struct app_state state;
-  SDL_Texture *(*texture_from_char)(struct display *, const char);
+  SDL_Texture *(*texture_from_char)(struct display *, const code_point_t);
+  enum display_mode mode;
+  char *plugin_mode_name;
+  bool switching_mode;
+};
+
+struct character_display {
+  code_point_t buf;
+  SDL_Texture *glyph;
+  SDL_Rect display_pos;
+  size_t row;
+  size_t col;
 };
 
 #endif

@@ -11,13 +11,9 @@
 #include "states/state.h"
 #include "types/display_type.h"
 #include "helpers/util.h"
+#include "types/registered_functions.h"
 
 void handle_plugin_textinput_mode(struct display*d, SDL_Event*e) {
-  switch (e->key.keysym.sym) {
-    case SDLK_ESCAPE:
-      d->mode = NORMAL;
-      break;
-  }
   struct display_dim dims;
   state_get_page_dim(&d->state, &dims);
   // handle plugin events after our events
@@ -25,13 +21,19 @@ void handle_plugin_textinput_mode(struct display*d, SDL_Event*e) {
     for (int i = 0; i < d->state.cmds.len; ++i) {
       struct command *cmd = &d->state.cmds.command_data[i];
       if (cmd->event != NULL) {
-        if (!cmd->event(e, d, &dims)) {
-          const char *name;
-          cmd->get_display_prompt(&name);
+        const char *name;
+        const size_t name_len = strlen(name);
+        cmd->get_display_prompt(&name);
+        if (strncmp(name, d->plugin_mode_name, name_len) == 0 && !cmd->event(e, d, &dims)) {
           fprintf(stderr, "command event failed: \"%s\"\n", name);
         }
       }
     }
+  }
+  switch (e->key.keysym.sym) {
+    case SDLK_ESCAPE:
+      display_set_mode(d, NORMAL);
+      break;
   }
 }
 
@@ -43,13 +45,45 @@ void handle_keydown(struct display *d, SDL_Event *e) {
     }
     case INSERT:{
       handle_insert_mode(d, e);
+      if (d->state.registry.insert_funcs.len > 0) {
+        for (int i = 0; i < d->state.registry.insert_funcs.len; ++i) {
+          insert_event event = d->state.registry.insert_funcs.insert_func_data[i];
+          if (event != NULL) {
+            event(d, e);
+          }
+        }
+      }
       break;
     }
     case COMMAND:{
       handle_command_mode(d, e);
       break;
     }
-    case PLUGIN_INPUT: {
+    case PLUGIN_INSERT: {
+      handle_plugin_textinput_mode(d, e);
+      break;
+    }
+    default:
+    break;
+  }
+}
+
+void handle_input(struct display *d, SDL_Event *e) {
+  switch (d->mode) {
+    case INSERT: {
+      if (d->switching_mode) break;
+      handle_input_mode(d, e);
+      if (d->state.registry.insert_funcs.len > 0) {
+        for (int i = 0; i < d->state.registry.insert_funcs.len; ++i) {
+          insert_event event = d->state.registry.insert_funcs.insert_func_data[i];
+          if (event != NULL) {
+            event(d, e);
+          }
+        }
+      }
+      break;
+    }
+    case PLUGIN_INSERT: {
       handle_plugin_textinput_mode(d, e);
       break;
     }
@@ -110,7 +144,7 @@ void handle_simple_keypresses(struct display *d, SDL_Event *e) {
       d->state.page_mgr.pages.page_data[d->state.cur_buf].page_offset.col = 0;
       break;
     case SDLK_ESCAPE:
-      d->mode = NORMAL;
+      display_set_mode(d, NORMAL);
       break;
     case SDLK_i: {
       prepare_insert_mode(d, INSERT_AT);
@@ -166,7 +200,7 @@ void handle_state_keypresses(struct display *d, SDL_Event *e) {
       prepare_insert_mode(d, INSERT_END);
     }
     if (colon) {
-      d->mode = COMMAND;
+      display_set_mode(d, COMMAND);
       prepare_command_mode(d);
     }
   } else if (ctrl) {

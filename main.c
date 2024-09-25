@@ -81,12 +81,22 @@ int main(int argc, char **argv) {
   clock_t init;
   SDL_Event e;
   while(d.state.running) {
+    d.switching_mode = false;
     init = clock();
     while(SDL_PollEvent(&e)) {
-      if (e.type == SDL_QUIT) {
-        d.state.running = false;
-      } else if (e.type == SDL_KEYDOWN) {
-        handle_keydown(&d, &e);
+      switch (e.type) {
+        case SDL_QUIT: {
+          d.state.running = false;
+          break;
+        }
+        case SDL_KEYDOWN: {
+          handle_keydown(&d, &e);
+          break;
+        }
+        case SDL_TEXTINPUT: {
+          handle_input(&d, &e);
+          break;
+        }
       }
     }
     SDL_SetRenderDrawColor(d.state.w.renderer, 0, 0, 0, 0xFF);

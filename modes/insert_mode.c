@@ -8,10 +8,11 @@
 #include "types/display_type.h"
 #include "inputs/scrolling.h"
 #include "states/state.h"
+#include "types/unicode_types.h"
 
 void handle_insert_mode(struct display *d, SDL_Event *e) {
   if (e->key.keysym.sym == SDLK_ESCAPE) {
-    d->mode = NORMAL;
+    display_set_mode(d, NORMAL);
     return;
   }
   struct page *cur_page;
@@ -24,15 +25,28 @@ void handle_insert_mode(struct display *d, SDL_Event *e) {
 
   if (e->key.keysym.sym == SDLK_BACKSPACE) {
     cur_page->handle_backspace(cur_page);
-  } else {
-    cur_page->handle_keystroke(cur_page, e);
+  } else if (e->key.keysym.sym == SDLK_RETURN) {
+    cur_page->handle_newline(cur_page);
   }
   handle_row_scroll(d, dim);
   handle_col_scroll(d, dim);
 }
 
+void handle_input_mode(struct display *d, SDL_Event *e) {
+  struct page *cur_page;
+  if (!state_get_cur_page(&d->state, &cur_page)) {
+    fprintf(stderr, "could not get current page for handle_insert_mode.\n");
+    return;
+  }
+  struct display_dim dim;
+  state_get_page_dim(&d->state, &dim);
+  cur_page->handle_keystroke(cur_page, e);
+  handle_row_scroll(d, dim);
+  handle_col_scroll(d, dim);
+}
+
 void prepare_insert_mode(struct display *d, enum insert_mode_t mode) {
-  d->mode = INSERT;
+  display_set_mode(d, INSERT);
   struct page *cur_page;
   if (!state_get_cur_page(&d->state, &cur_page)) {
     fprintf(stderr, "could not get current page for prepare_insert_mode.\n");
@@ -59,7 +73,7 @@ void prepare_insert_mode(struct display *d, enum insert_mode_t mode) {
     }
   }
   if (cur_page->cursor.pos.col >= cur_gb_len) {
-    char tmp = ' ';
+    code_point_t tmp = ' ';
     gap_buffer_get_char(cur_gb, cur_gb_len - 1, &tmp);
     if (tmp == '\n') {
       cur_page->cursor.pos.col = cur_gb_len - 1;

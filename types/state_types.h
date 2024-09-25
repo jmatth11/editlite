@@ -10,20 +10,22 @@
 #include "menu_types.h"
 #include "page_types.h"
 #include "plugin_interface_types.h"
+#include "types/registered_functions.h"
 #include "win_types.h"
 
 struct app_state {
-  size_t cur_buf;
-  bool running;
-
   struct config config;
   struct glyphs glyphs;
   struct menu menu;
   struct plugin_interface pi;
   struct win w;
+  struct registry registry;
 
   struct command_array cmds;
   struct page_manager page_mgr;
+
+  size_t cur_buf;
+  bool running;
 };
 
 #endif

@@ -1,6 +1,7 @@
 #ifndef GAP_BUFFER_H
 #define GAP_BUFFER_H
 
+#include "types/unicode_types.h"
 #include <stddef.h>
 #include <stdbool.h>
 
@@ -16,8 +17,9 @@ struct gap_buffer {
   size_t len;
   size_t cursor_start;
   size_t cursor_end;
-  char* (*get_str)(struct gap_buffer*);
-  char *buffer;
+  code_point_t* (*get_str)(struct gap_buffer*);
+  size_t (*get_len)(const struct gap_buffer*);
+  code_point_t *buffer;
 };
 
 /**
@@ -42,7 +44,7 @@ bool gap_buffer_move_cursor(struct gap_buffer *gb, size_t pos);
  * @param pos The position offset.
  * @param[out] out The char variable to be populated.
  */
-void gap_buffer_get_char(const struct gap_buffer *gb, size_t pos, char* out);
+void gap_buffer_get_char(const struct gap_buffer *gb, size_t pos, code_point_t* out);
 
 /**
  * Get the length of the gap buffer.
@@ -58,15 +60,16 @@ size_t gap_buffer_get_len(const struct gap_buffer *gb);
  * @param c The given character.
  * @returns True if successful, false otherwise.
  */
-bool gap_buffer_insert(struct gap_buffer *gb, char c);
+bool gap_buffer_insert(struct gap_buffer *gb, code_point_t c);
 /**
  * Insert a word at the given position.
  * @param gb The gap buffer.
  * @param pos The position offset.
  * @param input The given input string.
+ * @param len The length of input.
  * @returns True if successful, false otherwise.
  */
-bool gap_buffer_insert_word(struct gap_buffer *gb, size_t pos, char* input);
+bool gap_buffer_insert_word(struct gap_buffer *gb, size_t pos, code_point_t* input, size_t len);
 /**
  * Delete a character to the left of the current position.
  * @param gb The gap buffer.
@@ -87,7 +90,7 @@ bool gap_buffer_delete_seq(struct gap_buffer *gb, size_t n);
  * @param gb The gap buffer.
  * @returns The constructed string.
  */
-char *gap_buffer_get_str(struct gap_buffer *gb);
+code_point_t* gap_buffer_get_str(struct gap_buffer *gb);
 /**
  * Free the gap buffer internals.
  * @param gb The gap buffer.
