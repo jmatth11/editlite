@@ -1,5 +1,6 @@
 #include <stddef.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <structures/linked_list.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -12,6 +13,7 @@
 #include "search.h"
 #include "types/unicode_types.h"
 #include "utf8.h"
+#include "helpers/util.h"
 
 uint8_t cur_buffer[BUFSIZ];
 
@@ -32,6 +34,8 @@ bool check_and_add(struct display_dim *dim, const uint8_t *src, size_t src_len, 
       }
       out->beg = val_start;
       out->end = val_end;
+      out->display_beg = val_start;
+      out->display_end = val_end;
       out->preview_size = max_len;
       if (max_len < dim->col) {
         strncpy((char*)out->preview, (char*)src, max_len);
@@ -39,9 +43,14 @@ bool check_and_add(struct display_dim *dim, const uint8_t *src, size_t src_len, 
         // if the value is bigger than our buffer, just show as much of the value as possible.
         if ((val_size + FIND_INFO_PREVIEW_PADDING) > max_len) {
           strncpy((char*)out->preview, (char*)val, max_len);
+          out->display_beg = 0;
+          out->display_end = max_len - 1;
         } else {
-          size_t src_start = (max_len - FIND_INFO_PREVIEW_PADDING) - val_start;
+          // TODO revisit
+          out->display_beg = labs((long)val_start - FIND_INFO_PREVIEW_PADDING);
+          size_t src_start = MAX(((long)val_start - FIND_INFO_PREVIEW_PADDING), (0));
           strncpy((char*)out->preview, (char*)&src[src_start], max_len);
+          out->display_end = (out->display_beg + found_idx) - 1;
         }
       }
       result = true;

@@ -5,6 +5,7 @@
 #include <deps/array_template/array_template.h>
 #include <SDL2/SDL_events.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 struct display;
 struct display_dim;
@@ -24,6 +25,8 @@ struct find_loc {
   size_t line;
   size_t beg;
   size_t end;
+  size_t display_beg;
+  size_t display_end;
 };
 
 generate_array_template(location, struct find_loc)

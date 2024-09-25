@@ -84,7 +84,7 @@ void draw_options(struct display *d, struct find_info *op, size_t len,
         char_ren = d->texture_from_char(d, '?');
       }
       bool mutated = false;
-      if (current_idx >= loc->beg && current_idx <= loc->end) {
+      if (current_idx >= loc->display_beg && current_idx <= loc->display_end) {
         SDL_SetTextureColorMod(char_ren, 70, 255, 70);
         mutated = true;
       }
@@ -94,6 +94,7 @@ void draw_options(struct display *d, struct find_info *op, size_t len,
         SDL_SetTextureColorMod(char_ren, orig_color.r, orig_color.g, orig_color.b);
       }
       char_rect.x += char_w;
+      if (char_rect.x >= w) break;
     }
     char_rect.x = x_offset;
     char_rect.y += char_h;
