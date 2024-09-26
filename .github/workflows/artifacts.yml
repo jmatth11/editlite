@@ -10,7 +10,12 @@ jobs:
     name: Build and Create Artifact
     runs-on: ubuntu-latest
     steps:
-      - run: ./create_appimage.sh
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Run create appimage script
+        run: ./create_appimage.sh
+
       - uses: actions/upload-artifact@v4
         with:
           name: Editlite.AppImage
