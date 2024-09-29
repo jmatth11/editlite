@@ -8,6 +8,7 @@
 #include "line.h"
 #include "page.h"
 #include "structures/linked_list.h"
+#include "structures/unicode.h"
 #include "types/line_types.h"
 #include "types/size_types.h"
 #include "types/page_types.h"
@@ -283,3 +284,7 @@ void page_manager_free(struct page_manager *pm) {
   free_page_array(&pm->pages);
 }
 
+
+void viewable_page_info_free(struct viewable_page_info* vpi) {
+  utf8_buffer_free(&vpi->buffer);
+}
