@@ -6,6 +6,7 @@
 #include "modes/command_mode.h"
 #include "modes/insert_mode.h"
 #include "key_handler.h"
+#include "pages/page.h"
 #include "structures/linked_list.h"
 #include "scrolling.h"
 #include "states/state.h"
@@ -103,7 +104,7 @@ void handle_jump_commands(struct display *d, struct display_dim dim) {
   const int line_len = gap_buffer_get_len(&cur_line->value.chars) - 1;
   const int offset = line_len - dim.col;
   cur_page->cursor.pos.col = line_len;
-  cur_page->page_offset.col = MAX(offset, 0);
+  page_set_offset_col(cur_page, MAX(offset, 0), d);
 }
 
 void handle_simple_keypresses(struct display *d, SDL_Event *e) {
@@ -141,7 +142,8 @@ void handle_simple_keypresses(struct display *d, SDL_Event *e) {
     }
     case SDLK_0:
       cur_page->cursor.pos.col = 0;
-      d->state.page_mgr.pages.page_data[d->state.cur_buf].page_offset.col = 0;
+      page_set_offset_col(
+        &d->state.page_mgr.pages.page_data[d->state.cur_buf], 0, d);
       break;
     case SDLK_ESCAPE:
       display_set_mode(d, NORMAL);

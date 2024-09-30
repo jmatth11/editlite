@@ -8,10 +8,13 @@
 #include "line.h"
 #include "page.h"
 #include "structures/linked_list.h"
+#include "structures/unicode.h"
+#include "types/display_type.h"
 #include "types/line_types.h"
 #include "types/size_types.h"
 #include "types/page_types.h"
 #include "types/unicode_types.h"
+#include "types/registered_functions.h"
 #include "utf8.h"
 
 #ifndef BUFSIZ
@@ -75,6 +78,31 @@ bool page_handle_newline(struct page *p) {
 
 void page_reset_screen_cursor(struct page *p) {
   p->cursor.screen_pos = p->cursor.pos;
+}
+
+void page_set_offset_col(struct page *p, size_t col, struct display *d) {
+  p->page_offset.col = col;
+  page_change_func_array events = d->state.registry.page_change_funcs;
+  if (events.len > 0) {
+    for (int i = 0; i < events.len; ++i) {
+      page_change callback = events.page_change_func_data[i];
+      if (callback != NULL) {
+        callback(d, VIEW_RANGE_MOVE);
+      }
+    }
+  }
+}
+void page_set_offset_row(struct page *p, size_t row, struct display *d) {
+  p->page_offset.row = row;
+  page_change_func_array events = d->state.registry.page_change_funcs;
+  if (events.len > 0) {
+    for (int i = 0; i < events.len; ++i) {
+      page_change callback = events.page_change_func_data[i];
+      if (callback != NULL) {
+        callback(d, VIEW_RANGE_MOVE);
+      }
+    }
+  }
 }
 
 bool page_handle_keystroke(struct page *p, SDL_Event *e) {
@@ -283,3 +311,7 @@ void page_manager_free(struct page_manager *pm) {
   free_page_array(&pm->pages);
 }
 
+
+void viewable_page_info_free(struct viewable_page_info* vpi) {
+  utf8_buffer_free(&vpi->buffer);
+}

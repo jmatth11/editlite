@@ -1,12 +1,14 @@
 #ifndef EDITLITE_PAGE_TYPES_H
 #define EDITLITE_PAGE_TYPES_H
 
+#include <stdint.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <SDL2/SDL_events.h>
 #include "../deps/array_template/array_template.h"
 #include "cursor_types.h"
 #include "size_types.h"
+#include "types/unicode_types.h"
 
 // forward declaration
 struct linked_list;
@@ -32,6 +34,11 @@ struct page_manager {
   bool (*read)(struct page*, size_t limit);
   bool (*write)(struct page*);
   page_array pages;
+};
+
+struct viewable_page_info {
+  const char *filename;
+  struct utf8_buffer buffer;
 };
 
 #endif

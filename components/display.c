@@ -1,6 +1,7 @@
 #include <SDL2/SDL_events.h>
 #include <SDL2/SDL_keyboard.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <string.h>
 
 #include "commands/command.h"
@@ -16,9 +17,12 @@
 #include "states/state.h"
 #include "types/cursor_types.h"
 #include "types/display_type.h"
+#include "types/page_types.h"
 #include "types/registered_functions.h"
 #include "types/size_types.h"
 #include "helpers/util.h"
+#include "types/unicode_types.h"
+#include "utf8.h"
 #include "win.h"
 
 struct draw_info {
@@ -68,6 +72,8 @@ int display_init(struct display* d) {
     return 1;
   }
   d->texture_from_char = handle_characters;
+  d->viewable_page_buffer = display_viewable_page_buffer;
+  d->viewable_page_buffer_free = viewable_page_info_free;
   return 0;
 }
 
@@ -105,6 +111,8 @@ static struct character_display inline generate_character_display(struct draw_in
   struct character_display cd;
   code_point_t cur_char = ' ';
   gap_buffer_get_char(&di.cur_line->value.chars, char_idx, &cur_char);
+  cd.page_offset_row = di.cur_page->page_offset.row;
+  cd.page_offset_col = di.cur_page->page_offset.col;
   cd.buf = cur_char;
   cd.glyph = handle_characters(di.d, cur_char);
   cd.display_pos = (SDL_Rect){
@@ -217,6 +225,61 @@ bool display_page_render(struct display *d) {
     cur_line = cur_line->next;
   }
   return true;
+}
+
+struct viewable_page_info display_viewable_page_buffer(struct display *d, struct page *p) {
+  struct viewable_page_info result = {
+    .buffer = {
+      .len = 0,
+      .buffer = NULL,
+    },
+    .filename = NULL,
+  };
+  if (d->state.page_mgr.pages.len < 1) {
+    fprintf(stderr, "page mgr has no pages.\n");
+    return result;
+  }
+  struct page *cur_page = p;
+  if (cur_page == NULL) {
+    if (!state_get_cur_page(&d->state, &cur_page)) {
+      fprintf(stderr, "could not get current page.\n");
+      return result;
+    }
+  }
+  result.filename = cur_page->file_name;
+  struct display_dim dims;
+  state_get_page_dim(&d->state, &dims);
+  const int line_start = cur_page->page_offset.row;
+  const int line_end = dims.row + line_start;
+  struct linked_list *start_line = linked_list_get_pos(cur_page->lines, line_start);
+  struct linked_list *cur_line = start_line;
+  size_t utf8_count = 0;
+  for (int line_idx = line_start; line_idx < line_end; ++line_idx) {
+    if (cur_line == NULL) break;
+    struct gap_buffer *cur_buffer = &cur_line->value.chars;
+    code_point_t *str = gap_buffer_get_str(cur_buffer);
+    utf8_count += code_point_to_utf8_len(str, gap_buffer_get_len(cur_buffer));
+    free(str);
+    cur_line = cur_line->next;
+  }
+  result.buffer.buffer = malloc(sizeof(uint8_t) * (utf8_count + 1));
+  result.buffer.len = utf8_count;
+  cur_line = start_line;
+  size_t result_buffer_idx = 0;
+  for (int line_idx = line_start; line_idx < line_end; ++line_idx) {
+    if (cur_line == NULL) break;
+    struct gap_buffer *cur_buffer = &cur_line->value.chars;
+    size_t str_len = gap_buffer_get_len(cur_buffer);
+    code_point_t *str = gap_buffer_get_str(cur_buffer);
+    for (int point_idx = 0; point_idx < str_len; ++point_idx) {
+      result_buffer_idx += utf8_write_code_point(
+        result.buffer.buffer, result.buffer.len, result_buffer_idx, str[point_idx]);
+    }
+    free(str);
+    cur_line = cur_line->next;
+  }
+  result.buffer.buffer[result.buffer.len] = '\0';
+  return result;
 }
 
 void display_free(struct display* d) {
