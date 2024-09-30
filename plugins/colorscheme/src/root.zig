@@ -54,7 +54,7 @@ fn calculate_highlights(d: *editlite.display) void {
         return;
     };
     code_file.close();
-    //defer std.fs.deleteFileAbsolute(new_file_path) catch {};
+    defer std.fs.deleteFileAbsolute(new_file_path) catch {};
     const run_params = [_][]u8{ slice_from_str(exec_cmd), slice_from_str("highlight"), new_file };
     const results = std.process.Child.run(.{
         .allocator = alloc,
@@ -73,7 +73,6 @@ fn calculate_highlights(d: *editlite.display) void {
         std.debug.print("{s}: error processing tree-sitter results -- \"{}\"\n", .{ name, err });
         return;
     };
-    std.debug.print("highlight_data.len={d}\n", .{highlight_data.results.items.len});
 }
 
 fn insert_event(d: *editlite.display, e: *const editlite.SDL_Event) void {
