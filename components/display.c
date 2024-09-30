@@ -111,6 +111,8 @@ static struct character_display inline generate_character_display(struct draw_in
   struct character_display cd;
   code_point_t cur_char = ' ';
   gap_buffer_get_char(&di.cur_line->value.chars, char_idx, &cur_char);
+  cd.page_offset_row = di.cur_page->page_offset.row;
+  cd.page_offset_col = di.cur_page->page_offset.col;
   cd.buf = cur_char;
   cd.glyph = handle_characters(di.d, cur_char);
   cd.display_pos = (SDL_Rect){
@@ -258,6 +260,7 @@ struct viewable_page_info display_viewable_page_buffer(struct display *d, struct
     code_point_t *str = gap_buffer_get_str(cur_buffer);
     utf8_count += code_point_to_utf8_len(str, gap_buffer_get_len(cur_buffer));
     free(str);
+    cur_line = cur_line->next;
   }
   result.buffer.buffer = malloc(sizeof(uint8_t) * (utf8_count + 1));
   result.buffer.len = utf8_count;
@@ -273,6 +276,7 @@ struct viewable_page_info display_viewable_page_buffer(struct display *d, struct
         result.buffer.buffer, result.buffer.len, result_buffer_idx, str[point_idx]);
     }
     free(str);
+    cur_line = cur_line->next;
   }
   result.buffer.buffer[result.buffer.len] = '\0';
   return result;

@@ -64,14 +64,14 @@ pub const parse_results = struct {
                     try self.results.append(cur_highlight.?);
                     capturing_idx = null;
                     cur_highlight = null;
-                } else if (cur_highlight == null) {
+                } else if (cur_highlight == null and ansi_color.color.use_color) {
                     cur_highlight = highlight_info.init(self.alloc);
                     cur_highlight.?.color = ansi_color.color;
                     cur_highlight.?.row = row;
                     cur_highlight.?.col = col;
                 }
                 idx += ansi_color.bytes_read;
-                if (capturing_idx == null and !ansi_color.reset) {
+                if (capturing_idx == null and ansi_color.color.use_color) {
                     capturing_idx = idx;
                 }
                 continue;
@@ -83,8 +83,11 @@ pub const parse_results = struct {
     }
 
     pub fn release_results(self: *parse_results) void {
-        for (self.results.items) |hi| {
-            @constCast(&hi).deinit();
+        var idx: usize = 0;
+        const len: usize = self.results.items.len;
+        while (idx < len) : (idx += 1) {
+            var hi = self.results.pop();
+            hi.deinit();
         }
         self.parsed = false;
     }

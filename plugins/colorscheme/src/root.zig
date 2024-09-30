@@ -12,11 +12,12 @@ const parser = @import("parser.zig");
 
 const name = "Colorscheme";
 const temp_file = "colorscheme.";
-const exec_cmd = "tree-sitter highlight ";
+const exec_cmd = "tree-sitter";
 
 var alloc: std.mem.Allocator = undefined;
 var highlight_data: parser.parse_results = undefined;
 var render_state_idx: usize = 0;
+var done_render: bool = true;
 
 fn slice_from_str(str: [*:0]const u8) []u8 {
     return @constCast(std.mem.span(str));
@@ -27,32 +28,40 @@ fn calculate_highlights(d: *editlite.display) void {
     defer d.viewable_page_buffer_free.?(@constCast(&cur_buffer));
     // TODO maybe replace with editlite given local directory
     const app_dir = std.fs.getAppDataDir(alloc, "editlite") catch |err| {
-        std.debug.print("{s}: error getting app data directory -- \"{}\"", .{ name, err });
+        std.debug.print("{s}: error getting app data directory -- \"{}\"\n", .{ name, err });
         return;
     };
     defer alloc.free(app_dir);
     std.fs.makeDirAbsolute(app_dir) catch {};
-    const paths: [2][]u8 = [_][]u8{ app_dir, slice_from_str(temp_file) };
-    const new_path = std.fs.path.join(alloc, &paths) catch |err| {
-        std.debug.print("{s}: error joining paths for temp file -- \"{}\"", .{ name, err });
+    const file_name_slice = slice_from_str(cur_buffer.filename);
+    const new_file = std.fmt.allocPrint(alloc, "{s}{s}", .{ slice_from_str(temp_file), std.fs.path.basename(file_name_slice) }) catch |err| {
+        std.debug.print("{s}: error allocating filename -- \"{}\"\n", .{ name, err });
         return;
     };
-    defer alloc.free(new_path);
-    const code_file = std.fs.createFileAbsolute(new_path, .{ .truncate = true }) catch |err| {
-        std.debug.print("{s}: error creating temp file -- \"{}\"", .{ name, err });
+    defer alloc.free(new_file);
+    const paths: [2][]u8 = [_][]u8{ app_dir, new_file };
+    const new_file_path = std.fs.path.join(alloc, &paths) catch |err| {
+        std.debug.print("{s}: error joining paths for temp file -- \"{}\"\n", .{ name, err });
         return;
     };
-    _ = code_file.write(std.mem.span(cur_buffer.buffer.buffer)) catch |err| {
-        std.debug.print("{s}: error writing temp file -- \"{}\"", .{ name, err });
+    defer alloc.free(new_file_path);
+    const code_file = std.fs.createFileAbsolute(new_file_path, .{ .truncate = true }) catch |err| {
+        std.debug.print("{s}: error creating temp file -- \"{}\"\n", .{ name, err });
         return;
     };
-    defer std.fs.deleteFileAbsolute(new_path) catch {};
-    const run_params = [_][]u8{ slice_from_str(exec_cmd), new_path };
+    _ = code_file.write(slice_from_str(cur_buffer.buffer.buffer)) catch |err| {
+        std.debug.print("{s}: error writing data to file -- \"{}\"\n", .{ name, err });
+        return;
+    };
+    code_file.close();
+    //defer std.fs.deleteFileAbsolute(new_file_path) catch {};
+    const run_params = [_][]u8{ slice_from_str(exec_cmd), slice_from_str("highlight"), new_file };
     const results = std.process.Child.run(.{
         .allocator = alloc,
         .argv = &run_params,
+        .cwd = app_dir,
     }) catch |err| {
-        std.debug.print("{s}: error executing child process tree-sitter -- \"{}\"", .{ name, err });
+        std.debug.print("{s}: error executing child process tree-sitter -- \"{}\"\n", .{ name, err });
         return;
     };
     defer alloc.free(results.stdout);
@@ -61,9 +70,10 @@ fn calculate_highlights(d: *editlite.display) void {
         highlight_data.release_results();
     }
     highlight_data.parse(results.stdout) catch |err| {
-        std.debug.print("{s}: error processing tree-sitter results -- \"{}\"", .{ name, err });
+        std.debug.print("{s}: error processing tree-sitter results -- \"{}\"\n", .{ name, err });
         return;
     };
+    std.debug.print("highlight_data.len={d}\n", .{highlight_data.results.items.len});
 }
 
 fn insert_event(d: *editlite.display, e: *const editlite.SDL_Event) void {
@@ -77,22 +87,34 @@ fn render_glyph(cd: *editlite.character_display) void {
     if (highlight_data.results.items.len == 0) {
         return;
     }
+    if (cd.row == cd.page_offset_row and cd.col == cd.page_offset_col) {
+        render_state_idx = 0;
+        done_render = false;
+    }
+    if (done_render) {
+        return;
+    }
     const cur_highlight: parser.highlight_info = highlight_data.results.items[render_state_idx];
+    const cur_col = cd.page_offset_col + cur_highlight.col;
+    const cur_row = cd.page_offset_row + cur_highlight.row;
+    const col_end = cur_col + cur_highlight.text.?.len;
     const cur_color = cur_highlight.color;
-    const col_end = cur_highlight.col + cur_highlight.text.?.len;
-    if (cd.row == cur_highlight.row and cd.col >= cur_highlight.col and cd.col < col_end) {
-        if (editlite.SDL_SetTextureColorMod(cd.glyph, cur_color.r, cur_color.g, cur_color.b) == -1) {
-            std.debug.print("texture color mod not supported.\n", .{});
+    if (cd.row == cur_row and cd.col >= cur_col and cd.col < col_end) {
+        if (cur_highlight.color.use_color) {
+            if (editlite.SDL_SetTextureColorMod(cd.glyph, cur_color.r, cur_color.g, cur_color.b) == -1) {
+                std.debug.print("texture color mod not supported.\n", .{});
+            }
         }
     }
-    if (cd.row > cur_highlight.row or cd.col >= col_end) {
+    if (cd.row >= cur_row and cd.col >= col_end) {
         render_state_idx += 1;
     }
-    if (render_state_idx >= highlight_data.results.items.len) {
-        render_state_idx = 0;
+    if (render_state_idx == highlight_data.results.items.len) {
+        done_render = true;
     }
 }
-fn page_change(d: *editlite.display) void {
+fn page_change(d: *editlite.display, t: editlite.page_change_type) void {
+    _ = t;
     calculate_highlights(d);
 }
 

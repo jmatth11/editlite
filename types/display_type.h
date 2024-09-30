@@ -31,6 +31,8 @@ struct character_display {
   code_point_t buf;
   SDL_Texture *glyph;
   SDL_Rect display_pos;
+  size_t page_offset_row;
+  size_t page_offset_col;
   size_t row;
   size_t col;
 };

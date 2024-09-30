@@ -11,10 +11,15 @@ __BEGIN_DECLS
 struct display;
 struct character_display;
 
+enum page_change_type {
+  NEW_PAGE,
+  VIEW_RANGE_MOVE,
+};
+
 // function typedefs
 typedef void (*insert_event)(struct display *, const SDL_Event *e);
 typedef void (*render_glyph)(struct character_display *);
-typedef void (*page_change)(struct display *);
+typedef void (*page_change)(struct display *, enum page_change_type);
 
 generate_array_template(insert_func, insert_event)
 generate_array_template(render_glyph_func, render_glyph)
