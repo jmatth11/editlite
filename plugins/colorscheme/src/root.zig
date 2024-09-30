@@ -11,6 +11,8 @@ const editlite = @cImport({
 const parser = @import("parser.zig");
 
 const name = "Colorscheme";
+const name_status_on = "Colorscheme: on";
+const name_status_off = "Colorscheme: off";
 const temp_file = "colorscheme.";
 const exec_cmd = "tree-sitter";
 
@@ -18,6 +20,7 @@ var alloc: std.mem.Allocator = undefined;
 var highlight_data: parser.parse_results = undefined;
 var render_state_idx: usize = 0;
 var done_render: bool = true;
+var plugin_off: bool = false;
 
 fn slice_from_str(str: [*:0]const u8) []u8 {
     return @constCast(std.mem.span(str));
@@ -76,10 +79,16 @@ fn calculate_highlights(d: *editlite.display) void {
 }
 
 fn insert_event(d: *editlite.display, e: *const editlite.SDL_Event) void {
+    if (plugin_off) {
+        return;
+    }
     _ = e;
     calculate_highlights(d);
 }
 fn render_glyph(cd: *editlite.character_display) void {
+    if (plugin_off) {
+        return;
+    }
     if (cd.glyph == null) {
         return;
     }
@@ -113,6 +122,9 @@ fn render_glyph(cd: *editlite.character_display) void {
     }
 }
 fn page_change(d: *editlite.display, t: editlite.page_change_type) void {
+    if (plugin_off) {
+        return;
+    }
     _ = t;
     calculate_highlights(d);
 }
@@ -143,13 +155,20 @@ export fn setup(pi: *editlite.plugin_interface) bool {
 }
 
 export fn action(pi: *editlite.plugin_interface) bool {
-    std.debug.print("action called\n", .{});
+    plugin_off = !plugin_off;
+    if (!plugin_off) {
+        calculate_highlights(@as(*editlite.display, @alignCast(@ptrCast(pi.__internal))));
+    }
     pi.dispatch.?(pi, editlite.DISPATCH_NORMAL, null);
     return true;
 }
 
 export fn get_display_prompt(out: *[*:0]const u8) void {
-    out.* = name.ptr;
+    if (plugin_off) {
+        out.* = name_status_off.ptr;
+    } else {
+        out.* = name_status_on.ptr;
+    }
 }
 
 export fn cleanup(pi: *editlite.plugin_interface) bool {
