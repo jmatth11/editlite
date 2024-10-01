@@ -102,10 +102,35 @@ fn render_glyph(cd: *editlite.character_display) void {
     if (done_render) {
         return;
     }
-    const cur_highlight: parser.highlight_info = highlight_data.results.items[render_state_idx];
-    const cur_col = cd.page_offset_col + cur_highlight.col;
-    const cur_row = cd.page_offset_row + cur_highlight.row;
-    const col_end = cur_col + cur_highlight.text.?.len;
+    var cur_highlight: parser.highlight_info = highlight_data.results.items[render_state_idx];
+    var cur_col = cd.page_offset_col + cur_highlight.col;
+    var cur_row = cd.page_offset_row + cur_highlight.row;
+    var col_end = cur_col + cur_highlight.text.?.len;
+    var search_next: bool = false;
+    // this allows us to account for working around highlights outside the view buffer
+    if (cd.row > cur_row) {
+        search_next = true;
+    } else if (cd.row == cur_row and cd.col >= col_end) {
+        search_next = true;
+    }
+    if (search_next) {
+        render_state_idx += 1;
+        while (true) {
+            if (render_state_idx >= highlight_data.results.items.len) {
+                break;
+            }
+            cur_highlight = highlight_data.results.items[render_state_idx];
+            cur_col = cd.page_offset_col + cur_highlight.col;
+            col_end = cur_col + cur_highlight.text.?.len;
+            cur_row = cd.page_offset_row + cur_highlight.row;
+            if (cd.row < cur_row) {
+                break;
+            } else if (cd.row == cur_row and cd.col < col_end) {
+                break;
+            }
+            render_state_idx += 1;
+        }
+    }
     const cur_color = cur_highlight.color;
     if (cd.row == cur_row and cd.col >= cur_col and cd.col < col_end) {
         if (cur_highlight.color.use_color) {
@@ -114,10 +139,7 @@ fn render_glyph(cd: *editlite.character_display) void {
             }
         }
     }
-    if (cd.row >= cur_row and cd.col >= col_end) {
-        render_state_idx += 1;
-    }
-    if (render_state_idx == highlight_data.results.items.len) {
+    if (render_state_idx >= highlight_data.results.items.len) {
         done_render = true;
     }
 }
