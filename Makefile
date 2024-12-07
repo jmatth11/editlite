@@ -10,7 +10,7 @@ TARGET=editlite
 
 .PHONY: all
 all: $(OBJECTS)
-	$(CC) $(patsubst %.o, $(OBJ)/%.o, $(notdir $^)) -g $(CFLAGS) $(LIBS) -o $(BIN)/$(TARGET)
+	$(CC) $(patsubst %.o, $(OBJ)/%.o, $(notdir $^)) -O2 $(CFLAGS) $(LIBS) -o $(BIN)/$(TARGET)
 
 $(OBJ)/%.o: %.c
 	@mkdir -p $(OBJ)
