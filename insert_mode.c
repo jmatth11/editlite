@@ -117,9 +117,10 @@ static inline char sanitize_character(SDL_Keycode keycode) {
   }
   if (!is_special_char && isspace(c)) {
     if (c == '\r' || c == '\n') {
-      // TODO handle newlines
+      result = '\n';
+    } else {
+      result = ' ';
     }
-    result = ' ';
   } else if (!is_special_char && isalpha(c)) {
     result = c;
     if (is_upper) {
@@ -163,15 +164,49 @@ void handle_insert_mode(struct display *d, struct win *w, SDL_Event *e) {
       handle_row_scroll(d, dim);
       handle_col_scroll(d, dim);
     } else {
-      // TODO handle merging with line above current
+      // TODO something is wrong, need to debug
+      struct linked_list *prev_line = cur_line->prev;
+      struct gap_buffer *prev_gb = &prev_line->value.chars;
+      gap_buffer_move_cursor(prev_gb, gap_buffer_get_len(prev_gb));
+      // delete previous line's newline char
+      gap_buffer_delete(prev_gb);
+      for (int i = 0; i < gap_buffer_get_len(cur_gb); ++i) {
+        char tmp = ' ';
+        gap_buffer_get_char(cur_gb, i, &tmp);
+        gap_buffer_insert(prev_gb, tmp);
+      }
+      linked_list_delete_node(cur_line);
+      d->cursor.pos.row--;
+      d->cursor.pos.col = gap_buffer_get_len(prev_gb) - 1;
     }
   } else {
     const char received_char = sanitize_character(e->key.keysym.sym);
     if (received_char != '\0') {
-      gap_buffer_insert(cur_gb, received_char);
-      d->cursor.pos.col++;
-      handle_row_scroll(d, dim);
-      handle_col_scroll(d, dim);
+      if (received_char == '\n') {
+        // TODO something is wrong, need to debug
+        struct line new_line;
+        init_line(&new_line);
+        struct gap_buffer *next_gb = &new_line.chars;
+        gap_buffer_move_cursor(next_gb, 0);
+        size_t cur_col = d->cursor.pos.col;
+        size_t gb_len = gap_buffer_get_len(cur_gb);
+        for (; cur_col < gb_len; ++cur_col) {
+          char tmp = ' ';
+          gap_buffer_get_char(cur_gb, cur_col, &tmp);
+          gap_buffer_insert(next_gb, tmp);
+        }
+        cur_col = d->cursor.pos.col;
+        gap_buffer_move_cursor(cur_gb, cur_col);
+        gap_buffer_delete_seq(cur_gb, gb_len - cur_col);
+        linked_list_insert(cur_line, 1, new_line);
+        d->cursor.pos.col = 0;
+        d->cursor.pos.row++;
+      } else {
+        gap_buffer_insert(cur_gb, received_char);
+        d->cursor.pos.col++;
+        handle_row_scroll(d, dim);
+        handle_col_scroll(d, dim);
+      }
     }
   }
 
