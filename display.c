@@ -18,6 +18,9 @@ int display_init(struct display* d, const struct win *w) {
   d->glyphs.color = d->config.font_color;
   d->glyphs.size = d->config.font_size;
   d->running = true;
+  d->menu.items.menu_item_data = NULL;
+  d->menu.items.len = 0;
+  d->menu.items.cap = 0;
   int err = init_char(&d->glyphs, w, d->config.font_file);
   if (err != 0) return err;
   err = page_manager_init(&d->page_mgr);
