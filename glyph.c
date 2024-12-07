@@ -42,6 +42,7 @@ int init_char(struct glyphs *ch, const struct win *w, const char* ttf_file) {
   }
   ch->width = (double)ch->orig_width * ch->scale;
   ch->height = (double)ch->orig_height * ch->scale;
+  ch->sanitize_character = sanitize_character;
   return 0;
 }
 

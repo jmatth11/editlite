@@ -10,6 +10,8 @@
 extern "C" {
 #endif
 
+#define FIND_INFO_VALUE_SIZE 1024
+
 struct find_loc {
   size_t beg;
   size_t end;
@@ -18,7 +20,10 @@ struct find_loc {
 generate_array_template(location, struct find_loc)
 
 struct find_info {
-  char *value;
+  int idx;
+  int height;
+  int value_size;
+  char value[FIND_INFO_VALUE_SIZE];
   location_array locs;
 };
 
