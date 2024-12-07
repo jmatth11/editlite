@@ -11,7 +11,8 @@ TODO
 - [x] navigating the document.
 - [x] Loading more of the file in memory when navigating.
 - [x] Edit the document.
-    - [ ] Handle newlines properly.
+    - [x] Handle newlines properly.
+    - [ ] Fix bugs with certain edge cases on deleting to previous line and moving to newline
 - [ ] Implement "command" mode.
 - [ ] Command to load another file.
 - [ ] Searching through document.
