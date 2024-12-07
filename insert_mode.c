@@ -161,29 +161,28 @@ void handle_insert_mode(struct display *d, struct win *w, SDL_Event *e) {
     if (d->cursor.pos.col > 0) {
       gap_buffer_delete(cur_gb);
       d->cursor.pos.col--;
-      handle_row_scroll(d, dim);
-      handle_col_scroll(d, dim);
     } else {
-      // TODO something is wrong, need to debug
       struct linked_list *prev_line = cur_line->prev;
       struct gap_buffer *prev_gb = &prev_line->value.chars;
       gap_buffer_move_cursor(prev_gb, gap_buffer_get_len(prev_gb));
       // delete previous line's newline char
       gap_buffer_delete(prev_gb);
-      for (int i = 0; i < gap_buffer_get_len(cur_gb); ++i) {
+      size_t cur_gb_len = gap_buffer_get_len(cur_gb);
+      for (int i = 0; i < cur_gb_len; ++i) {
         char tmp = ' ';
         gap_buffer_get_char(cur_gb, i, &tmp);
         gap_buffer_insert(prev_gb, tmp);
       }
       linked_list_delete_node(cur_line);
       d->cursor.pos.row--;
-      d->cursor.pos.col = gap_buffer_get_len(prev_gb) - 1;
+      d->cursor.pos.col = gap_buffer_get_len(prev_gb) - cur_gb_len;
     }
   } else {
     const char received_char = sanitize_character(e->key.keysym.sym);
     if (received_char != '\0') {
       if (received_char == '\n') {
         // TODO something is wrong, need to debug
+        gap_buffer_insert(cur_gb, received_char);
         struct line new_line;
         init_line(&new_line);
         struct gap_buffer *next_gb = &new_line.chars;
@@ -196,18 +195,18 @@ void handle_insert_mode(struct display *d, struct win *w, SDL_Event *e) {
           gap_buffer_insert(next_gb, tmp);
         }
         cur_col = d->cursor.pos.col;
-        gap_buffer_move_cursor(cur_gb, cur_col);
+        gap_buffer_move_cursor(cur_gb, gb_len);
         gap_buffer_delete_seq(cur_gb, gb_len - cur_col);
-        linked_list_insert(cur_line, 1, new_line);
+        linked_list_insert(cur_line, 0, new_line);
         d->cursor.pos.col = 0;
         d->cursor.pos.row++;
       } else {
         gap_buffer_insert(cur_gb, received_char);
         d->cursor.pos.col++;
-        handle_row_scroll(d, dim);
-        handle_col_scroll(d, dim);
       }
     }
+    handle_row_scroll(d, dim);
+    handle_col_scroll(d, dim);
   }
 
 }

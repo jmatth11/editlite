@@ -54,14 +54,15 @@ int page_render(struct display *d, struct win *w) {
     const int char_start = cur_page.col_offset;
     const int gap_buffer_len = gap_buffer_get_len(&cur_line->value.chars);
     const int char_len = MIN(gap_buffer_len, dims.col + cur_page.col_offset);
-    if (d->cursor.pos.row == line_idx && d->cursor.pos.col >= char_len) {
-      d->cursor.screen_pos.col = char_len - 1;
+    if (d->cursor.pos.row == line_idx && d->cursor.pos.col > char_len) {
+      d->cursor.screen_pos.col = char_len;
     }
+    SDL_Rect r;
     for (int char_idx = char_start; char_idx < char_len; ++char_idx) {
       char cur_char = ' ';
       gap_buffer_get_char(&cur_line->value.chars, char_idx, &cur_char);
       SDL_Texture *glyph = handle_characters(d, cur_char);
-      SDL_Rect r = {
+      r = (SDL_Rect){
         .x = width_offset,
         .y = height_offset,
         .w = d->glyphs.max_width,
@@ -88,6 +89,10 @@ int page_render(struct display *d, struct win *w) {
         &r
       );
       width_offset += d->glyphs.max_width;
+    }
+    if (d->cursor.screen_pos.row == line_idx && d->cursor.screen_pos.col == char_len) {
+      r.x = width_offset;
+      draw_cursor(d, w, &r);
     }
     width_offset = 0;
     height_offset += d->glyphs.max_height;
