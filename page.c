@@ -133,6 +133,15 @@ bool page_manager_read(struct page *buf) {
   return true;
 }
 
+bool page_write(struct page* buf) {
+  FILE *tmpFile = tmpfile();
+  char output_buffer[BUFSIZ];
+  // TODO think of if we want to write to a tmpFile or create a file to rename
+  // once we are done
+
+  return true;
+}
+
 bool page_init(struct page *p) {
   p->lines = (struct linked_list*)malloc(sizeof(struct linked_list));
   int err = linked_list_init(p->lines);
