@@ -7,7 +7,7 @@
 struct display {
   size_t cur_buf;
   struct characters glyphs;
-  struct page_manager pages;
+  struct page_manager page_mgr;
 };
 
 int init_display(struct display* d, const struct win *w);

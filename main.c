@@ -49,12 +49,12 @@ int main(int argc, char **arg) {
     printf("Page could not initialize.\n");
     exit(1);
   }
-  insert_page_array(&pm.buf, test_buffer);
-  if (pm.read_file(&pm.buf.page_data[0], "main.c") != 0) {
+  insert_page_array(&pm.pages, test_buffer);
+  if (pm.read_file(&pm.pages.page_data[0], "main.c") != 0) {
     printf("Could not read file.\n");
     exit(1);
   }
-  d.pages = pm;
+  d.page_mgr = pm;
 
   SDL_Event e; int quit = 0;
   while(!quit) {

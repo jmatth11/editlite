@@ -27,13 +27,6 @@ int page_manager_read(struct page *buf, const char *file_name) {
     }
     for (int i = 0; i < n; ++i) {
       char cur_char = buffer[i];
-      if (cur_char == '\n') {
-        line_idx++;
-        struct line tmp_line;
-        init_line(&tmp_line);
-        insert_line_array(&buf->lines, tmp_line);
-        char_idx = 0;
-      }
       // TODO would like to handle dynamically loading longer lines so
       // they aren't loaded all at once.
       if (line_idx >= LINE_BUFFER) {
@@ -41,22 +34,29 @@ int page_manager_read(struct page *buf, const char *file_name) {
         break;
       }
       struct line *line_buf = &buf->lines.line_data[line_idx];
-      insert_char_array(&line_buf->buffer, cur_char);
+      insert_char_array(&line_buf->chars, cur_char);
       char_idx++;
+      if (cur_char == '\n') {
+        line_idx++;
+        struct line tmp_line;
+        init_line(&tmp_line);
+        insert_line_array(&buf->lines, tmp_line);
+        char_idx = 0;
+      }
     }
   }
   return 0;
 }
 
 int init_line(struct line *l) {
-  int err = init_char_array(&l->buffer, LINE_CHAR_BUFF_SIZE);
+  int err = init_char_array(&l->chars, LINE_CHAR_BUFF_SIZE);
   l->load_pos = 0;
   l->start_pos = 0;
   return err;
 }
 
 void free_line(struct line *l) {
-  free_char_array(&l->buffer);
+  free_char_array(&l->chars);
 }
 
 int init_page(struct page *p) {
@@ -74,14 +74,14 @@ void free_page(struct page *p) {
 }
 
 int init_page_manager(struct page_manager *pm) {
-  int err = init_page_array(&pm->buf, 1);
+  int err = init_page_array(&pm->pages, 1);
   pm->read_file = page_manager_read;
   return err;
 }
 
 void free_page_manager(struct page_manager *pm) {
-  for (int i = 0; i < pm->buf.len; ++i) {
-    free_page(&pm->buf.page_data[i]);
+  for (int i = 0; i < pm->pages.len; ++i) {
+    free_page(&pm->pages.page_data[i]);
   }
-  free_page_array(&pm->buf);
+  free_page_array(&pm->pages);
 }
