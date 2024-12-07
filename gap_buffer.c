@@ -18,13 +18,13 @@ static bool resize_buffer(struct gap_buffer *gb) {
   if (!resize(gb)) {
     return false;
   }
-  for (size_t i = gb->len - 1, j = gb->cap - 1; i >= gb->cursor_end; --i, --j) {
-    gb->buffer[j] = gb->buffer[i];
-    if (i == gb->cursor_end) {
-      gb->cursor_end = j;
-      gb->len = gb->cap;
-    }
+  size_t i = gb->len, j = gb->cap;
+  for (; i > gb->cursor_end; --i, --j) {
+    gb->buffer[j - 1] = gb->buffer[i - 1];
   }
+  gb->len = gb->cap;
+  gb->cursor_end = j;
+  return true;
   return true;
 }
 
