@@ -85,9 +85,8 @@ int main(int argc, char **argv) {
       if (e.type == SDL_QUIT) {
         quit = 1;
       } else if (e.type == SDL_KEYDOWN) {
-        handle_simple_keypresses(&d, &w, &e);
+        handle_keydown(&d, &w, &e);
       }
-      handle_state_keypresses(&d, &w, &e);
     }
     SDL_SetRenderDrawColor(w.renderer, 0, 0, 0, 0xFF);
     SDL_RenderClear(w.renderer);
