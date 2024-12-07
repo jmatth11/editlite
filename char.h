@@ -10,6 +10,7 @@ struct characters {
   SDL_Color color;
   size_t size;
   size_t max_height;
+  size_t max_width;
 };
 
 int init_char(struct characters *ch, const struct win *w, const char* ttf_file);
