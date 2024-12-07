@@ -15,7 +15,7 @@ bool action(struct plugin_interface *pi) {
     free_location_array(&op.locs);
   }
   init_location_array(&op.locs, 1);
-  pi->dispatch(pi, DISPATCH_PLUGIN_TEXTINPUT, NULL);
+  pi->dispatch(pi, DISPATCH_PLUGIN_INPUT, NULL);
   showMenu = true;
   return true;
 }
@@ -23,11 +23,15 @@ bool action(struct plugin_interface *pi) {
 bool render(struct display *d, struct display_dim *dim) {
   if (showMenu) {
     // TODO render find display
+    // need to use popen to execute grep command and get output
   }
   return true;
 }
 
 bool event(SDL_Event *e, struct display *d) {
+  if (e->type == SDL_QUIT) {
+    showMenu = false;
+  }
 
   return true;
 }
