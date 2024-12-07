@@ -39,6 +39,7 @@ struct display {
 
 int display_init(struct display* d, const struct win *w);
 bool display_load_plugins(struct display* d);
+bool display_reload_plugins(struct display *d);
 bool display_page_render(struct display *d, struct win *w);
 bool display_get_cur_page(struct display *d, struct page **out);
 void display_get_page_dim(struct display *d, struct win *w, struct display_dim *out);
