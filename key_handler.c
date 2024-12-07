@@ -1,4 +1,5 @@
 #include "key_handler.h"
+#include "display.h"
 #include "page.h"
 #include "util.h"
 #include <SDL2/SDL_keycode.h>
@@ -24,8 +25,9 @@ void handle_row_scroll(struct display *d, struct display_dim dim) {
 void handle_col_scroll(struct display *d, struct display_dim dim) {
   struct page *cur_page = &d->page_mgr.pages.page_data[d->cur_buf];
   struct line *cur_line = &cur_page->lines.line_data[d->cursor.pos.row];
-  if (d->cursor.pos.col >= cur_line->chars.len) {
-    d->cursor.pos.col = cur_line->chars.len - 1;
+  const int gap_buffer_len = gap_buffer_get_len(&cur_line->chars);
+  if (d->cursor.pos.col >= gap_buffer_len) {
+    d->cursor.pos.col = gap_buffer_len - 1;
   } else if (d->cursor.pos.col >= cur_page->col_offset + dim.col) {
     cur_page->col_offset++;
   } else if (d->cursor.pos.col < cur_page->col_offset) {
@@ -36,7 +38,7 @@ void handle_col_scroll(struct display *d, struct display_dim dim) {
 void handle_jump_commands(struct display *d, struct display_dim dim) {
   struct page *cur_page = &d->page_mgr.pages.page_data[d->cur_buf];
   struct line *cur_line = &cur_page->lines.line_data[d->cursor.pos.row];
-  const int line_len = cur_line->chars.len - 1;
+  const int line_len = gap_buffer_get_len(&cur_line->chars) - 1;
   const int offset = line_len - dim.col;
   d->cursor.pos.col = line_len;
   cur_page->col_offset = MAX(offset, 0);
@@ -71,6 +73,9 @@ void handle_simple_keypresses(struct display *d, struct win *w, SDL_Event *e) {
       d->cursor.pos.col = 0;
       d->page_mgr.pages.page_data[d->cur_buf].col_offset = 0;
       break;
+    case SDLK_ESCAPE:
+      d->mode = NORMAL;
+      break;
   }
 }
 
@@ -81,8 +86,14 @@ void handle_state_keypresses(struct display *d, struct win *w, SDL_Event *e) {
   const Uint8 lshift = key_states[SDL_SCANCODE_LSHIFT];
   const Uint8 rshift =key_states[SDL_SCANCODE_RSHIFT];
   const Uint8 k4 = key_states[SDL_SCANCODE_4];
-  if ((lshift || rshift) && k4) {
-    handle_jump_commands(d, dims);
+  const Uint8 colon = key_states[SDL_SCANCODE_SEMICOLON];
+  if (lshift || rshift) {
+    if (k4) {
+      handle_jump_commands(d, dims);
+    }
+    if (colon) {
+      d->mode = COMMAND;
+    }
   }
 }
 

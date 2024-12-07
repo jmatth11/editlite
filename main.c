@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include "command_prompt.h"
 #include "config.h"
 #include "display.h"
 #include "key_handler.h"
@@ -46,6 +47,9 @@ int main(int argc, char **argv) {
   create_win(&w);
   struct config config;
   init_config(&config);
+  struct command_prompt cmd;
+  cmd.width = w.width - 30;
+  cmd.height = 60;
   struct display d;
   d.config = config;
   if (init_display(&d, &w) != 0) {
@@ -88,6 +92,9 @@ int main(int argc, char **argv) {
     SDL_SetRenderDrawColor(w.renderer, 0, 0, 0, 0xFF);
     SDL_RenderClear(w.renderer);
     page_render(&d, &w);
+    if (d.mode == COMMAND) {
+      display_command_prompt(&cmd, &d, &w);
+    }
     SDL_RenderPresent(w.renderer);
     double cur_exec_time = ((clock() - init) / (double)CLOCKS_PER_SEC);
     double tick = 1000.0 / 60.0;
