@@ -29,16 +29,17 @@ struct cursor {
 
 struct display {
   enum display_mode mode;
-  struct win w;
   bool running;
   size_t cur_buf;
+  struct win w;
   struct cursor cursor;
-  struct glyphs glyphs;
   struct menu menu;
-  struct command_array cmds;
-  struct page_manager page_mgr;
   struct config config;
   struct plugin_interface pi;
+  struct glyphs glyphs;
+  struct command_array cmds;
+  struct page_manager page_mgr;
+  SDL_Texture *(*texture_from_char)(struct display *, const char);
 };
 
 int display_init(struct display* d);

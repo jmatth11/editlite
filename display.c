@@ -32,6 +32,7 @@ int display_init(struct display* d) {
   err = init_command_array(&d->cmds, 1);
   if (err != 0) return err;
   if (!display_load_plugins(d)) return 1;
+  d->texture_from_char = handle_characters;
   return 0;
 }
 

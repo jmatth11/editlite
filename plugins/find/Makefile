@@ -1,17 +1,23 @@
 CC=gcc
 PLUGIN_NAME=find
 SHARED_NAME=lib$(PLUGIN_NAME).so
+SOURCES=$(wildcard *.c)
+OBJECTS=$(SOURCES:%.c=%.o)
 INCLUDES=-I../../
+LIBS=-lSDL2 -lSDL2_ttf -lm
 
-all: $(PLUGIN_NAME).o
-	gcc -shared -fPIC -o $(SHARED_NAME) $<
+.PHONY: all
+all: $(OBJECTS)
+	$(CC) -shared -fPIC -o $(SHARED_NAME) $^ $(LIBS)
+
+%.o:%.c
+	$(CC) -c -fPIC $< $(INCLUDES) -o $@
 
 debug:
-	gcc -ggdb -c -fPIC $(PLUGIN_NAME).c $(INCLUDES)
-	gcc -shared -fPIC -ggdb -o $(SHARED_NAME) $(PLUGIN_NAME).o
+	$(CC) -ggdb -c -fPIC $(PLUGIN_NAME).c $(INCLUDES)
+	$(CC) -ggdb -c -fPIC draw.c $(INCLUDES)
+	$(CC) -shared -fPIC -ggdb -o $(SHARED_NAME) draw.o $(PLUGIN_NAME).o $(LIBS)
 
-$(PLUGIN_NAME).o: $(PLUGIN_NAME).c
-	gcc -c -fPIC $< $(INCLUDES)
 
 clean:
 	@rm *.o *.so 2> /dev/null
