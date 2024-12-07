@@ -18,7 +18,7 @@ src: $(OBJECTS)
 	$(CC) $^ -O2 $(CFLAGS) $(LIBS) -o $(BIN)/$(TARGET)
 
 .PHONY: debug
-debug: deps debugsrc
+debug: deps_debug debugsrc
 
 .PHONY: debugsrc
 debugsrc: $(DEBUG_OBJECTS)
@@ -50,5 +50,11 @@ clean_all: clean clean_deps
 deps:
 	@for i in $(DEPS); do\
 		cd $${i} && $(MAKE) && cd -;\
+	done
+
+.PHONY: deps_debug
+deps_debug:
+	@for i in $(DEPS); do\
+		cd $${i} && ($(MAKE) debug || $(MAKE)) && cd -;\
 	done
 
