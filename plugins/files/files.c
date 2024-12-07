@@ -29,10 +29,16 @@ bool setup(struct plugin_interface* pi) {
 }
 
 bool file_selected(struct display *d, void *ctx) {
-
+  char *filename = (char*)ctx;
+  fprintf(stdout, "openning file: \"%s\"\n", filename);
   return true;
 }
 
+int file_compare(const void *a, const void *b) {
+  struct menu_item *obj1 = (struct menu_item *)a;
+  struct menu_item *obj2 = (struct menu_item *)b;
+  return strcmp(obj1->name, obj2->name);
+}
 
 bool action(struct plugin_interface *d) {
   if (cwd == NULL) return false;
@@ -51,6 +57,7 @@ bool action(struct plugin_interface *d) {
       insert_menu_item_array(&buffer, mi);
     }
   } while (dp != NULL);
+  qsort(buffer.menu_item_data, buffer.len, sizeof(struct menu_item), file_compare);
   d->dispatch(d, DISPATCH_MENU, &buffer);
   free_menu_item_array(&buffer);
   return true;
