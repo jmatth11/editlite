@@ -10,6 +10,7 @@ void config_init(struct config *c) {
   c->font_point = 48;
   c->win_width = 640;
   c->win_height = 480;
+  c->read_size = BUFSIZ * 4;
   c->cursor_color = (SDL_Color){0xAA,0xAA,0xAA,0x77};
   c->font_color = (SDL_Color){0xFF,0xFF,0xFF,0xFF};
   c->font_file = "resources/RobotoMono-Regular.ttf";
@@ -61,6 +62,11 @@ void parse_config(struct config *c) {
   toml_datum_t win_width = toml_int_in(main, "win_width");
   if (win_width.ok) {
     c->win_width = win_width.u.i;
+  }
+  toml_datum_t read_size = toml_int_in(main, "read_size");
+  if (read_size.ok) {
+    c->read_size = read_size.u.i;
+    if (c->read_size == 0) c->read_size = BUFSIZ * 4;
   }
   toml_array_t *cursor_color = toml_array_in(main, "cursor_color");
   if (cursor_color) {

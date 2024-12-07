@@ -19,8 +19,8 @@ struct page {
   int row_offset;
   int x_offset;
   int y_offset;
-  bool (*handle_backspace)(struct page *p, struct display *d);
-  bool (*handle_keystroke)(struct page *p, struct display *d, SDL_Event *e);
+  bool (*handle_backspace)(struct page *, struct display *d);
+  bool (*handle_keystroke)(struct page *, struct display *d, SDL_Event *e);
   struct linked_list *lines;
 };
 
@@ -31,9 +31,9 @@ generate_array_template(page, struct page)
 
 struct page_manager {
   page_array pages;
-  bool (*open)(struct page* buf);
-  bool (*read)(struct page* buf);
-  bool (*write)(struct page* buf);
+  bool (*open)(struct page*);
+  bool (*read)(struct page*, size_t limit);
+  bool (*write)(struct page*);
 };
 
 int page_manager_init(struct page_manager* pm);
