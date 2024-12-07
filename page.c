@@ -166,7 +166,7 @@ bool page_manager_write(struct page* buf) {
   // reset new size
   buf->file_size = ftell(buf->fp);
   // seek back to the end of our updates
-  fseek(buf->fp, 0, fp_idx);
+  fseek(buf->fp, fp_idx, SEEK_SET);
   // close and delete tmpFile
   fclose(tmpFile);
   return true;
