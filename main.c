@@ -50,7 +50,10 @@ int main(int argc, char **arg) {
     exit(1);
   }
   insert_page_array(&pm.buf, test_buffer);
-  pm.read_file(&pm.buf.page_data[0], "main.c");
+  if (pm.read_file(&pm.buf.page_data[0], "main.c") != 0) {
+    printf("Could not read file.\n");
+    exit(1);
+  }
   d.pages = pm;
 
   SDL_Event e; int quit = 0;
