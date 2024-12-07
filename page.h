@@ -10,7 +10,7 @@ generate_array_template(char, char)
 struct line {
   size_t start_pos;
   size_t load_pos;
-  char_array buffer;
+  char_array chars;
 };
 
 int init_line(struct line *l);
@@ -30,7 +30,7 @@ void free_page(struct page* p);
 generate_array_template(page, struct page)
 
 struct page_manager {
-  page_array buf;
+  page_array pages;
   int (*read_file)(struct page* buf, const char* file_name);
 };
 
