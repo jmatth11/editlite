@@ -10,6 +10,7 @@ enum dispatch_calls {
   DISPATCH_NEW_PAGE,
   DISPATCH_PLUGIN_INPUT,
   DISPATCH_UPDATE_CURSOR,
+  DISPATCH_ERROR_MESSAGE,
 };
 
 struct plugin_interface {
