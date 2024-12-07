@@ -96,6 +96,11 @@ void handle_simple_keypresses(struct display *d, struct win *w, SDL_Event *e) {
     case SDLK_ESCAPE:
       d->mode = NORMAL;
       break;
+    case SDLK_i: {
+      d->mode = INSERT;
+      prepare_insert_mode(d, w);
+      break;
+    }
   }
 }
 
