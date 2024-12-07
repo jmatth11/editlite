@@ -5,7 +5,10 @@
 
 void config_init(struct config *c) {
   c->leader = '\\';
-  c->font_size = 14;
+  c->font_scale = 1;
+  c->font_point = 48;
+  c->win_width = 640;
+  c->win_height = 480;
   c->cursor_color = (SDL_Color){0xAA,0xAA,0xAA,0x77};
   c->font_color = (SDL_Color){0xFF,0xFF,0xFF,0xFF};
   c->font_file = "resources/RobotoMono-Regular.ttf";
@@ -37,9 +40,21 @@ void parse_config(struct config *c) {
   if (leader.ok) {
     c->leader = leader.u.s[0];
   }
-  toml_datum_t font_size = toml_int_in(main, "font_size");
-  if (font_size.ok) {
-    c->font_size = font_size.u.i;
+  toml_datum_t font_scale = toml_double_in(main, "font_scale");
+  if (font_scale.ok) {
+    c->font_scale = font_scale.u.d;
+  }
+  toml_datum_t font_point = toml_int_in(main, "font_point");
+  if (font_point.ok) {
+    c->font_point = font_point.u.i;
+  }
+  toml_datum_t win_height = toml_int_in(main, "win_height");
+  if (win_height.ok) {
+    c->win_height = win_height.u.i;
+  }
+  toml_datum_t win_width = toml_int_in(main, "win_width");
+  if (win_width.ok) {
+    c->win_width = win_width.u.i;
   }
   toml_array_t *cursor_color = toml_array_in(main, "cursor_color");
   if (cursor_color) {

@@ -18,10 +18,10 @@ src: $(OBJECTS)
 	$(CC) $(patsubst %.o, $(OBJ)/%.o, $(notdir $^)) -O2 $(CFLAGS) $(LIBS) -o $(BIN)/$(TARGET)
 
 .PHONY: debug
-debug: deps srcdebug
+debug: deps debugsrc
 
-.PHONY: srcdebug
-srcdebug: $(DEBUG_OBJECTS)
+.PHONY: debugsrc
+debugsrc: $(DEBUG_OBJECTS)
 	$(CC) $(patsubst %.o, $(OBJ)/%.o, $(notdir $^)) -ggdb $(CFLAGS) $(LIBS) -o $(BIN)/$(TARGET)
 
 $(OBJ)/%.o: %.c
@@ -38,7 +38,13 @@ $(OBJ)/%-debug.o: %.c
 clean:
 	@rm $(OBJ)/* 2> /dev/null
 	@rm $(BIN)/* 2> /dev/null
+
+.PHONY: clean_deps
+clean_deps:
 	$(foreach dir, $(DEPS), $(shell cd $(dir) && $(MAKE) clean))
+
+.PHONY: clean_all
+clean_all: clean clean_deps
 
 .PHONY: deps
 deps:

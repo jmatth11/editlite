@@ -8,9 +8,9 @@
 #include <ctype.h>
 
 int init_char(struct glyphs *ch, const struct win *w, const char* ttf_file) {
-  ch->font = TTF_OpenFont(ttf_file, ch->size);
-  ch->max_width = 0;
-  ch->max_height = 0;
+  ch->font = TTF_OpenFont(ttf_file, ch->point);
+  ch->orig_width = 0;
+  ch->orig_height = 0;
   if (ch->font == NULL) {
     fprintf(stderr, "TTF font could not initialize.\n");
     exit(1);
@@ -23,11 +23,11 @@ int init_char(struct glyphs *ch, const struct win *w, const char* ttf_file) {
     if (s == NULL) {
       fprintf(stderr, "rendering TTF surface failed. %s\n", SDL_GetError());
     }
-    if (s->h > ch->max_height) {
-      ch->max_height = s->h;
+    if (s->h > ch->orig_height) {
+      ch->orig_height = s->h;
     }
-    if (s->w > ch->max_width) {
-      ch->max_width = s->w;
+    if (s->w > ch->orig_width) {
+      ch->orig_width = s->w;
     }
     SDL_Texture *new_glyph = SDL_CreateTextureFromSurface(w->renderer, s);
     if (new_glyph == NULL) {
@@ -37,6 +37,11 @@ int init_char(struct glyphs *ch, const struct win *w, const char* ttf_file) {
     }
     SDL_FreeSurface(s);
   }
+  if (ch->scale <= 0) {
+    ch->scale = 1;
+  }
+  ch->width = (double)ch->orig_width * ch->scale;
+  ch->height = (double)ch->orig_height * ch->scale;
   return 0;
 }
 

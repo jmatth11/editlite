@@ -10,4 +10,4 @@ $(PLUGIN_NAME).o: $(PLUGIN_NAME).c
 	gcc -c -fPIC $< $(INCLUDES)
 
 clean:
-	rm *.o *.so
+	@rm *.o *.so

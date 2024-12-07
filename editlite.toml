@@ -1,6 +1,9 @@
 [main]
 leader="\\"
-font_size=20
+win_height=720
+win_width=1024
+font_point=64
+font_scale=0.3
 cursor_color=[170,170,170,119]
 font_color=[255,255,255,255]
 font_file="resources/RobotoMono-Regular.ttf"
