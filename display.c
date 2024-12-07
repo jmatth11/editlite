@@ -33,11 +33,18 @@ int display_init(struct display* d) {
   d->state.pi.__internal = d;
   int err = init_char(&d->state.glyphs, &d->state.w, d->state.config.font_file);
   if (err != 0) return err;
-  err = page_manager_init(&d->state.page_mgr);
-  if (err != 0) return err;
-  err = init_command_array(&d->state.cmds, 1);
-  if (err != 0) return err;
-  if (!state_load_plugins(&d->state)) return 1;
+  if (!page_manager_init(&d->state.page_mgr)) {
+    fprintf(stderr, "page manager failed to initialize\n");
+    return 1;
+  }
+  if(!init_command_array(&d->state.cmds, 1)) {
+    fprintf(stderr, "command array init failed\n");
+    return 1;
+  }
+  if (!state_load_plugins(&d->state)) {
+    fprintf(stderr, "loading plugins failed\n");
+    return 1;
+  }
   d->texture_from_char = handle_characters;
   return 0;
 }
@@ -58,6 +65,7 @@ static void inline draw_cursor(struct display *d, SDL_Rect *rect) {
 
 bool display_page_render(struct display *d) {
   if (d->state.page_mgr.pages.len < 1) {
+    fprintf(stderr, "page mgr has no pages.\n");
     return false;
   }
   struct page *cur_page;

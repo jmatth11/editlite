@@ -10,7 +10,7 @@
 
 bool state_load_plugins(struct app_state *state) {
   if (state->cmds.command_data == NULL) {
-    if (init_command_array(&state->cmds, state->config.plugins.len) != 0) {
+    if (!init_command_array(&state->cmds, state->config.plugins.len)) {
       return false;
     }
   }

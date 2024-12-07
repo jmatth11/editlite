@@ -184,6 +184,10 @@ bool page_manager_write(struct page* buf) {
 bool page_init(struct page *p) {
   p->lines = (struct linked_list*)malloc(sizeof(struct linked_list));
   int err = linked_list_init(p->lines);
+  if (err != 0) {
+    fprintf(stderr, "linked list failed to initialize\n");
+    return false;
+  }
   p->file_size = 0;
   p->file_offset_pos = 0;
   p->page_offset = (struct display_dim){0,0};
@@ -209,12 +213,15 @@ void page_free(struct page *p) {
   }
 }
 
-int page_manager_init(struct page_manager *pm) {
-  int err = init_page_array(&pm->pages, 1);
+bool page_manager_init(struct page_manager *pm) {
+  if (!init_page_array(&pm->pages, 1)) {
+    fprintf(stderr, "page array failed to initialize\n");
+    return false;
+  }
   pm->open = page_manager_open;
   pm->read = page_manager_read;
   pm->write = page_manager_write;
-  return err;
+  return true;
 }
 
 void page_manager_free(struct page_manager *pm) {
