@@ -1,6 +1,8 @@
+#include <SDL2/SDL_render.h>
+#include <types/display_type.h>
+
 #include "draw.h"
 #include "find.h"
-#include <SDL2/SDL_render.h>
 
 void draw_background(struct display *d, int x, int y, int w, int h) {
   SDL_Rect box = {
@@ -9,8 +11,8 @@ void draw_background(struct display *d, int x, int y, int w, int h) {
     .w = w,
     .h = h,
   };
-  SDL_SetRenderDrawColor(d->w.renderer, 0x35, 0x35, 0x35, 0xff);
-  SDL_RenderFillRect(d->w.renderer, &box);
+  SDL_SetRenderDrawColor(d->state.w.renderer, 0x35, 0x35, 0x35, 0xff);
+  SDL_RenderFillRect(d->state.w.renderer, &box);
 }
 
 void draw_textinput(struct display *d, const char *val, const int val_size,
@@ -21,12 +23,12 @@ void draw_textinput(struct display *d, const char *val, const int val_size,
     .w = w,
     .h = h,
   };
-  SDL_SetRenderDrawColor(d->w.renderer, 0x45, 0x45, 0x45, 0xff);
-  SDL_RenderFillRect(d->w.renderer, &box);
+  SDL_SetRenderDrawColor(d->state.w.renderer, 0x45, 0x45, 0x45, 0xff);
+  SDL_RenderFillRect(d->state.w.renderer, &box);
   int x_offset = x;
   int y_offset = y;
-  const int char_w = d->glyphs.width;
-  const int char_h = d->glyphs.height;
+  const int char_w = d->state.glyphs.scaled_size.width;
+  const int char_h = d->state.glyphs.scaled_size.height;
   SDL_Rect char_rect = {
     .x = x_offset,
     .y = y_offset,
@@ -38,7 +40,7 @@ void draw_textinput(struct display *d, const char *val, const int val_size,
     if (char_ren == NULL) {
       char_ren = d->texture_from_char(d, '?');
     }
-    SDL_RenderCopy(d->w.renderer, char_ren, NULL, &char_rect);
+    SDL_RenderCopy(d->state.w.renderer, char_ren, NULL, &char_rect);
     char_rect.x += char_w;
   }
 }
@@ -48,8 +50,8 @@ void draw_options(struct display *d, struct find_info *op, size_t len,
 
   int x_offset = x;
   int y_offset = y;
-  const int char_w = d->glyphs.width;
-  const int char_h = d->glyphs.height;
+  const int char_w = d->state.glyphs.scaled_size.width;
+  const int char_h = d->state.glyphs.scaled_size.height;
   SDL_Rect char_rect = {
     .x = x_offset,
     .y = y_offset,
@@ -68,7 +70,7 @@ void draw_options(struct display *d, struct find_info *op, size_t len,
       if (char_ren == NULL) {
         char_ren = d->texture_from_char(d, '?');
       }
-      SDL_RenderCopy(d->w.renderer, char_ren, NULL, &char_rect);
+      SDL_RenderCopy(d->state.w.renderer, char_ren, NULL, &char_rect);
       char_rect.x += char_w;
     }
     char_rect.x = x_offset;
@@ -83,6 +85,6 @@ void draw_select_box(struct display *d, int x, int y, int w, int h) {
     .w = w,
     .h = h,
   };
-  SDL_SetRenderDrawColor(d->w.renderer, 0xff, 0xff, 0xff, 0xff);
-  SDL_RenderDrawRect(d->w.renderer, &r);
+  SDL_SetRenderDrawColor(d->state.w.renderer, 0xff, 0xff, 0xff, 0xff);
+  SDL_RenderDrawRect(d->state.w.renderer, &r);
 }

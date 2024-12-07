@@ -1,10 +1,13 @@
 #ifndef EDITLITE_FIND_PLUGIN_H
 #define EDITLITE_FIND_PLUGIN_H
 
-#include <stdbool.h>
-#include <plugin_interface.h>
-#include <display.h>
+#include <deps/array_template/array_template.h>
 #include <SDL2/SDL_events.h>
+#include <stdbool.h>
+
+struct display;
+struct display_dim;
+struct plugin_interface;
 
 #ifdef __cplusplus
 extern "C" {

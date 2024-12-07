@@ -1,4 +1,5 @@
 #include "line.h"
+#include "types/line_types.h"
 
 #define LINE_CHAR_BUFF_SIZE 10
 

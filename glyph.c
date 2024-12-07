@@ -1,16 +1,18 @@
-#include "glyph.h"
-#include <SDL2/SDL_error.h>
-#include <SDL2/SDL_render.h>
-#include <SDL2/SDL_ttf.h>
+#include <ctype.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
-#include <ctype.h>
+#include <SDL2/SDL_error.h>
+#include <SDL2/SDL_ttf.h>
+
+#include "glyph.h"
+#include "types/glyph_types.h"
+#include "types/win_types.h"
 
 int init_char(struct glyphs *ch, const struct win *w, const char* ttf_file) {
   ch->font = TTF_OpenFont(ttf_file, ch->point);
-  ch->orig_width = 0;
-  ch->orig_height = 0;
+  ch->unscaled_size.width = 0;
+  ch->unscaled_size.height = 0;
   if (ch->font == NULL) {
     fprintf(stderr, "TTF font could not initialize.\n");
     exit(1);
@@ -23,11 +25,11 @@ int init_char(struct glyphs *ch, const struct win *w, const char* ttf_file) {
     if (s == NULL) {
       fprintf(stderr, "rendering TTF surface failed. %s\n", SDL_GetError());
     }
-    if (s->h > ch->orig_height) {
-      ch->orig_height = s->h;
+    if (s->h > ch->unscaled_size.height) {
+      ch->unscaled_size.height = s->h;
     }
-    if (s->w > ch->orig_width) {
-      ch->orig_width = s->w;
+    if (s->w > ch->unscaled_size.width) {
+      ch->unscaled_size.width = s->w;
     }
     SDL_Texture *new_glyph = SDL_CreateTextureFromSurface(w->renderer, s);
     if (new_glyph == NULL) {
@@ -40,14 +42,14 @@ int init_char(struct glyphs *ch, const struct win *w, const char* ttf_file) {
   if (ch->scale <= 0) {
     ch->scale = 1;
   }
-  ch->width = (double)ch->orig_width * ch->scale;
-  ch->height = (double)ch->orig_height * ch->scale;
+  ch->scaled_size.width = (double)ch->unscaled_size.width * ch->scale;
+  ch->scaled_size.height = (double)ch->unscaled_size.height * ch->scale;
   ch->sanitize_character = sanitize_character;
   return 0;
 }
 
 SDL_Texture* get_glyph(struct glyphs *ch, const char c) {
-  size_t idx = (int)c - CHAR_START_RANGE;
+  int idx = (int)c - CHAR_START_RANGE;
   if (idx >= 0 && idx < CHAR_END_RANGE - CHAR_START_RANGE) {
     return ch->glyphs[idx];
   }

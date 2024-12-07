@@ -6,7 +6,8 @@ extern "C" {
 #endif
 
 #include <stdbool.h>
-#include <plugin_interface.h>
+
+struct plugin_interface;
 
 bool setup(struct plugin_interface*);
 bool action(struct plugin_interface *d);
