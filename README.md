@@ -33,4 +33,5 @@ TODO
     - [x] implement jumping with ctrl-d/u
     - [ ] jump between words
 - [ ] Searching through document.
+- [ ] Run in "memory limited" mode for memory constrained systems.
 - [ ] allow rendering callback for plugins.
