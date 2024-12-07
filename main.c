@@ -48,9 +48,6 @@ int main(int argc, char **argv) {
   win_init(&w);
   struct config config;
   config_init(&config);
-  struct command_prompt cmd;
-  cmd.width = w.width - 30;
-  cmd.height = 60;
   struct display d;
   d.config = config;
   if (display_init(&d, &w) != 0) {
@@ -94,7 +91,7 @@ int main(int argc, char **argv) {
       fprintf(stderr, "page render failed.\n");
     }
     if (d.mode == COMMAND) {
-      display_command_prompt(&cmd, &d, &w);
+      command_prompt_display(&d, &w);
     }
     SDL_RenderPresent(w.renderer);
     double cur_exec_time = ((clock() - init) / (double)CLOCKS_PER_SEC);

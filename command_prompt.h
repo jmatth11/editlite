@@ -1,17 +1,14 @@
 #ifndef EDITLITE_COMMAND_PROMPT_H
 #define EDITLITE_COMMAND_PROMPT_H
 
+#include <stddef.h>
 #include "display.h"
 #include "win.h"
-#include <stddef.h>
 #include "gap_buffer.h"
+#include "page.h"
 
-struct command_prompt {
-  size_t height;
-  size_t width;
-  struct gap_buffer buffer;
-};
-
-int display_command_prompt(struct command_prompt *cmd, struct display *d, struct win *w);
+bool command_prompt_init(struct page *p);
+bool command_prompt_display(struct display *d, struct win *w);
+void command_prompt_free(struct page *p);
 
 #endif
