@@ -1,12 +1,16 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_events.h>
 #include <SDL2/SDL_render.h>
+#include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_video.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include "display.h"
+#include "key_handler.h"
 #include "page.h"
+#include "util.h"
 #include "win.h"
 
 void init() {
@@ -56,17 +60,27 @@ int main(int argc, char **arg) {
   }
   d.page_mgr = pm;
 
+  clock_t init;
   SDL_Event e; int quit = 0;
   while(!quit) {
+    init = clock();
     while(SDL_PollEvent(&e)) {
       if (e.type == SDL_QUIT) {
         quit = 1;
+      } else if (e.type == SDL_KEYDOWN) {
+        keydown_handler(&d, &w, &e);
       }
     }
     SDL_SetRenderDrawColor(w.renderer, 0, 0, 0, 0xFF);
     SDL_RenderClear(w.renderer);
     page_render(&d, &w);
     SDL_RenderPresent(w.renderer);
+    double cur_exec_time = ((clock() - init) / (double)CLOCKS_PER_SEC);
+    double tick = 1000.0 / 60.0;
+    if (cur_exec_time < tick) {
+      double delay = tick - cur_exec_time;
+      SDL_Delay(delay);
+    }
   }
   free_display(&d);
   free_win(&w);
