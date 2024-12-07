@@ -21,6 +21,8 @@ int display_init(struct display* d, const struct win *w) {
   d->menu.items.menu_item_data = NULL;
   d->menu.items.len = 0;
   d->menu.items.cap = 0;
+  plugin_interface_init(&d->pi);
+  d->pi.__internal = d;
   int err = init_char(&d->glyphs, w, d->config.font_file);
   if (err != 0) return err;
   err = page_manager_init(&d->page_mgr);
@@ -32,9 +34,6 @@ int display_init(struct display* d, const struct win *w) {
 }
 
 bool display_load_plugins(struct display* d) {
-  struct plugin_interface plugin;
-  plugin_interface_init(&plugin);
-  plugin.__internal = d;
   for (int i = 0; i < d->config.plugins.len; ++i) {
     struct command cmd;
     command_init(&cmd);
@@ -47,7 +46,7 @@ bool display_load_plugins(struct display* d) {
       fprintf(stderr, "failed command load.\n");
     };
     if (cmd->setup != NULL) {
-      if (!cmd->setup(&plugin)) {
+      if (!cmd->setup(&d->pi)) {
         const char *prompt;
         cmd->get_display_prompt(&prompt);
         fprintf(stderr, "plugin setup failed: \"%s\"\n", prompt);
@@ -205,13 +204,10 @@ void display_get_page_dim(struct display *d, struct win *w, struct display_dim *
 }
 
 void display_free(struct display* d) {
-  struct plugin_interface plugin;
-  plugin_interface_init(&plugin);
-  plugin.__internal = d;
   for (int i = 0; i < d->cmds.len; ++i) {
     struct command *cmd = &d->cmds.command_data[i];
     if (cmd->cleanup != NULL) {
-      if (!cmd->cleanup(&plugin)) {
+      if (!cmd->cleanup(&d->pi)) {
         const char *prompt;
         cmd->get_display_prompt(&prompt);
         fprintf(stderr, "clean up for command failed: \"%s\"\n", prompt);
