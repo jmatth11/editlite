@@ -40,7 +40,7 @@ void handle_jump_commands(struct display *d, struct display_dim dim) {
 
 void handle_simple_keypresses(struct display *d, struct win *w, SDL_Event *e) {
   struct display_dim dims;
-  get_page_dim(d, w, &dims);
+  display_get_page_dim(d, w, &dims);
   switch (e->key.keysym.sym) {
     case SDLK_j:
     case SDLK_DOWN:
@@ -80,7 +80,7 @@ void handle_simple_keypresses(struct display *d, struct win *w, SDL_Event *e) {
 
 void handle_state_keypresses(struct display *d, struct win *w, SDL_Event *e) {
   struct display_dim dims;
-  get_page_dim(d, w, &dims);
+  display_get_page_dim(d, w, &dims);
   const Uint8* key_states = SDL_GetKeyboardState(NULL);
   const Uint8 lshift = key_states[SDL_SCANCODE_LSHIFT];
   const Uint8 rshift =key_states[SDL_SCANCODE_RSHIFT];
