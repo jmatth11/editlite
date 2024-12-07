@@ -73,7 +73,14 @@ int linked_list_delete(struct linked_list *ll, size_t pos) {
   obj->prev->next = obj->next;
   obj->next->prev = obj->prev;
   linked_list_free(obj);
-  free(obj);
+  return 0;
+}
+
+int linked_list_delete_node(struct linked_list *ll) {
+  if (ll == NULL) return 1;
+  ll->prev->next = ll->next;
+  ll->next->prev = ll->prev;
+  linked_list_free(ll);
   return 0;
 }
 
