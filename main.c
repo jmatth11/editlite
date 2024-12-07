@@ -43,16 +43,16 @@ int main(int argc, char **argv) {
   struct config config;
   config_init(&config);
   parse_config(&config);
-  struct win w = {
+  struct display d;
+  d.config = config;
+  d.w = (struct win){
     .window = NULL,
     .renderer = NULL,
     .height = config.win_height,
     .width = config.win_width
   };
-  win_init(&w);
-  struct display d;
-  d.config = config;
-  if (display_init(&d, &w) != 0) {
+  win_init(&d.w);
+  if (display_init(&d) != 0) {
     fprintf(stderr, "Display could not initialize.\n");
     exit(1);
   }
@@ -77,31 +77,32 @@ int main(int argc, char **argv) {
   d.page_mgr = pm;
 
   clock_t init;
-  SDL_Event e;;
+  SDL_Event e;
   while(d.running) {
     init = clock();
     while(SDL_PollEvent(&e)) {
       if (e.type == SDL_QUIT) {
         d.running = false;
       } else if (e.type == SDL_KEYDOWN) {
-        handle_keydown(&d, &w, &e);
+        handle_keydown(&d, &d.w, &e);
       }
+      // TODO setup to pass event to plugins that want event updates
     }
-    SDL_SetRenderDrawColor(w.renderer, 0, 0, 0, 0xFF);
-    SDL_RenderClear(w.renderer);
-    if (!display_page_render(&d, &w)) {
+    SDL_SetRenderDrawColor(d.w.renderer, 0, 0, 0, 0xFF);
+    SDL_RenderClear(d.w.renderer);
+    if (!display_page_render(&d, &d.w)) {
       fprintf(stderr, "page render failed.\n");
     }
     if (d.mode == COMMAND) {
-      menu_display(&d, &w);
+      menu_display(&d, &d.w);
     }
     if (d.cmds.len > 0) {
       struct display_dim dim;
-      display_get_page_dim(&d, &w, &dim);
+      display_get_page_dim(&d, &d.w, &dim);
       for (int i = 0; i < d.cmds.len; ++i) {
         struct command *cmd = &d.cmds.command_data[i];
         if (cmd->render != NULL) {
-          if (!cmd->render(w.renderer, &d, &dim)) {
+          if (!cmd->render(d.w.renderer, &d, &dim)) {
             const char *name;
             cmd->get_display_prompt(&name);
             fprintf(stderr, "plugin render failed: \"%s\"\n", name);
@@ -109,7 +110,7 @@ int main(int argc, char **argv) {
         }
       }
     }
-    SDL_RenderPresent(w.renderer);
+    SDL_RenderPresent(d.w.renderer);
     double cur_exec_time = ((clock() - init) / (double)CLOCKS_PER_SEC);
     double tick = 1000.0 / 60.0;
     if (cur_exec_time < tick) {
@@ -118,7 +119,6 @@ int main(int argc, char **argv) {
     }
   }
   display_free(&d);
-  win_free(&w);
   deinit();
   return 0;
 }

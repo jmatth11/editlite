@@ -1,6 +1,7 @@
 #ifndef EDITLITE_COMMAND_PROMPT_H
 #define EDITLITE_COMMAND_PROMPT_H
 
+#include <SDL2/SDL_events.h>
 #include <SDL2/SDL_render.h>
 #include <stddef.h>
 #include "plugin_interface.h"
@@ -17,6 +18,8 @@ struct command {
   bool (*action)(struct plugin_interface *);
   void (*get_display_prompt)(const char **out);
   bool (*render)(SDL_Renderer *, struct display *, struct display_dim *);
+  // TODO change this declaration to accept display once it holds the window as well.
+  bool (*event)(SDL_Event *e);
   bool (*cleanup)(struct plugin_interface *);
 };
 
