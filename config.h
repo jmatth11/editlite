@@ -10,9 +10,12 @@
 generate_array_template(string, char*);
 
 struct config {
-  size_t font_size;
+  double font_scale;
+  size_t font_point;
   SDL_Color font_color;
   SDL_Color cursor_color;
+  int win_height;
+  int win_width;
   char leader;
   char *font_file;
   string_array plugins;

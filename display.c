@@ -16,7 +16,8 @@ int display_init(struct display* d, const struct win *w) {
   d->cursor.screen_pos = d->cursor.pos;
   d->cur_buf = 0;
   d->glyphs.color = d->config.font_color;
-  d->glyphs.size = d->config.font_size;
+  d->glyphs.point = d->config.font_point;
+  d->glyphs.scale = d->config.font_scale;
   d->running = true;
   d->menu.items.menu_item_data = NULL;
   d->menu.items.len = 0;
@@ -103,6 +104,8 @@ bool display_page_render(struct display *d, struct win *w) {
   int width_offset=cur_page->x_offset;
   int height_offset=cur_page->y_offset;
   reset_cursor_screen_pos(d);
+  const size_t font_width = d->glyphs.width;
+  const size_t font_height = d->glyphs.height;
   const int line_start = cur_page->row_offset;
   const int line_end = dims.row + cur_page->row_offset;
   struct linked_list *cur_line = linked_list_get_pos(cur_page->lines, line_start);
@@ -122,8 +125,8 @@ bool display_page_render(struct display *d, struct win *w) {
       r = (SDL_Rect){
         .x = width_offset,
         .y = height_offset,
-        .w = d->glyphs.max_width,
-        .h = d->glyphs.max_height,
+        .w = font_width,
+        .h = font_height,
       };
       if (glyph == NULL) {
         // ignore newline character and carriage return
@@ -147,14 +150,14 @@ bool display_page_render(struct display *d, struct win *w) {
         NULL,
         &r
       );
-      width_offset += d->glyphs.max_width;
+      width_offset += font_width;
     }
     // this is for empty lines
     if (d->cursor.screen_pos.row == line_idx && d->cursor.screen_pos.col == char_len) {
       draw_cursor(d, w, &r);
     }
     width_offset = 0;
-    height_offset += d->glyphs.max_height;
+    height_offset += font_height;
     cur_line = cur_line->next;
   }
   return true;
@@ -199,8 +202,8 @@ bool display_get_cur_page(struct display *d, struct page **out) {
 void display_get_page_dim(struct display *d, struct win *w, struct display_dim *out) {
   int winh, winw;
   SDL_GetWindowSize(w->window, &winw, &winh);
-  out->row = (int)winh / d->glyphs.max_height;
-  out->col = ((int)winw / d->glyphs.max_width);
+  out->row = (int)winh / d->glyphs.height;
+  out->col = ((int)winw / d->glyphs.width);
 }
 
 void display_free(struct display* d) {
