@@ -26,7 +26,8 @@ TODO
     - [x] Fix bugs with certain edge cases on deleting to previous line and moving to newline
 - [x] Implement "command" mode.
     - [x] Support plugins with command mode.
-- [ ] Save file.
+- [x] Save file.
+- [ ] Implement some more basic vim motions.
 - [ ] Command to load another file.
 - [ ] Allow load in of config file to adjust settings.
 - [ ] Searching through document.
