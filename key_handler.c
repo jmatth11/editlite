@@ -2,6 +2,7 @@
 #include "display.h"
 #include "insert_mode.h"
 #include "command_mode.h"
+#include "linked_list.h"
 #include "scrolling.h"
 #include "page.h"
 #include "util.h"
@@ -30,8 +31,8 @@ void handle_keydown(struct display *d, struct win *w, SDL_Event *e) {
 
 void handle_jump_commands(struct display *d, struct display_dim dim) {
   struct page *cur_page = &d->page_mgr.pages.page_data[d->cur_buf];
-  struct line *cur_line = &cur_page->lines.line_data[d->cursor.pos.row];
-  const int line_len = gap_buffer_get_len(&cur_line->chars) - 1;
+  struct linked_list *cur_line = linked_list_get_pos(cur_page->lines, d->cursor.pos.row);
+  const int line_len = gap_buffer_get_len(&cur_line->value.chars) - 1;
   const int offset = line_len - dim.col;
   d->cursor.pos.col = line_len;
   cur_page->col_offset = MAX(offset, 0);

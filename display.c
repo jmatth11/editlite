@@ -47,18 +47,19 @@ int page_render(struct display *d, struct win *w) {
   int height_offset=0;
   reset_cursor_screen_pos(d);
   const int line_start = cur_page.row_offset;
-  const int line_end = MIN(cur_page.lines.len, dims.row + cur_page.row_offset);
+  const int line_end = dims.row + cur_page.row_offset;
+  struct linked_list *cur_line = linked_list_get_pos(cur_page.lines, line_start);
   for (int line_idx = line_start; line_idx < line_end; ++line_idx) {
-    const struct line tmp_line = cur_page.lines.line_data[line_idx];
+    if (cur_line == NULL) break;
     const int char_start = cur_page.col_offset;
-    const int gap_buffer_len = gap_buffer_get_len(&tmp_line.chars);
+    const int gap_buffer_len = gap_buffer_get_len(&cur_line->value.chars);
     const int char_len = MIN(gap_buffer_len, dims.col + cur_page.col_offset);
     if (d->cursor.pos.row == line_idx && d->cursor.pos.col >= char_len) {
       d->cursor.screen_pos.col = char_len - 1;
     }
     for (int char_idx = char_start; char_idx < char_len; ++char_idx) {
       char cur_char = ' ';
-      gap_buffer_get_char(&tmp_line.chars, char_idx, &cur_char);
+      gap_buffer_get_char(&cur_line->value.chars, char_idx, &cur_char);
       SDL_Texture *glyph = handle_characters(d, cur_char);
       SDL_Rect r = {
         .x = width_offset,
@@ -69,8 +70,8 @@ int page_render(struct display *d, struct win *w) {
       if (glyph == NULL) {
         // ignore newline character
         if (cur_char != 10) {
-          printf("cur_char: %d\n", cur_char);
-          printf("glyph was null\n");
+          fprintf(stderr, "cur_char: %d\n", cur_char);
+          fprintf(stderr, "glyph was null\n");
         } else if (d->cursor.screen_pos.row == line_idx &&
           d->cursor.screen_pos.col == char_idx ) {
           draw_cursor(d, w, &r);
@@ -90,6 +91,7 @@ int page_render(struct display *d, struct win *w) {
     }
     width_offset = 0;
     height_offset += d->glyphs.max_height;
+    cur_line = cur_line->next;
   }
   return 0;
 }
