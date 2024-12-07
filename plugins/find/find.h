@@ -10,9 +10,12 @@
 extern "C" {
 #endif
 
-#define FIND_INFO_VALUE_SIZE 1024
+#define FIND_INFO_VALUE_SIZE 200
+#define FIND_INFO_PREVIEW_SIZE 300
 
 struct find_loc {
+  int preview_size;
+  char preview[FIND_INFO_PREVIEW_SIZE];
   size_t beg;
   size_t end;
 };
