@@ -7,6 +7,8 @@
 
 int init_display(struct display* d, const struct win *w) {
   d->cur_buf = 0;
+  d->glyphs.color = (SDL_Color){ 255, 255, 255, 255 };
+  d->glyphs.size = 16;
   int err = init_char(&d->glyphs, w, "resources/SourceCodePro-Regular.ttf");
   if (err != 0) return err;
   err = init_page_manager(&d->pages);
@@ -19,7 +21,6 @@ int page_render(struct display *d, struct win *w) {
   const struct line tmp_line = cur_page.lines.line_data[0];
   int width_offset=0;
   int height_offset=0;
-  int top_height = 0;
   for (int i = 0; i < tmp_line.buffer.len; ++i) {
     char cur_char = tmp_line.buffer.char_data[i];
     SDL_Texture *glyph = get_glyph(&d->glyphs, cur_char);
@@ -38,11 +39,8 @@ int page_render(struct display *d, struct win *w) {
       &r
     );
     width_offset += outw + CHARACTER_PADDING;
-    if (outh > top_height) {
-      top_height = outh;
-    }
   }
-  height_offset += top_height + CHARACTER_PADDING;
+  height_offset += d->glyphs.max_height + CHARACTER_PADDING;
   return 0;
 }
 

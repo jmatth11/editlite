@@ -22,6 +22,9 @@ int init_char(struct characters *ch, const struct win *w, const char* ttf_file) 
     if (s == NULL) {
       printf("rendering TTF surface failed. %s\n", SDL_GetError());
     }
+    if (s->h > ch->max_height) {
+      ch->max_height = s->h;
+    }
     SDL_Texture *new_glyph = SDL_CreateTextureFromSurface(w->renderer, s);
     if (new_glyph == NULL) {
       printf("error with glyph: %s\n", SDL_GetError());
