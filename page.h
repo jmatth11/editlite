@@ -17,6 +17,8 @@ struct page {
   size_t file_size;
   int col_offset;
   int row_offset;
+  int x_offset;
+  int y_offset;
   bool (*handle_backspace)(struct page *p, struct display *d);
   bool (*handle_keystroke)(struct page *p, struct display *d, SDL_Event *e);
   struct linked_list *lines;

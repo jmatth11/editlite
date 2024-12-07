@@ -99,6 +99,7 @@ void handle_state_keypresses(struct display *d, struct win *w, SDL_Event *e) {
     }
     if (colon) {
       d->mode = COMMAND;
+      prepare_command_mode(d, w);
     }
   }
 }
