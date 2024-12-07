@@ -13,9 +13,9 @@ Normal traversing of file and editing.
 
 https://github.com/jmatth11/editlite/assets/5776125/ccb72b91-3f02-45f0-9bcf-7f2b041c1613
 
-Using plugins loaded through dynamic libraries to handle commands.
+Using plugins loaded through dynamic libraries to handle commands (save/quit/files).
 
-https://github.com/jmatth11/editlite/assets/5776125/9cb362dc-a56f-45a3-b128-4300680aaf3e
+https://github.com/jmatth11/editlite/assets/5776125/589983fb-8f68-4c3b-b5cd-6a51018833d9
 
 
 TODO
