@@ -6,6 +6,9 @@
 #include "deps/array_template/array_template.h"
 #include "linked_list.h"
 
+// forward declaration
+struct display;
+
 struct page {
   FILE *fp;
   size_t file_offset_pos;
@@ -13,6 +16,8 @@ struct page {
   int col_offset;
   int row_offset;
   struct linked_list *lines;
+  int (*handle_backspace)(struct page *p, struct display *d);
+  int (*handle_keystroke)(struct page *p, struct display *d);
 };
 
 int init_page(struct page* p);

@@ -155,13 +155,13 @@ void handle_insert_mode(struct display *d, struct win *w, SDL_Event *e) {
   struct linked_list *cur_line = linked_list_get_pos(cur_page->lines, d->cursor.pos.row);
   struct gap_buffer *cur_gb = &cur_line->value.chars;
   struct display_dim dim;
-  get_page_dim(d, w, &dim);
+  display_get_page_dim(d, w, &dim);
 
   if (e->key.keysym.sym == SDLK_BACKSPACE) {
     if (d->cursor.pos.col > 0) {
       gap_buffer_delete(cur_gb);
       d->cursor.pos.col--;
-    } else {
+    } else if (d->cursor.pos.row != 0) {
       struct linked_list *prev_line = cur_line->prev;
       struct gap_buffer *prev_gb = &prev_line->value.chars;
       gap_buffer_move_cursor(prev_gb, gap_buffer_get_len(prev_gb));
