@@ -7,12 +7,12 @@ int win_init(struct win *w) {
   w->window = SDL_CreateWindow("Editlite", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
                             w->width, w->height, SDL_WINDOW_SHOWN);
   if (w->window == NULL) {
-    printf("Window is null\n");
+    fprintf(stderr, "Window is null\n");
     return -1;
   }
   w->renderer = SDL_CreateRenderer(w->window, -1, SDL_RENDERER_ACCELERATED);
   if (w->renderer == NULL) {
-    printf("renderer is null\n");
+    fprintf(stderr, "renderer is null\n");
     return -1;
   }
   return 0;

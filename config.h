@@ -12,6 +12,6 @@ struct config {
   char *font_file;
 };
 
-void init_config(struct config *c);
+void config_init(struct config *c);
 
 #endif

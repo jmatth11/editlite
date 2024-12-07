@@ -7,22 +7,23 @@
 #include <SDL2/SDL_video.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 #include "command_prompt.h"
 #include "config.h"
-#include "display.h"
 #include "key_handler.h"
 #include "page.h"
 #include "util.h"
 #include "win.h"
+#include "display.h"
 
 void init() {
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-    printf("couldn't load video\n");
+    fprintf(stderr, "couldn't load video\n");
     exit(1);
   }
   if (TTF_Init() == -1) {
-    printf("failed ttf init\n");
+    fprintf(stderr, "failed ttf init\n");
     exit(1);
   }
 }
@@ -34,7 +35,7 @@ void deinit() {
 
 int main(int argc, char **argv) {
   init();
-  char *file = "main.c";
+  char *file = NULL;
   if (argc > 1) {
     file = argv[1];
   }
@@ -46,33 +47,32 @@ int main(int argc, char **argv) {
   };
   win_init(&w);
   struct config config;
-  init_config(&config);
+  config_init(&config);
   struct command_prompt cmd;
   cmd.width = w.width - 30;
   cmd.height = 60;
   struct display d;
   d.config = config;
   if (display_init(&d, &w) != 0) {
-    printf("Display could not initialize.\n");
+    fprintf(stderr, "Display could not initialize.\n");
     exit(1);
   }
   struct page_manager pm;
-  if (init_page_manager(&pm) != 0) {
-    printf("Page Manager could not initialize.\n");
+  if (page_manager_init(&pm) != 0) {
+    fprintf(stderr, "Page Manager could not initialize.\n");
     exit(1);
   }
   struct page test_buffer;
-  if (init_page(&test_buffer) != 0) {
-    printf("Page could not initialize.\n");
+  if (!page_init(&test_buffer)) {
+    fprintf(stderr, "Page could not initialize.\n");
     exit(1);
   }
-  insert_page_array(&pm.pages, test_buffer);
-  if (pm.open(&pm.pages.page_data[0], file) != 0) {
-    printf("Could not open file.\n");
-    exit(1);
+  if (file != NULL) {
+    test_buffer.file_name = malloc(sizeof(char) * strlen(file));
+    strcpy(test_buffer.file_name, file);
   }
-  if (pm.read(&pm.pages.page_data[0]) != 0) {
-    printf("Could not read file.\n");
+  if (insert_page_array(&pm.pages, test_buffer) != 0) {
+    fprintf(stderr, "error inserting page into page manager.\n");
     exit(1);
   }
   d.page_mgr = pm;
@@ -90,7 +90,9 @@ int main(int argc, char **argv) {
     }
     SDL_SetRenderDrawColor(w.renderer, 0, 0, 0, 0xFF);
     SDL_RenderClear(w.renderer);
-    display_page_render(&d, &w);
+    if (!display_page_render(&d, &w)) {
+      fprintf(stderr, "page render failed.\n");
+    }
     if (d.mode == COMMAND) {
       display_command_prompt(&cmd, &d, &w);
     }

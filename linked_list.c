@@ -9,16 +9,30 @@ int linked_list_init(struct linked_list *ll) {
   return 0;
 }
 
-static struct linked_list* find_pos(struct linked_list *ll, size_t cur_pos, size_t target_pos) {
+static struct linked_list* find_pos(struct linked_list *ll, size_t target_pos) {
   if (ll == NULL) return NULL;
-  if (cur_pos == target_pos) return ll;
-  return find_pos(ll->next, cur_pos + 1, target_pos);
+  struct linked_list *cur = ll;
+  size_t idx = 0;
+  while (cur != NULL) {
+    if (idx == target_pos) {
+      break;
+    }
+    cur = cur->next;
+    ++idx;
+  }
+  if (idx != target_pos) {
+    return NULL;
+  }
+  return cur;
 }
 
 static struct linked_list* find_end(struct linked_list *ll) {
   if (ll == NULL) return NULL;
-  if (ll->next == NULL) return ll;
-  return find_end(ll);
+  struct linked_list *cur = ll;
+  while (cur->next != NULL) {
+    cur = cur->next;
+  }
+  return cur;
 }
 
 static inline size_t find_len(struct linked_list *ll) {
@@ -32,7 +46,7 @@ static inline size_t find_len(struct linked_list *ll) {
 }
 
 int linked_list_insert(struct linked_list *ll, size_t pos, struct line value) {
-  struct linked_list *obj = find_pos(ll, 0, pos);
+  struct linked_list *obj = find_pos(ll, pos);
   if (obj == NULL) return 1;
   struct linked_list *tmp = (struct linked_list*)malloc(sizeof(struct linked_list));
   if (tmp == NULL) return 1;
@@ -60,7 +74,7 @@ int linked_list_append(struct linked_list *ll, struct line value) {
 }
 
 struct linked_list* linked_list_get_pos(struct linked_list *ll, size_t pos) {
-  return find_pos(ll, 0, pos);
+  return find_pos(ll, pos);
 }
 
 struct linked_list* linked_list_get_end(struct linked_list *ll) {
@@ -72,7 +86,7 @@ size_t linked_list_get_len(struct linked_list *ll) {
 }
 
 int linked_list_delete(struct linked_list *ll, size_t pos) {
-  struct linked_list *obj = find_pos(ll, 0, pos);
+  struct linked_list *obj = find_pos(ll, pos);
   if (obj == NULL) return 1;
   obj->prev->next = obj->next;
   obj->next->prev = obj->prev;

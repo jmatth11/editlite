@@ -1,6 +1,6 @@
 #include "config.h"
 
-void init_config(struct config *c) {
+void config_init(struct config *c) {
   c->leader = '\\';
   c->font_size = 14;
   c->cursor_color = (SDL_Color){0xAA,0xAA,0xAA,0x77};

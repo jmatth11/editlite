@@ -151,7 +151,11 @@ void handle_insert_mode(struct display *d, struct win *w, SDL_Event *e) {
     d->mode = NORMAL;
     return;
   }
-  struct page *cur_page = &d->page_mgr.pages.page_data[d->cur_buf];
+  struct page *cur_page;
+  if (!display_get_cur_page(d, &cur_page)) {
+    fprintf(stderr, "could not get current page for handle_insert_mode.\n");
+    return;
+  }
   struct linked_list *cur_line = linked_list_get_pos(cur_page->lines, d->cursor.pos.row);
   struct gap_buffer *cur_gb = &cur_line->value.chars;
   struct display_dim dim;
@@ -214,7 +218,11 @@ void handle_insert_mode(struct display *d, struct win *w, SDL_Event *e) {
 }
 
 void prepare_insert_mode(struct display *d, struct win *w) {
-  struct page *cur_page = &d->page_mgr.pages.page_data[d->cur_buf];
+  struct page *cur_page;
+  if (!display_get_cur_page(d, &cur_page)) {
+    fprintf(stderr, "could not get current page for prepare_insert_mode.\n");
+    return;
+  }
   struct linked_list *cur_line = linked_list_get_pos(cur_page->lines, d->cursor.pos.row);
   struct gap_buffer *cur_gb = &cur_line->value.chars;
   const size_t cur_gb_len = gap_buffer_get_len(cur_gb);
