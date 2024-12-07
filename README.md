@@ -10,7 +10,8 @@ Not sure how configurable I will allow it, but I will try to make it customizabl
 TODO
 - [x] navigating the document.
 - [x] Loading more of the file in memory when navigating.
-- [ ] Edit the document.
+- [x] Edit the document.
+    - [ ] Handle newlines properly.
 - [ ] Implement "command" mode.
 - [ ] Command to load another file.
 - [ ] Searching through document.
