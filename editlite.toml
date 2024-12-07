@@ -2,6 +2,7 @@
 leader="\\"
 win_height=720
 win_width=1024
+#plugin_path="<plugin path>"
 fps=120
 font_point=64
 font_scale=0.3

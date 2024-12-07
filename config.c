@@ -1,6 +1,7 @@
 #include "config.h"
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include "deps/tomlc99/toml.h"
 
 void config_init(struct config *c) {
@@ -14,6 +15,7 @@ void config_init(struct config *c) {
   c->cursor_color = (SDL_Color){0xAA,0xAA,0xAA,0x77};
   c->font_color = (SDL_Color){0xFF,0xFF,0xFF,0xFF};
   c->font_file = "resources/RobotoMono-Regular.ttf";
+  c->home_path = getenv("HOME");
   if (init_string_array(&c->plugins, 1) != 0) {
     fprintf(stderr, "plugin array could not be initialized.\n");
   }
@@ -22,10 +24,15 @@ void config_init(struct config *c) {
 }
 
 void parse_config(struct config *c) {
-  FILE *fp = fopen(CONFIG_FILENAME, "r+");
+  size_t hp_len = strlen(c->home_path);
+  size_t fn_len = strlen(CONFIG_FILENAME);
+  char *conf_file = malloc(sizeof(char) * (hp_len + fn_len + 1));
+  sprintf(conf_file, "%s%c%s", c->home_path, '/', CONFIG_FILENAME);
+  FILE *fp = fopen(conf_file, "r");
   if (fp == NULL) {
     return;
   }
+  free(conf_file);
   char errbuff[200];
   toml_table_t *conf = toml_parse_file(fp, errbuff, sizeof(errbuff));
   fclose(fp);
@@ -37,6 +44,14 @@ void parse_config(struct config *c) {
   if (!main) {
     fprintf(stderr, "[main] missing\n");
     return;
+  }
+  toml_datum_t plugin_path = toml_string_in(main, "plugin_path");
+  if (plugin_path.ok) {
+    c->plugin_path = plugin_path.u.s;
+  } else {
+    char *pp = malloc(sizeof(char) * (hp_len + strlen(EDITLITE_PLUGIN_PATH) + 1));
+    sprintf(pp, "%s%c%s", c->home_path, '/', EDITLITE_PLUGIN_PATH);
+    c->plugin_path = pp;
   }
   toml_datum_t leader = toml_string_in(main, "leader");
   if (leader.ok) {
@@ -103,3 +118,7 @@ void parse_config(struct config *c) {
   toml_free(conf);
 }
 
+void config_free(struct config *c) {
+  free(c->plugin_path);
+  free_string_array(&c->plugins);
+}
