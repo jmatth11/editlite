@@ -10,7 +10,8 @@ struct display_dim {
 };
 
 struct cursor {
-  struct display_dim dim;
+  struct display_dim pos;
+  struct display_dim screen_pos;
 };
 
 struct display {
