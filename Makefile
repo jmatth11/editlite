@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-Wall
-LIBS=-lSDL2
+LIBS=-lSDL2 -lSDL2_ttf
 INCLUDES=
 OBJ=obj
 BIN=bin
@@ -10,7 +10,7 @@ TARGET=editlite
 
 .PHONY: all
 all: $(OBJECTS)
-	$(CC) $(patsubst %.o, $(OBJ)/%.o, $(notdir $^)) -O2 $(CFLAGS) $(LIBS) -o $(BIN)/$(TARGET)
+	$(CC) $(patsubst %.o, $(OBJ)/%.o, $(notdir $^)) -g $(CFLAGS) $(LIBS) -o $(BIN)/$(TARGET)
 
 $(OBJ)/%.o: %.c
 	@mkdir -p $(OBJ)

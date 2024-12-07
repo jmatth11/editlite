@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "display.h"
+#include "page.h"
 #include "win.h"
 
 void init() {
@@ -34,7 +35,24 @@ int main(int argc, char **arg) {
   };
   create_win(&w);
   struct display d;
-  init_display(&d);
+  if (init_display(&d, &w) != 0) {
+    printf("Display could not initialize.\n");
+    exit(1);
+  }
+  struct page_manager pm;
+  if (init_page_manager(&pm) != 0) {
+    printf("Page Manager could not initialize.\n");
+    exit(1);
+  }
+  struct page test_buffer;
+  if (init_page(&test_buffer) != 0) {
+    printf("Page could not initialize.\n");
+    exit(1);
+  }
+  insert_page_array(&pm.buf, test_buffer);
+  pm.read_file(&pm.buf.page_data[0], "main.c");
+  d.pages = pm;
+
   SDL_Event e; int quit = 0;
   while(!quit) {
     while(SDL_PollEvent(&e)) {
@@ -44,9 +62,10 @@ int main(int argc, char **arg) {
     }
     SDL_SetRenderDrawColor(w.renderer, 0, 0, 0, 0xFF);
     SDL_RenderClear(w.renderer);
-
+    page_render(&d, &w);
     SDL_RenderPresent(w.renderer);
   }
+  free_display(&d);
   free_win(&w);
   deinit();
   return 0;

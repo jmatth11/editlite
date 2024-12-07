@@ -11,6 +11,7 @@ struct display {
 };
 
 int init_display(struct display* d, const struct win *w);
-int page_render(struct display *page, struct win *w);
+int page_render(struct display *d, struct win *w);
+void free_display(struct display *d);
 
 #endif
