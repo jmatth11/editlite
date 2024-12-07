@@ -1,4 +1,6 @@
 #include "config.h"
+#include <stdio.h>
+#include <stdbool.h>
 
 void config_init(struct config *c) {
   c->leader = '\\';
@@ -12,3 +14,4 @@ void config_init(struct config *c) {
   insert_string_array(&c->plugins, "plugins/save/libsave.so");
   insert_string_array(&c->plugins, "plugins/quit/libquit.so");
 }
+
