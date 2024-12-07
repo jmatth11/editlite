@@ -1,7 +1,7 @@
 #ifndef EDITLITE_DISPLAY_H
 #define EDITLITE_DISPLAY_H
 
-#include "char.h"
+#include "glyph.h"
 #include "page.h"
 #include "config.h"
 
@@ -25,7 +25,7 @@ struct display {
   enum display_mode mode;
   size_t cur_buf;
   struct cursor cursor;
-  struct characters glyphs;
+  struct glyphs glyphs;
   struct page_manager page_mgr;
   struct config config;
 };
