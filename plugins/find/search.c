@@ -12,17 +12,24 @@ bool check_and_add(struct display_dim *dim, const char *src, size_t src_len, con
     if (found_idx == val_size) {
       size_t val_start = i - val_size;
       size_t val_end = found_idx;
-      size_t max_len = dim->col < FIND_INFO_PREVIEW_SIZE ? dim->col : FIND_INFO_PREVIEW_SIZE;
+      size_t max_len = src_len;
+      if (max_len > dim->col) {
+        max_len = dim->col;
+        if (max_len > FIND_INFO_PREVIEW_SIZE) {
+          max_len = FIND_INFO_PREVIEW_SIZE;
+        }
+      }
       out->beg = val_start;
       out->end = val_end;
       out->preview_size = max_len;
-      if (src_len < dim->col) {
+      if (max_len < dim->col) {
         strncpy(out->preview, src, max_len);
       } else if (src_len > dim->col) {
+        // if the value is bigger than our buffer, just show as much of the value as possible.
         if ((val_size + FIND_INFO_PREVIEW_PADDING) > max_len) {
           strncpy(out->preview, val, max_len);
         } else {
-          size_t src_start = val_start - (max_len - FIND_INFO_PREVIEW_PADDING);
+          size_t src_start = (max_len - FIND_INFO_PREVIEW_PADDING) - val_start;
           strncpy(out->preview, &src[src_start], max_len);
         }
       }
