@@ -5,6 +5,8 @@ A simple text editor for learning purposes.
 One of the main goals of this project is to make it easier to open large text files. Currently it incrementally loads an opened file as you scroll through it.
 But I'd like to try and implement a "memory constrained" mode where it only loads in a specified buffer length while doing operations on the file.
 
+I've only been testing this on linux so far, so don't expect it to work anywhere else until I can find time to support other platforms.
+
 ## Functionality
 
 Currently supports:
@@ -107,3 +109,4 @@ TODO
     - [ ] jump between words
 - [ ] Prompt to add filename to unnamed pages.
 - [ ] Run in "memory limited" mode for memory constrained systems.
+- [ ] Support Windows
