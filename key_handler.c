@@ -1,6 +1,7 @@
 #include "key_handler.h"
 #include "display.h"
 #include "insert_mode.h"
+#include "command_mode.h"
 #include "page.h"
 #include "util.h"
 #include <SDL2/SDL_keycode.h>
@@ -18,7 +19,7 @@ void handle_keydown(struct display *d, struct win *w, SDL_Event *e) {
       break;
     }
     case COMMAND:{
-
+      handle_command_mode(d, w, e);
       break;
     }
     default:
