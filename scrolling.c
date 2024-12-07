@@ -11,19 +11,23 @@ void handle_row_scroll(struct display *d, struct display_dim dim) {
   if (d->cursor.pos.row < 0) {
     d->cursor.pos.row = 0;
   }
-  if (d->cursor.pos.row >= page_len) {
-    d->cursor.pos.row = page_len - 1;
-  }
   const size_t c_row = d->cursor.pos.row;
+  if (cur_page->fp != NULL && (c_row+10) >= page_len &&
+    cur_page->file_offset_pos < cur_page->file_size) {
+    size_t new_page_len = page_len;
+    struct linked_list *cur_end = linked_list_get_end(cur_page->lines);
+    // keep reading until we get to where the user's cursor wants to go
+    while ((c_row+10) >= new_page_len) {
+      d->page_mgr.read(cur_page, d->config.read_size);
+      new_page_len += linked_list_get_len(cur_end);
+      cur_end = linked_list_get_end(cur_end);
+    }
+  }
   if (c_row >= cur_page->row_offset + dim.row) {
     const int offset = c_row - (cur_page->row_offset + dim.row);
     cur_page->row_offset += offset + 1;
   } else if (c_row < cur_page->row_offset) {
     cur_page->row_offset = c_row;
-  }
-  if (cur_page->fp != NULL && (c_row+10) >= page_len &&
-    cur_page->file_offset_pos < cur_page->file_size) {
-    d->page_mgr.read(cur_page);
   }
 }
 

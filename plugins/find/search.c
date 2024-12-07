@@ -13,7 +13,6 @@ bool check_and_add(struct display_dim *dim, const char *src, size_t src_len, con
   bool result = false;
   for (int i = 0; i<src_len; ++i) {
     if (found_idx == val_size) {
-      printf("size: %zu, str:\"%s\"\n", src_len, src);
       size_t val_start = i - val_size;
       size_t val_end = found_idx;
       size_t max_len = src_len;
@@ -72,18 +71,17 @@ void search_word_options(struct display *d, struct display_dim *dim, struct find
   }
   // break if file is fully in memory
   if (cur_page->file_offset_pos >= cur_page->file_size) return;
-  printf("opening file for read\n");
   // handle reading file that is still on disk
   FILE *fp = fopen(cur_page->file_name, "r");
   if (fp == NULL) {
     fprintf(stderr, "could not open file for find plugin: \"%s\"\n", cur_page->file_name);
     return;
   }
-  printf("seeking file\n");
   fseek(fp, cur_page->file_offset_pos, SEEK_SET);
   size_t n = 0;
   size_t total = 0;
   bool done = false;
+  ++line_idx;
   while (!done) {
     n = fread(cur_buffer, sizeof(char), BUFSIZ, fp);
     if (n < BUFSIZ) {

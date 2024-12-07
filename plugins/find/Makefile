@@ -16,7 +16,8 @@ all: $(OBJECTS)
 debug:
 	$(CC) -ggdb -c -fPIC $(PLUGIN_NAME).c $(INCLUDES)
 	$(CC) -ggdb -c -fPIC draw.c $(INCLUDES)
-	$(CC) -shared -fPIC -ggdb -o $(SHARED_NAME) draw.o $(PLUGIN_NAME).o $(LIBS)
+	$(CC) -ggdb -c -fPIC search.c $(INCLUDES)
+	$(CC) -shared -fPIC -ggdb -o $(SHARED_NAME) search.o draw.o $(PLUGIN_NAME).o $(LIBS)
 
 
 clean:

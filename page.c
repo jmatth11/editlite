@@ -86,7 +86,7 @@ bool page_manager_open(struct page *buf) {
   return true;
 }
 
-bool page_manager_read(struct page *buf) {
+bool page_manager_read(struct page *buf, size_t limit) {
   bool done = buf->fp == NULL;
   int char_idx = 0;
   struct linked_list *cur_line = linked_list_get_end(buf->lines);

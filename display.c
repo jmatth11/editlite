@@ -182,7 +182,7 @@ bool display_get_cur_page(struct display *d, struct page **out) {
         fprintf(stderr, "failed to open file \"%s\".\n", cur_page->file_name);
         return false;
       }
-      if (!d->page_mgr.read(cur_page)) {
+      if (!d->page_mgr.read(cur_page, d->config.read_size)) {
         fprintf(stderr, "failed to read file \"%s\".\n", cur_page->file_name);
         return false;
       }

@@ -85,8 +85,8 @@ void pi_dispatch(
       d->cursor.pos = *dim;
       struct display_dim win_dim;
       display_get_page_dim(d, &win_dim);
-      handle_col_scroll(d, win_dim);
       handle_row_scroll(d, win_dim);
+      handle_col_scroll(d, win_dim);
       break;
     }
     default:
