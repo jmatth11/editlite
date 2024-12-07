@@ -11,6 +11,7 @@ generate_array_template(string, char*);
 
 struct config {
   double font_scale;
+  double fps;
   size_t font_point;
   SDL_Color font_color;
   SDL_Color cursor_color;
