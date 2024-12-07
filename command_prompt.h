@@ -8,8 +8,10 @@
 struct command {
   void* handler;
   char *shared_library;
-  bool (*action)(struct plugin_interface *d);
+  bool (*setup)(struct plugin_interface *);
+  bool (*action)(struct plugin_interface *);
   void (*get_display_prompt)(const char **out);
+  bool (*cleanup)(struct plugin_interface *);
 };
 
 generate_array_template(command, struct command);
