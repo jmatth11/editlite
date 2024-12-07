@@ -5,6 +5,7 @@
 #include <SDL2/SDL_video.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "display.h"
 #include "win.h"
 
 void init() {
@@ -32,6 +33,8 @@ int main(int argc, char **arg) {
     .width = 640
   };
   create_win(&w);
+  struct display d;
+  init_display(&d);
   SDL_Event e; int quit = 0;
   while(!quit) {
     while(SDL_PollEvent(&e)) {
