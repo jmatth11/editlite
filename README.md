@@ -7,12 +7,16 @@ I'd also like to have it dynamically load long lines and files so I don't have t
 
 Not sure how configurable I will allow it, but I will try to make it customizable with the basic features.
 
+## Demo
+
+https://github.com/jmatth11/editlite/assets/5776125/ccb72b91-3f02-45f0-9bcf-7f2b041c1613
+
 TODO
 - [x] navigating the document.
 - [x] Loading more of the file in memory when navigating.
 - [x] Edit the document.
     - [x] Handle newlines properly.
-    - [ ] Fix bugs with certain edge cases on deleting to previous line and moving to newline
+    - [x] Fix bugs with certain edge cases on deleting to previous line and moving to newline
 - [ ] Implement "command" mode.
 - [ ] Command to load another file.
 - [ ] Searching through document.
