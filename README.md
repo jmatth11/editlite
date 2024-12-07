@@ -30,4 +30,7 @@ TODO
 - [x] Allow load in of config file to adjust settings.
 - [x] Command to load another file.
 - [ ] Implement some more basic vim motions.
+    - [x] implement jumping with ctrl-d/u
+    - [ ] jump between words
 - [ ] Searching through document.
+- [ ] allow rendering callback for plugins.
