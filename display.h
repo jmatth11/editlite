@@ -3,6 +3,7 @@
 
 #include "char.h"
 #include "page.h"
+#include "config.h"
 
 struct display_dim {
   int col;
@@ -19,6 +20,7 @@ struct display {
   struct cursor cursor;
   struct characters glyphs;
   struct page_manager page_mgr;
+  struct config config;
 };
 
 int init_display(struct display* d, const struct win *w);
