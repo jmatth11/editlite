@@ -9,6 +9,7 @@ enum dispatch_calls {
   DISPATCH_MENU,
   DISPATCH_NEW_PAGE,
   DISPATCH_PLUGIN_INPUT,
+  DISPATCH_UPDATE_CURSOR,
 };
 
 struct plugin_interface {

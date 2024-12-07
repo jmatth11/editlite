@@ -2,6 +2,7 @@
 #include "display.h"
 #include "menu.h"
 #include "page.h"
+#include "scrolling.h"
 #include <string.h>
 
 void pi_get_cur_page(struct plugin_interface* pi, struct page *p){
@@ -77,6 +78,15 @@ void pi_dispatch(
     }
     case DISPATCH_PLUGIN_INPUT: {
       d->mode = PLUGIN_INPUT;
+      break;
+    }
+    case DISPATCH_UPDATE_CURSOR: {
+      struct display_dim *dim = (struct display_dim*)context;
+      d->cursor.pos = *dim;
+      struct display_dim win_dim;
+      display_get_page_dim(d, &win_dim);
+      handle_col_scroll(d, win_dim);
+      handle_row_scroll(d, win_dim);
       break;
     }
     default:

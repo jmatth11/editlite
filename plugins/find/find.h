@@ -17,6 +17,7 @@ extern "C" {
 struct find_loc {
   int preview_size;
   char preview[FIND_INFO_PREVIEW_SIZE];
+  size_t line;
   size_t beg;
   size_t end;
 };
