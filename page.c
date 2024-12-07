@@ -1,4 +1,5 @@
 #include "page.h"
+#include <stdbool.h>
 #include <stdio.h>
 
 #ifndef BUFSIZ
@@ -31,22 +32,29 @@ int page_manager_read(struct page *buf) {
     linked_list_append(cur_line, tmp_line);
     cur_line = cur_line->next;
   }
+  bool create_new_line = false;
   while (!done) {
     size_t n = fread(buffer, sizeof(char), BUFSIZ, buf->fp);
     if (n < BUFSIZ) {
       done = 1;
     }
     for (int i = 0; i < n; ++i) {
-      char cur_char = buffer[i];
-      gap_buffer_insert(&cur_line->value.chars, cur_char);
-      if (cur_char == '\n') {
-        cur_line->value.load_pos = char_idx + buf->file_offset_pos;
+      // create new line entry on the next go so we don't have empty lines
+      // at the end of the linked list
+      if (create_new_line) {
         init_line(&tmp_line);
         tmp_line.start_pos = (char_idx + 1) + buf->file_offset_pos;
         tmp_line.load_pos = tmp_line.start_pos;
         linked_list_append(cur_line, tmp_line);
         cur_line = cur_line->next;
         char_idx = 0;
+        create_new_line = false;
+      }
+      char cur_char = buffer[i];
+      gap_buffer_insert(&cur_line->value.chars, cur_char);
+      if (cur_char == '\n') {
+        cur_line->value.load_pos = char_idx + buf->file_offset_pos;
+        create_new_line = true;
       } else {
         char_idx++;
       }
