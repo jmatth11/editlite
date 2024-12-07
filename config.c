@@ -18,7 +18,7 @@ void config_init(struct config *c) {
   c->font_color = (SDL_Color){0xFF,0xFF,0xFF,0xFF};
   c->font_file = "resources/RobotoMono-Regular.ttf";
   c->home_path = getenv("HOME");
-  if (init_string_array(&c->plugins, 1) != 0) {
+  if (!init_string_array(&c->plugins, 1)) {
     fprintf(stderr, "plugin array could not be initialized.\n");
   }
   insert_string_array(&c->plugins, "plugins/save/libsave.so");
