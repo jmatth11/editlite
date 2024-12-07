@@ -11,6 +11,7 @@
 const char *prompt = "view files";
 menu_item_array buffer;
 char *cwd = NULL;
+DIR *dir = NULL;
 
 bool gen_items_from_dir(const char *wd, menu_item_array *buf);
 
@@ -61,11 +62,14 @@ int file_compare(const void *a, const void *b) {
 }
 
 bool gen_items_from_dir(const char *wd, menu_item_array *buf) {
-  if (cwd == NULL) return false;
-  DIR *dir;
+  if (wd == NULL) return false;
+  if (dir != NULL) {
+    closedir(dir);
+    dir = NULL;
+  }
   struct dirent *dp = NULL;
-  if ((dir = opendir(cwd)) == NULL) {
-    fprintf(stderr, "failed to open directory %s\n", cwd);
+  if ((dir = opendir(wd)) == NULL) {
+    fprintf(stderr, "failed to open directory %s\n", wd);
     return false;
   }
   do {
@@ -95,6 +99,10 @@ void get_display_prompt(const char **out) {
 }
 
 bool cleanup(struct plugin_interface* pi) {
+  if (dir != NULL) {
+    closedir(dir);
+    dir = NULL;
+  }
   free(cwd);
   if (buffer.menu_item_data != NULL) {
     free_menu_item_array(&buffer);
