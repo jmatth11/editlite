@@ -1,5 +1,6 @@
 #include <SDL2/SDL_render.h>
 #include "display.h"
+#include "gap_buffer.h"
 #include "glyph.h"
 #include "page.h"
 #include "util.h"
@@ -50,12 +51,14 @@ int page_render(struct display *d, struct win *w) {
   for (int line_idx = line_start; line_idx < line_end; ++line_idx) {
     const struct line tmp_line = cur_page.lines.line_data[line_idx];
     const int char_start = cur_page.col_offset;
-    const int char_len = MIN(tmp_line.chars.len, dims.col + cur_page.col_offset);
+    const int gap_buffer_len = gap_buffer_get_len(&tmp_line.chars);
+    const int char_len = MIN(gap_buffer_len, dims.col + cur_page.col_offset);
     if (d->cursor.pos.row == line_idx && d->cursor.pos.col >= char_len) {
       d->cursor.screen_pos.col = char_len - 1;
     }
     for (int char_idx = char_start; char_idx < char_len; ++char_idx) {
-      char cur_char = tmp_line.chars.char_data[char_idx];
+      char cur_char = ' ';
+      gap_buffer_get_char(&tmp_line.chars, char_idx, &cur_char);
       SDL_Texture *glyph = handle_characters(d, cur_char);
       SDL_Rect r = {
         .x = width_offset,

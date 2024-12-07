@@ -35,7 +35,7 @@ int page_manager_read(struct page *buf) {
     for (int i = 0; i < n; ++i) {
       char cur_char = buffer[i];
       struct line *line_buf = &buf->lines.line_data[line_idx];
-      insert_char_array(&line_buf->chars, cur_char);
+      gap_buffer_insert(&line_buf->chars, cur_char);
       if (cur_char == '\n') {
         line_idx++;
         line_buf->load_pos = char_idx + buf->file_offset_pos;
@@ -57,14 +57,14 @@ int page_manager_read(struct page *buf) {
 }
 
 int init_line(struct line *l) {
-  int err = init_char_array(&l->chars, LINE_CHAR_BUFF_SIZE);
+  if (!gap_buffer_init(&l->chars, LINE_CHAR_BUFF_SIZE)) return 1;
   l->load_pos = 0;
   l->start_pos = 0;
-  return err;
+  return 0;
 }
 
 void free_line(struct line *l) {
-  free_char_array(&l->chars);
+  gap_buffer_free(&l->chars);
 }
 
 int init_page(struct page *p) {
