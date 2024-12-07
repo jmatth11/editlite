@@ -1,11 +1,11 @@
-#include "char.h"
+#include "glyph.h"
 #include <SDL2/SDL_error.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_ttf.h>
 #include <stdlib.h>
 #include <string.h>
 
-int init_char(struct characters *ch, const struct win *w, const char* ttf_file) {
+int init_char(struct glyphs *ch, const struct win *w, const char* ttf_file) {
   ch->font = TTF_OpenFont(ttf_file, ch->size);
   ch->max_width = 0;
   ch->max_height = 0;
@@ -38,7 +38,7 @@ int init_char(struct characters *ch, const struct win *w, const char* ttf_file) 
   return 0;
 }
 
-SDL_Texture* get_glyph(struct characters *ch, const char c) {
+SDL_Texture* get_glyph(struct glyphs *ch, const char c) {
   size_t idx = (int)c - CHAR_START_RANGE;
   if (idx >= 0 && idx < CHAR_END_RANGE - CHAR_START_RANGE) {
     return ch->glyphs[idx];
@@ -46,7 +46,7 @@ SDL_Texture* get_glyph(struct characters *ch, const char c) {
   return NULL;
 }
 
-void free_char(struct characters *ch) {
+void free_char(struct glyphs *ch) {
   for (int i = 0; i < (CHAR_END_RANGE - CHAR_START_RANGE); ++i) {
     SDL_Texture *tmp = ch->glyphs[i];
     if (tmp != NULL) {

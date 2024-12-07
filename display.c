@@ -1,6 +1,6 @@
 #include <SDL2/SDL_render.h>
 #include "display.h"
-#include "char.h"
+#include "glyph.h"
 #include "page.h"
 #include "util.h"
 
