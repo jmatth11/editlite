@@ -1,5 +1,4 @@
 #include "gap_buffer.h"
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -62,11 +61,18 @@ bool gap_buffer_move_cursor(struct gap_buffer *gb, size_t pos) {
     }
     gb->cursor_end = pos_offset;
   } else if (pos < gb->cursor_start) {
-    const size_t start_idx = gb->cursor_start - 1;
-    for (size_t i = start_idx; i >= pos; --i) {
-      gb->buffer[gb->cursor_end - 1] = gb->buffer[i];
-      gb->cursor_end--;
+    size_t i = gb->cursor_start - 1;
+    size_t j = gb->cursor_end;
+    for (; i >= pos; --i, --j) {
+      gb->buffer[j - 1] = gb->buffer[i];
+      // break after we handle 0 otherwise it will wrap
+      if (i == 0) {
+        // decrement j in this case because we miss the last decrement
+        j--;
+        break;
+      }
     }
+    gb->cursor_end = j;
     gb->cursor_start = pos;
   }
   return true;
