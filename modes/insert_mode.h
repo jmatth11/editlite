@@ -13,6 +13,7 @@ enum insert_mode_t {
 };
 
 void handle_insert_mode(struct display *d, SDL_Event *e);
+void handle_input_mode(struct display *d, SDL_Event *e);
 void prepare_insert_mode(struct display *d, enum insert_mode_t);
 
 #endif

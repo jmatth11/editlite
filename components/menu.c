@@ -1,10 +1,12 @@
 #include <SDL2/SDL_rect.h>
+#include <SDL2/SDL_render.h>
 
 #include "display.h"
 #include "menu.h"
 #include "types/menu_types.h"
 #include "types/display_type.h"
 #include "helpers/util.h"
+#include "utf8.h"
 
 bool menu_init(struct menu *m) {
   m->w = 50;
@@ -82,8 +84,12 @@ bool menu_display(struct display *d) {
       draw_select(d, &r);
     }
     struct menu_item *item = &d->state.menu.items.menu_item_data[i];
-    for (size_t char_idx = 0; char_idx < strlen(item->name); ++char_idx) {
-      SDL_Texture *glyph = handle_characters(d, item->name[char_idx]);
+    const size_t name_len = strlen(item->name);
+    for (size_t char_idx = 0; char_idx < name_len;) {
+      const struct code_point point = utf8_next((uint8_t *)item->name, name_len, char_idx);
+      char_idx += octet_type_count(point.type);
+
+      SDL_Texture *glyph = handle_characters(d, point.val);
       if (glyph == NULL) {
         glyph = handle_characters(d, '?');
       }
@@ -93,12 +99,24 @@ bool menu_display(struct display *d) {
         .w = d->state.glyphs.scaled_size.width,
         .h = d->state.glyphs.scaled_size.height,
       };
+      bool mutated = false;
+      if (item->use_color) {
+        if (SDL_SetTextureColorMod(glyph, item->color.r, item->color.g, item->color.b) == -1) {
+          fprintf(stderr, "color modulation not supported on this machine.\n");
+        } else {
+          mutated = true;
+        }
+      }
       SDL_RenderCopy(
         d->state.w.renderer,
         glyph,
         NULL,
         &r
       );
+      if (mutated) {
+        const SDL_Color orig_color = d->state.glyphs.color;
+        SDL_SetTextureColorMod(glyph, orig_color.r, orig_color.g, orig_color.b);
+      }
       width_offset += d->state.glyphs.scaled_size.width;
     }
     height_offset += d->state.glyphs.scaled_size.height;

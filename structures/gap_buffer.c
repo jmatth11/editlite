@@ -1,12 +1,13 @@
 #include "gap_buffer.h"
 #include <stdlib.h>
 #include <string.h>
+#include <wchar.h>
 
 #define GAP_DEFAULT_BUFFER_SIZE 16
 
 static bool resize(struct gap_buffer *gb) {
   const size_t new_size = ((double)gb->cap) * 1.7;
-  char* tmp_buff = (char*)realloc(gb->buffer, new_size * sizeof(char));
+  code_point_t* tmp_buff = (code_point_t*)realloc(gb->buffer, new_size * sizeof(code_point_t));
   if (tmp_buff == NULL) return false;
   gb->buffer = tmp_buff;
   gb->cap = new_size;
@@ -34,8 +35,8 @@ bool gap_buffer_init(struct gap_buffer *gb, size_t buf_size) {
   if (buf_size <= 0) {
     buf_size = GAP_DEFAULT_BUFFER_SIZE;
   }
-  size_t alloc_size = buf_size * sizeof(char);
-  gb->buffer = (char*)malloc(alloc_size);
+  size_t alloc_size = buf_size * sizeof(code_point_t);
+  gb->buffer = (code_point_t*)malloc(alloc_size);
   if (gb->buffer == NULL) {
     return false;
   }
@@ -44,6 +45,7 @@ bool gap_buffer_init(struct gap_buffer *gb, size_t buf_size) {
   gb->cursor_start = 0;
   gb->cursor_end = buf_size;
   gb->get_str = gap_buffer_get_str;
+  gb->get_len = gap_buffer_get_len;
   return true;
 }
 
@@ -79,7 +81,7 @@ bool gap_buffer_move_cursor(struct gap_buffer *gb, size_t pos) {
   return true;
 }
 
-void gap_buffer_get_char(const struct gap_buffer *gb, size_t pos, char* out) {
+void gap_buffer_get_char(const struct gap_buffer *gb, size_t pos, code_point_t* out) {
   if (pos > gb->cap) return;
   size_t idx = pos;
   if (idx >= gb->cursor_start) {
@@ -92,7 +94,7 @@ size_t gap_buffer_get_len(const struct gap_buffer *gb) {
   return gb->len - (gb->cursor_end - gb->cursor_start);
 }
 
-bool gap_buffer_insert(struct gap_buffer *gb, char c) {
+bool gap_buffer_insert(struct gap_buffer *gb, code_point_t c) {
   if (gb->cursor_start >= gb->cursor_end) {
     if (!resize_buffer(gb)) return false;
   }
@@ -101,9 +103,8 @@ bool gap_buffer_insert(struct gap_buffer *gb, char c) {
   return true;
 }
 
-bool gap_buffer_insert_word(struct gap_buffer *gb, size_t pos, char* input) {
+bool gap_buffer_insert_word(struct gap_buffer *gb, size_t pos, code_point_t* input, size_t len) {
   if (!gap_buffer_move_cursor(gb, pos)) return false;
-  const size_t len = strlen(input);
   for (int i = 0; i < len; ++i) {
     if (!gap_buffer_insert(gb, input[i])) return false;
   }
@@ -122,12 +123,12 @@ bool gap_buffer_delete_seq(struct gap_buffer *gb, size_t n) {
   return true;
 }
 
-char *gap_buffer_get_str(struct gap_buffer *gb) {
+code_point_t *gap_buffer_get_str(struct gap_buffer *gb) {
   size_t len = gap_buffer_get_len(gb);
   if (len == 0) return NULL;
-  char *result = malloc(sizeof(char)*(len + 1));
+  code_point_t *result = malloc(sizeof(code_point_t)*(len + 1));
   for (int i = 0; i < len; ++i) {
-    char tmp = ' ';
+    code_point_t tmp = ' ';
     gap_buffer_get_char(gb, i, &tmp);
     result[i] = tmp;
   }

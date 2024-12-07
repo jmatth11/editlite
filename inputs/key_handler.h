@@ -8,5 +8,6 @@ struct display;
 void handle_keydown(struct display *d, SDL_Event *e);
 void handle_simple_keypresses(struct display *d, SDL_Event *e);
 void handle_state_keypresses(struct display *d, SDL_Event *e);
+void handle_input(struct display *d, SDL_Event *e);
 
 #endif

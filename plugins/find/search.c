@@ -1,16 +1,23 @@
+#include <stddef.h>
+#include <stdint.h>
+#include <stdlib.h>
 #include <structures/linked_list.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 #include <types/display_type.h>
 #include <types/page_types.h>
+#include <wchar.h>
 
 #include "find.h"
 #include "search.h"
+#include "types/unicode_types.h"
+#include "utf8.h"
+#include "helpers/util.h"
 
-char cur_buffer[BUFSIZ];
+uint8_t cur_buffer[BUFSIZ];
 
-bool check_and_add(struct display_dim *dim, const char *src, size_t src_len, const char *val, size_t val_size, struct find_loc *out) {
+bool check_and_add(struct display_dim *dim, const uint8_t *src, size_t src_len, const uint8_t *val, size_t val_size, struct find_loc *out) {
   if (src_len < val_size) return false;
   size_t found_idx = 0;
   bool result = false;
@@ -21,22 +28,32 @@ bool check_and_add(struct display_dim *dim, const char *src, size_t src_len, con
       size_t max_len = src_len;
       if (max_len > dim->col) {
         max_len = dim->col;
-        if (max_len > FIND_INFO_PREVIEW_SIZE) {
-          max_len = FIND_INFO_PREVIEW_SIZE;
-        }
+      }
+      if (max_len > FIND_INFO_PREVIEW_SIZE) {
+        max_len = FIND_INFO_PREVIEW_SIZE;
       }
       out->beg = val_start;
       out->end = val_end;
+      out->display_beg = val_start;
+      out->display_end = val_end;
       out->preview_size = max_len;
       if (max_len < dim->col) {
-        strncpy(out->preview, src, max_len);
+        strncpy((char*)out->preview, (char*)src, max_len);
       } else if (src_len > dim->col) {
         // if the value is bigger than our buffer, just show as much of the value as possible.
         if ((val_size + FIND_INFO_PREVIEW_PADDING) > max_len) {
-          strncpy(out->preview, val, max_len);
+          strncpy((char*)out->preview, (char*)val, max_len);
+          out->display_beg = 0;
+          out->display_end = max_len - 1;
         } else {
-          size_t src_start = (max_len - FIND_INFO_PREVIEW_PADDING) - val_start;
-          strncpy(out->preview, &src[src_start], max_len);
+          out->display_beg = val_start;
+          size_t src_start = 0;
+          if (val_start > FIND_INFO_PREVIEW_PADDING) {
+            out->display_beg = FIND_INFO_PREVIEW_PADDING;
+            src_start = val_start - FIND_INFO_PREVIEW_PADDING;
+          }
+          strncpy((char*)out->preview, (char*)&src[src_start], max_len);
+          out->display_end = (out->display_beg + found_idx) - 1;
         }
       }
       result = true;
@@ -55,29 +72,46 @@ void search_word_options(struct display *d, struct display_dim *dim, struct find
   if (op->locs.location_data != NULL) {
     free_location_array(&op->locs);
   }
+  const size_t op_len = code_point_to_utf8_len(op->value, op->value_size);
+  uint8_t* op_buffer = malloc(sizeof(uint8_t)*op_len);
+  size_t op_buffer_idx = 0;
+  for (int op_idx = 0; op_idx < op->value_size; ++op_idx) {
+    op_buffer_idx += utf8_write_code_point(op_buffer, op_len, op_buffer_idx, op->value[op_idx]);
+  }
   init_location_array(&op->locs, 1);
   struct page *cur_page = &d->state.page_mgr.pages.page_data[d->state.cur_buf];
   struct linked_list *cur_line = cur_page->lines;
   size_t line_idx = 0;
   while (cur_line != NULL) {
     struct gap_buffer *gb = &cur_line->value.chars;
-    char *buf = gb->get_str(gb);
-    size_t buf_len = strlen(buf);
+    code_point_t *buf = gb->get_str(gb);
+    const size_t buf_len = gb->get_len(gb);
+    const size_t byte_len = code_point_to_utf8_len(buf, buf_len);
+    uint8_t *byte_array = malloc(sizeof(uint8_t)*byte_len);
+    size_t byte_idx = 0;
+    for (int i =0; i < buf_len; ++i) {
+      byte_idx += utf8_write_code_point(byte_array, byte_len, byte_idx, buf[i]);
+    }
     struct find_loc loc;
-    if (check_and_add(dim, buf, buf_len, op->value, op->value_size, &loc)) {
+    if (check_and_add(dim, byte_array, byte_len, op_buffer, op_len, &loc)) {
       loc.line = line_idx;
       insert_location_array(&op->locs, loc);
     }
     free(buf);
+    free(byte_array);
     cur_line = cur_line->next;
     ++line_idx;
   }
   // break if file is fully in memory
-  if (cur_page->file_offset_pos >= cur_page->file_size) return;
+  if (cur_page->file_offset_pos >= cur_page->file_size) {
+    free(op_buffer);
+    return;
+  }
   // handle reading file that is still on disk
   FILE *fp = fopen(cur_page->file_name, "r");
   if (fp == NULL) {
     fprintf(stderr, "could not open file for find plugin: \"%s\"\n", cur_page->file_name);
+    free(op_buffer);
     return;
   }
   fseek(fp, cur_page->file_offset_pos, SEEK_SET);
@@ -86,7 +120,7 @@ void search_word_options(struct display *d, struct display_dim *dim, struct find
   bool done = false;
   ++line_idx;
   while (!done) {
-    n = fread(cur_buffer, sizeof(char), BUFSIZ, fp);
+    n = fread(cur_buffer, sizeof(uint8_t), BUFSIZ, fp);
     if (n < BUFSIZ) {
       done = true;
     }
@@ -96,7 +130,7 @@ void search_word_options(struct display *d, struct display_dim *dim, struct find
       struct find_loc loc;
       ++line_len;
       if (cur_buffer[i] == '\n') {
-        if (check_and_add(dim, &cur_buffer[start_idx], line_len, op->value, op->value_size, &loc)) {
+        if (check_and_add(dim, &cur_buffer[start_idx], line_len, op_buffer, op_len, &loc)) {
           loc.line = line_idx;
           insert_location_array(&op->locs, loc);
         }
@@ -114,4 +148,5 @@ void search_word_options(struct display *d, struct display_dim *dim, struct find
       total += n;
     }
   }
+  free(op_buffer);
 }

@@ -1,9 +1,11 @@
 #ifndef EDITLITE_FIND_PLUGIN_H
 #define EDITLITE_FIND_PLUGIN_H
 
+#include "types/unicode_types.h"
 #include <deps/array_template/array_template.h>
 #include <SDL2/SDL_events.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 struct display;
 struct display_dim;
@@ -19,10 +21,12 @@ extern "C" {
 
 struct find_loc {
   int preview_size;
-  char preview[FIND_INFO_PREVIEW_SIZE];
+  uint8_t preview[FIND_INFO_PREVIEW_SIZE];
   size_t line;
   size_t beg;
   size_t end;
+  size_t display_beg;
+  size_t display_end;
 };
 
 generate_array_template(location, struct find_loc)
@@ -32,7 +36,7 @@ struct find_info {
   int visual_offset;
   int height;
   int value_size;
-  char value[FIND_INFO_VALUE_SIZE];
+  code_point_t value[FIND_INFO_VALUE_SIZE];
   location_array locs;
 };
 
