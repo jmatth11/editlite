@@ -1,6 +1,7 @@
 #ifndef EDITLITE_PAGE_H
 #define EDITLITE_PAGE_H
 
+#include <SDL2/SDL_events.h>
 #include <stdio.h>
 #include <stddef.h>
 #include "deps/array_template/array_template.h"
@@ -17,7 +18,7 @@ struct page {
   int col_offset;
   int row_offset;
   bool (*handle_backspace)(struct page *p, struct display *d);
-  bool (*handle_keystroke)(struct page *p, struct display *d);
+  bool (*handle_keystroke)(struct page *p, struct display *d, SDL_Event *e);
   struct linked_list *lines;
 };
 
