@@ -4,26 +4,125 @@
 #include <SDL2/SDL_keycode.h>
 #include <ctype.h>
 #include <stdbool.h>
-#include <stdio.h>
 
-static inline char sanitize_character(SDL_Keycode c) {
+static inline char sanitize_character(SDL_Keycode keycode) {
   // TODO look into SDL_TextInputEvent to see if that can replace this logic
-  printf("keycode = \'%c\'", c);
   char result = '\0';
-  if (c == SDLK_RETURN) return '\n';
+  if (keycode == SDLK_LSHIFT || keycode == SDLK_RSHIFT) return result;
   const Uint8* key_states = SDL_GetKeyboardState(NULL);
   bool is_upper = (key_states[SDL_SCANCODE_LSHIFT] || key_states[SDL_SCANCODE_RSHIFT]);
-  if (isspace(c)) {
+  bool is_special_char = false;
+  if (keycode > 127) {
+    return result;
+  }
+  // force to char size
+  char c = (char)keycode;
+  switch (c) {
+    case SDLK_MINUS: {
+      result = c;
+      if (is_upper) {
+        result = '_';
+      }
+      is_special_char = true;
+      break;
+    }
+    case SDLK_EQUALS:{
+      result = c;
+      if (is_upper) {
+        result = '+';
+      }
+      is_special_char = true;
+      break;
+    }
+    case SDLK_LEFTBRACKET:{
+      result = c;
+      if (is_upper) {
+        result = '{';
+      }
+      is_special_char = true;
+      break;
+    }
+    case SDLK_RIGHTBRACKET:{
+      result = c;
+      if (is_upper) {
+        result = '}';
+      }
+      is_special_char = true;
+      break;
+    }
+    case SDLK_BACKSLASH:{
+      result = c;
+      if (is_upper) {
+        result = '|';
+      }
+      is_special_char = true;
+      break;
+    }
+    case SDLK_SEMICOLON:{
+      result = c;
+      if (is_upper) {
+        result = ':';
+      }
+      is_special_char = true;
+      break;
+    }
+    case SDLK_QUOTE:{
+      result = c;
+      if (is_upper) {
+        result = '"';
+      }
+      is_special_char = true;
+      break;
+    }
+    case SDLK_BACKQUOTE:{
+      result = c;
+      if (is_upper) {
+        result = '~';
+      }
+      is_special_char = true;
+      break;
+    }
+    case SDLK_COMMA:{
+      result = c;
+      if (is_upper) {
+        result = '<';
+      }
+      is_special_char = true;
+      break;
+    }
+    case SDLK_PERIOD:{
+      result = c;
+      if (is_upper) {
+        result = '>';
+      }
+      is_special_char = true;
+      break;
+    }
+    case SDLK_SLASH:{
+      result = c;
+      if (is_upper) {
+        result = '?';
+      }
+      is_special_char = true;
+      break;
+    }
+    case SDLK_ASTERISK:
+    case SDLK_PLUS:
+      result = c;
+      is_special_char = true;
+      break;
+  }
+  if (!is_special_char && isspace(c)) {
     if (c == '\r' || c == '\n') {
       // TODO handle newlines
     }
     result = ' ';
-  } else if (isalpha(c)) {
+  } else if (!is_special_char && isalpha(c)) {
     result = c;
     if (is_upper) {
       result = toupper(result);
     }
-  } else if (isdigit(c)) {
+  } else if (!is_special_char && isdigit(c)) {
     result = c;
     if (is_upper) {
       switch (c) {
@@ -37,90 +136,6 @@ static inline char sanitize_character(SDL_Keycode c) {
         case '8': result = '*'; break;
         case '9': result = '('; break;
         case '0': result = ')'; break;
-      }
-    } else {
-      switch (c) {
-        case '-': {
-          result = c;
-          if (is_upper) {
-            result = '_';
-          }
-          break;
-        }
-        case '=':{
-          result = c;
-          if (is_upper) {
-            result = '+';
-          }
-          break;
-        }
-        case '[':{
-          result = c;
-          if (is_upper) {
-            result = '{';
-          }
-          break;
-        }
-        case ']':{
-          result = c;
-          if (is_upper) {
-            result = '}';
-          }
-          break;
-        }
-        case '\\':{
-          result = c;
-          if (is_upper) {
-            result = '|';
-          }
-          break;
-        }
-        case ';':{
-          result = c;
-          if (is_upper) {
-            result = ':';
-          }
-          break;
-        }
-        case '\'':{
-          result = c;
-          if (is_upper) {
-            result = '"';
-          }
-          break;
-        }
-        case '`':{
-          result = c;
-          if (is_upper) {
-            result = '~';
-          }
-          break;
-        }
-        case ',':{
-          result = c;
-          if (is_upper) {
-            result = '<';
-          }
-          break;
-        }
-        case '.':{
-          result = c;
-          if (is_upper) {
-            result = '>';
-          }
-          break;
-        }
-        case '/':{
-          result = c;
-          if (is_upper) {
-            result = '?';
-          }
-          break;
-        }
-        case '*':
-        case '+':
-          result = c;
-          break;
       }
     }
   }
@@ -141,7 +156,6 @@ void handle_insert_mode(struct display *d, struct win *w, SDL_Event *e) {
     d->cursor.pos.col--;
   } else {
     const char received_char = sanitize_character(e->key.keysym.sym);
-    printf("char = \'%c\'", received_char);
     if (received_char != '\0') {
       gap_buffer_insert(cur_gb, received_char);
       d->cursor.pos.col++;
