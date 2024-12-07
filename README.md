@@ -9,7 +9,14 @@ Not sure how configurable I will allow it, but I will try to make it customizabl
 
 ## Demo
 
+Normal traversing of file and editing.
+
 https://github.com/jmatth11/editlite/assets/5776125/ccb72b91-3f02-45f0-9bcf-7f2b041c1613
+
+Using plugins loaded through dynamic libraries to handle commands.
+
+https://github.com/jmatth11/editlite/assets/5776125/9cb362dc-a56f-45a3-b128-4300680aaf3e
+
 
 TODO
 - [x] navigating the document.
