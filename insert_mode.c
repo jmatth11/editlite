@@ -152,8 +152,12 @@ void handle_insert_mode(struct display *d, struct win *w, SDL_Event *e) {
   struct gap_buffer *cur_gb = &cur_line->chars;
 
   if (e->key.keysym.sym == SDLK_BACKSPACE) {
-    gap_buffer_delete(cur_gb);
-    d->cursor.pos.col--;
+    if (d->cursor.pos.col > 0) {
+      gap_buffer_delete(cur_gb);
+      d->cursor.pos.col--;
+    } else {
+      // TODO handle merging with line above current
+    }
   } else {
     const char received_char = sanitize_character(e->key.keysym.sym);
     if (received_char != '\0') {
