@@ -27,7 +27,7 @@ TODO
 - [x] Implement "command" mode.
     - [x] Support plugins with command mode.
 - [x] Save file.
+- [x] Allow load in of config file to adjust settings.
 - [ ] Implement some more basic vim motions.
 - [ ] Command to load another file.
-- [ ] Allow load in of config file to adjust settings.
 - [ ] Searching through document.
