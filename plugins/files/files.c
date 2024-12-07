@@ -6,10 +6,13 @@
 #include <unistd.h>
 #include <errno.h>
 #include <dirent.h>
+#include <sys/stat.h>
 
 const char *prompt = "view files";
 menu_item_array buffer;
 char *cwd = NULL;
+
+bool gen_items_from_dir(const char *wd, menu_item_array *buf);
 
 bool setup(struct plugin_interface* pi) {
   size_t size = 1024;
@@ -29,9 +32,25 @@ bool setup(struct plugin_interface* pi) {
   return true;
 }
 
+bool is_dir(const char *path) {
+  struct stat stats;
+  stat(path, &stats);
+  if (S_ISDIR(stats.st_mode)) return true;
+  return false;
+}
+
 bool file_selected(struct display *d, void *ctx) {
   char *filename = (char*)ctx;
-  d->pi.dispatch(&d->pi, DISPATCH_NEW_PAGE, filename);
+  // TODO handle more than top level directory
+  if (is_dir(filename)) {
+    if (!gen_items_from_dir(filename, &buffer)) {
+      return false;
+    }
+    d->pi.dispatch(&d->pi, DISPATCH_MENU, &buffer);
+    free_menu_item_array(&buffer);
+  } else {
+    d->pi.dispatch(&d->pi, DISPATCH_NEW_PAGE, filename);
+  }
   return true;
 }
 
@@ -41,7 +60,7 @@ int file_compare(const void *a, const void *b) {
   return strcmp(obj1->name, obj2->name);
 }
 
-bool action(struct plugin_interface *d) {
+bool gen_items_from_dir(const char *wd, menu_item_array *buf) {
   if (cwd == NULL) return false;
   DIR *dir;
   struct dirent *dp = NULL;
@@ -59,6 +78,14 @@ bool action(struct plugin_interface *d) {
     }
   } while (dp != NULL);
   qsort(buffer.menu_item_data, buffer.len, sizeof(struct menu_item), file_compare);
+  //closedir(dir);
+  return true;
+}
+
+bool action(struct plugin_interface *d) {
+  if (!gen_items_from_dir(cwd, &buffer)) {
+    return false;
+  }
   d->dispatch(d, DISPATCH_MENU, &buffer);
   free_menu_item_array(&buffer);
   return true;

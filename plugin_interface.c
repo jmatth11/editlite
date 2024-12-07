@@ -51,10 +51,27 @@ void pi_dispatch(
         fprintf(stderr, "error handling page: \"%s\"\n", filename);
         break;
       }
-      p.file_name = malloc(sizeof(char)*strlen(filename));
-      strcpy(p.file_name, filename);
-      insert_page_array(&d->page_mgr.pages, p);
-      d->cur_buf = d->page_mgr.pages.len - 1;
+      bool found = false;
+      for (int i = 0; i < d->page_mgr.pages.len; ++i) {
+        struct page *tmp = &d->page_mgr.pages.page_data[i];
+        if (tmp->file_name != NULL) {
+          if (strcmp(tmp->file_name, filename)==0) {
+            d->cur_buf = i;
+            found = true;
+            break;
+          }
+        }
+      }
+      if (!found) {
+        p.file_name = malloc(sizeof(char)*strlen(filename));
+        strcpy(p.file_name, filename);
+        insert_page_array(&d->page_mgr.pages, p);
+        d->cur_buf = d->page_mgr.pages.len - 1;
+        // TODO think about moving the cursor to the page level so
+        // we can remember where we left off.
+        d->cursor.pos.col = 0;
+        d->cursor.pos.row = 0;
+      }
       d->mode = NORMAL;
       break;
     }
