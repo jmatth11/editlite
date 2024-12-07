@@ -13,6 +13,8 @@ struct line {
   char_array buffer;
 };
 
+int init_line(struct line *l);
+
 generate_array_template(line, struct line)
 
 struct page {
@@ -21,9 +23,15 @@ struct page {
   line_array lines;
 };
 
+int init_page(struct page* p);
+
+generate_array_template(page, struct page)
+
 struct page_manager {
-  struct page buf;
-  int (*read_file)(struct page buf, const char* file_name);
+  page_array buf;
+  int (*read_file)(struct page* buf, const char* file_name);
 };
+
+int init_page_manager(struct page_manager* pm);
 
 #endif
