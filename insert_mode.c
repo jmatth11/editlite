@@ -176,13 +176,14 @@ void handle_insert_mode(struct display *d, struct win *w, SDL_Event *e) {
       linked_list_delete_node(cur_line);
       d->cursor.pos.row--;
       d->cursor.pos.col = gap_buffer_get_len(prev_gb) - cur_gb_len;
+      gap_buffer_move_cursor(prev_gb, d->cursor.pos.col);
     }
   } else {
     const char received_char = sanitize_character(e->key.keysym.sym);
     if (received_char != '\0') {
       if (received_char == '\n') {
-        // TODO something is wrong, need to debug
         gap_buffer_insert(cur_gb, received_char);
+        d->cursor.pos.col++;
         struct line new_line;
         init_line(&new_line);
         struct gap_buffer *next_gb = &new_line.chars;
@@ -192,14 +193,16 @@ void handle_insert_mode(struct display *d, struct win *w, SDL_Event *e) {
         for (; cur_col < gb_len; ++cur_col) {
           char tmp = ' ';
           gap_buffer_get_char(cur_gb, cur_col, &tmp);
+          printf("%c", tmp);
           gap_buffer_insert(next_gb, tmp);
         }
         cur_col = d->cursor.pos.col;
-        gap_buffer_move_cursor(cur_gb, gb_len);
+        gap_buffer_move_cursor(cur_gb, gb_len - 1);
         gap_buffer_delete_seq(cur_gb, gb_len - cur_col);
         linked_list_insert(cur_line, 0, new_line);
         d->cursor.pos.col = 0;
         d->cursor.pos.row++;
+        gap_buffer_move_cursor(next_gb, d->cursor.pos.col);
       } else {
         gap_buffer_insert(cur_gb, received_char);
         d->cursor.pos.col++;

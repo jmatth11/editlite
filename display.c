@@ -69,8 +69,8 @@ int page_render(struct display *d, struct win *w) {
         .h = d->glyphs.max_height,
       };
       if (glyph == NULL) {
-        // ignore newline character
-        if (cur_char != 10) {
+        // ignore newline character and carriage return
+        if (cur_char != 10 && cur_char != 13) {
           fprintf(stderr, "cur_char: %d\n", cur_char);
           fprintf(stderr, "glyph was null\n");
         } else if (d->cursor.screen_pos.row == line_idx &&
