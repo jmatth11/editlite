@@ -4,15 +4,21 @@
 #include <SDL2/SDL_keycode.h>
 #include <ctype.h>
 #include <stdbool.h>
-
+#include <stdio.h>
 
 static inline char sanitize_character(SDL_Keycode c) {
   // TODO look into SDL_TextInputEvent to see if that can replace this logic
+  printf("keycode = \'%c\'", c);
   char result = '\0';
   if (c == SDLK_RETURN) return '\n';
   const Uint8* key_states = SDL_GetKeyboardState(NULL);
   bool is_upper = (key_states[SDL_SCANCODE_LSHIFT] || key_states[SDL_SCANCODE_RSHIFT]);
-  if (isalpha(c)) {
+  if (isspace(c)) {
+    if (c == '\r' || c == '\n') {
+      // TODO handle newlines
+    }
+    result = ' ';
+  } else if (isalpha(c)) {
     result = c;
     if (is_upper) {
       result = toupper(result);
@@ -113,7 +119,6 @@ static inline char sanitize_character(SDL_Keycode c) {
         }
         case '*':
         case '+':
-        case ' ':
           result = c;
           break;
       }
@@ -136,6 +141,7 @@ void handle_insert_mode(struct display *d, struct win *w, SDL_Event *e) {
     d->cursor.pos.col--;
   } else {
     const char received_char = sanitize_character(e->key.keysym.sym);
+    printf("char = \'%c\'", received_char);
     if (received_char != '\0') {
       gap_buffer_insert(cur_gb, received_char);
       d->cursor.pos.col++;
