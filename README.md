@@ -129,10 +129,9 @@ bool cleanup(struct plugin_interface*);
 
 ## Demo
 
-Basic usage: editing, file traversing, and searching through file.
+Basic usage: editing, file traversing, searching through file, tree-sitter highlighting, and unicode support.
 
-https://github.com/jmatth11/editlite/assets/5776125/bb694295-c093-403a-8afd-08701b4fd3f3
-
+https://github.com/user-attachments/assets/097e51bb-4fbf-4e37-a752-3e537ffba744
 
 TODO
 - [x] navigating the document.
@@ -151,6 +150,7 @@ TODO
 - [x] Add Unicode support
 - [x] Add basic event listening callbacks for plugins.
 - [x] Prompt to add filename to unnamed pages.
+- [x] Add tree-sitter highlight support
 - [ ] Implement some more basic vim motions.
     - [x] implement jumping with ctrl-d/u
     - [ ] jump between words
@@ -158,3 +158,4 @@ TODO
 - [ ] Add Copy/Paste
 - [ ] Support Windows
 - [ ] Update Makefile to make a release bundle
+    - [ ] Using AppImage bundler
