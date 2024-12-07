@@ -6,6 +6,7 @@
 void config_init(struct config *c) {
   c->leader = '\\';
   c->font_scale = 1;
+  c->fps = 60.0;
   c->font_point = 48;
   c->win_width = 640;
   c->win_height = 480;
@@ -43,6 +44,11 @@ void parse_config(struct config *c) {
   toml_datum_t font_scale = toml_double_in(main, "font_scale");
   if (font_scale.ok) {
     c->font_scale = font_scale.u.d;
+  }
+  toml_datum_t fps = toml_double_in(main, "fps");
+  if (fps.ok) {
+    c->fps = fps.u.d;
+    if (c->fps >= 1000) c->fps = 1000;
   }
   toml_datum_t font_point = toml_int_in(main, "font_point");
   if (font_point.ok) {

@@ -112,7 +112,7 @@ int main(int argc, char **argv) {
     }
     SDL_RenderPresent(d.w.renderer);
     double cur_exec_time = ((clock() - init) / (double)CLOCKS_PER_SEC);
-    double tick = 1000.0 / 60.0;
+    double tick = 1000.0 / d.config.fps;
     if (cur_exec_time < tick) {
       double delay = tick - cur_exec_time;
       SDL_Delay(delay);
