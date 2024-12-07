@@ -44,7 +44,15 @@ void pi_dispatch(
       break;
     }
     case DISPATCH_NEW_PAGE: {
-      // TODO maybe implement or could do it all in the plugin
+      char *filename = (char*)context;
+      struct page p;
+      if (!page_init(&p)) {
+        fprintf(stderr, "error handling page: \"%s\"\n", filename);
+        break;
+      }
+      p.file_name = filename;
+      insert_page_array(&d->page_mgr.pages, p);
+      d->cur_buf = d->page_mgr.pages.len - 1;
       break;
     }
     default:

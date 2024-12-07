@@ -31,6 +31,7 @@ bool setup(struct plugin_interface* pi) {
 bool file_selected(struct display *d, void *ctx) {
   char *filename = (char*)ctx;
   fprintf(stdout, "openning file: \"%s\"\n", filename);
+  // TODO figure out how to rework this to include the plugin manager.
   return true;
 }
 
