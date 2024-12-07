@@ -5,7 +5,8 @@
 #include <stddef.h>
 #include "deps/array_template/array_template.h"
 
-#define CONFIG_FILENAME "editlite.toml"
+#define EDITLITE_PLUGIN_PATH ".config/editlite\0"
+#define CONFIG_FILENAME ".editlite.toml\0"
 
 generate_array_template(string, char*);
 
@@ -20,10 +21,13 @@ struct config {
   size_t read_size;
   char leader;
   char *font_file;
+  char *plugin_path;
+  char *home_path;
   string_array plugins;
 };
 
 void config_init(struct config *c);
 void parse_config(struct config *c);
+void config_free(struct config *c);
 
 #endif
