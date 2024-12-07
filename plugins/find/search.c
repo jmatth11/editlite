@@ -2,7 +2,10 @@
 #include "page.h"
 #include "find.h"
 #include <stdbool.h>
+#include <stdio.h>
 #include <string.h>
+
+char cur_buffer[BUFSIZ];
 
 bool check_and_add(struct display_dim *dim, const char *src, size_t src_len, const char *val, size_t val_size, struct find_loc *out) {
   if (src_len < val_size) return false;
@@ -53,7 +56,6 @@ void search_word_options(struct display *d, struct display_dim *dim, struct find
   struct page *cur_page = &d->page_mgr.pages.page_data[d->cur_buf];
   struct linked_list *cur_line = cur_page->lines;
   size_t line_idx = 0;
-  // TODO also read from the file if the page hasn't loaded it in entirely yet.
   while (cur_line != NULL) {
     struct gap_buffer *gb = &cur_line->value.chars;
     char *buf = gb->get_str(gb);
@@ -66,5 +68,46 @@ void search_word_options(struct display *d, struct display_dim *dim, struct find
     free(buf);
     cur_line = cur_line->next;
     ++line_idx;
+  }
+  // break if file is fully in memory
+  if (cur_page->file_offset_pos >= cur_page->file_size) return;
+  // handle reading file that is still on disk
+  FILE *fp = fopen(cur_page->file_name, "r");
+  if (fp == NULL) {
+    fprintf(stderr, "could not open file for find plugin: \"%s\"\n", cur_page->file_name);
+    return;
+  }
+  fseek(fp, cur_page->file_offset_pos, SEEK_SET);
+  size_t n = 0;
+  size_t total = 0;
+  bool done = false;
+  while (!done) {
+    n = fread(cur_buffer, sizeof(char), BUFSIZ, fp);
+    if (n < BUFSIZ) {
+      done = true;
+    }
+    size_t start_idx = 0;
+    size_t line_len = 0;
+    for (int i = 0; i < n; ++i) {
+      struct find_loc loc;
+      ++line_len;
+      // TODO handle windows \r\n
+      if (cur_buffer[i] == '\n') {
+        if (check_and_add(dim, &cur_buffer[start_idx], line_len, op->value, op->value_size, &loc)) {
+          loc.line = line_idx;
+          insert_location_array(&op->locs, loc);
+          ++line_idx;
+          start_idx = i + 1;
+        }
+      }
+    }
+    // if we didn't hit a newline at the end of our buffer,
+    // rewind to the last known newline, except if we filled the buffer then move on.
+    if (start_idx < n && (n - start_idx) != n) {
+      total += start_idx;
+      fseek(fp, cur_page->file_offset_pos + total, SEEK_SET);
+    } else {
+      total += n;
+    }
   }
 }
