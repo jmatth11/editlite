@@ -47,19 +47,19 @@ Run the program with no arguments or with a file to initially load in.
 I'm mainly reusing vim movements at the moment, but I only have a very small subset implemented.
 
 Supported movements:
-- h/j/k/l (left,down,up,right)
-- CTRL-d/u (down half page, up half page)
-- 0/$ (beginning of line, end of line)
-- i/a/I/A (insert at cursor, insert after cursor,insert beginning of line, insert at the end of the line)
-- : (command mode -- this is different from vim, it lists the plugins you have and hitting enter on one triggers it's action)
-- g (just a single g goes to top of file)
+- `h/j/k/l` (left,down,up,right)
+- `CTRL-d/u` (down half page, up half page)
+- `0/$` (beginning of line, end of line)
+- `i/a/I/A` (insert at cursor, insert after cursor,insert beginning of line, insert at the end of the line)
+- `:` (command mode -- this is different from vim, it lists the plugins you have and hitting enter on one triggers it's action)
+- `g` (just a single g goes to top of file)
 
 - Within File Menu
-    - h/j/k/l
+    - `h/j/k/l`
     - enter to select file
 - Within Find Plugin
     - Type to enter the word you want to find
-    - CTRL-n/p/y (navigate down the list, navigate up the list, confirm choice)
+    - `CTRL-n/p/y` (navigate down the list, navigate up the list, confirm choice)
 
 ## Configuration
 
