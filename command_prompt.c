@@ -6,7 +6,10 @@ bool command_init(struct command *cmd) {
   cmd->handler = NULL;
   cmd->shared_library = NULL;
   cmd->action = NULL;
+  cmd->render = NULL;
   cmd->get_display_prompt = NULL;
+  cmd->setup = NULL;
+  cmd->cleanup = NULL;
   return true;
 }
 
@@ -49,8 +52,6 @@ bool command_unload(struct command *cmd) {
   if (cmd->handler != NULL) {
     dlclose(cmd->handler);
   }
-  cmd->handler = NULL;
-  cmd->action = NULL;
-  cmd->get_display_prompt = NULL;
+  command_init(cmd);
   return true;
 }
