@@ -8,6 +8,7 @@ bool menu_init(struct menu *m) {
   m->x = 0;
   m->y = 0;
   m->idx = 0;
+  if (init_menu_item_array(&m->items, 1) != 0) return false;
   return true;
 }
 
@@ -71,4 +72,8 @@ bool menu_display(struct display *d, struct win *w) {
     width_offset = x_offset;
   }
   return true;
+}
+
+void menu_free(struct menu *m) {
+  free_menu_item_array(&m->items);
 }
