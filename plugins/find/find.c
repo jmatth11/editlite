@@ -6,7 +6,7 @@
 #include <deps/array_template/array_template.h>
 #include <stdio.h>
 
-const char *prompt = "find files";
+const char *prompt = "find word";
 struct find_info op;
 bool showMenu = false;
 
@@ -19,6 +19,8 @@ bool action(struct plugin_interface *pi) {
     free_location_array(&op.locs);
   }
   init_location_array(&op.locs, 1);
+  op.idx = 0;
+  op.value_size = 0;
   pi->dispatch(pi, DISPATCH_PLUGIN_INPUT, NULL);
   showMenu = true;
   return true;
