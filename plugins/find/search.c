@@ -52,15 +52,19 @@ void search_word_options(struct display *d, struct display_dim *dim, struct find
   init_location_array(&op->locs, 1);
   struct page *cur_page = &d->page_mgr.pages.page_data[d->cur_buf];
   struct linked_list *cur_line = cur_page->lines;
+  size_t line_idx = 0;
+  // TODO also read from the file if the page hasn't loaded it in entirely yet.
   while (cur_line != NULL) {
     struct gap_buffer *gb = &cur_line->value.chars;
     char *buf = gb->get_str(gb);
     size_t buf_len = strlen(buf);
     struct find_loc loc;
     if (check_and_add(dim, buf, buf_len, op->value, op->value_size, &loc)) {
+      loc.line = line_idx;
       insert_location_array(&op->locs, loc);
     }
     free(buf);
     cur_line = cur_line->next;
+    ++line_idx;
   }
 }

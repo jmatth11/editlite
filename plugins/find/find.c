@@ -1,4 +1,5 @@
 #include "find.h"
+#include "display.h"
 #include "plugins/find/draw.h"
 #include "plugins/find/search.h"
 #include <SDL2/SDL_rect.h>
@@ -38,11 +39,12 @@ bool render(struct display *d, struct display_dim *dim) {
       (menu_max_height * line_height);
     // extra row for user input
     op.height += line_height;
+    size_t options_y_offset = (winh - op.height) + line_height;
     draw_background(d, 0, winh - op.height, winw, op.height);
     draw_textinput(d, op.value, op.value_size, 0, winh - op.height, winw, line_height);
-    draw_options(d, &op, 0, (winh - op.height) + line_height, winw, line_height);
-    // TODO render find display
-    // need to use popen to execute grep command and get output
+    draw_options(d, &op, 0, options_y_offset, winw, line_height);
+    size_t select_box_y_offset = (line_height * op.idx) + options_y_offset;
+    draw_select_box(d, 0, select_box_y_offset, winw, line_height);
   }
   return true;
 }
@@ -57,13 +59,25 @@ bool event(SDL_Event *e, struct display *d, struct display_dim *dim) {
   const Uint8 ctrl = key_states[SDL_SCANCODE_LCTRL] || key_states[SDL_SCANCODE_RCTRL];
   const Uint8 kn = key_states[SDL_SCANCODE_N];
   const Uint8 kp = key_states[SDL_SCANCODE_P];
+  const Uint8 ky = key_states[SDL_SCANCODE_Y];
   if (ctrl) {
-    // TODO check special commands
     if (kn) {
-
+      ++op.idx;
+      if (op.idx >= op.locs.len) op.idx = 0;
     }
     if (kp) {
-
+      --op.idx;
+      if (op.idx < 0) op.idx = op.locs.len - 1;
+    }
+    if (ky) {
+      // TODO jump to line
+      struct display_dim new_pos;
+      struct find_loc *loc = &op.locs.location_data[op.idx];
+      new_pos.row = loc->line;
+      new_pos.col = loc->beg;
+      showMenu = false;
+      d->pi.dispatch(&d->pi, DISPATCH_UPDATE_CURSOR, &new_pos);
+      d->mode = NORMAL;
     }
   } else {
     if (e->key.keysym.sym == SDLK_BACKSPACE) {
