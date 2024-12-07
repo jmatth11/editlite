@@ -1,4 +1,5 @@
 #include <SDL2/SDL_render.h>
+#include "command_prompt.h"
 #include "gap_buffer.h"
 #include "glyph.h"
 #include "page.h"
@@ -16,6 +17,7 @@ int display_init(struct display* d, const struct win *w) {
   if (err != 0) return err;
   err = page_manager_init(&d->page_mgr);
   if (err != 0) return err;
+  if (!command_prompt_init(&d->command_prompt)) return 1;
   return 0;
 }
 
@@ -106,6 +108,19 @@ bool display_page_render(struct display *d, struct win *w) {
 }
 
 bool display_get_cur_page(struct display *d, struct page **out) {
+  // special case for COMMAND mode
+  if (d->mode == COMMAND) {
+    struct gap_buffer *gb = &d->command_prompt.lines->value.chars;
+    // ensure there is at least a newline in the gap buffer
+    if (gap_buffer_get_len(gb) == 0) {
+      gap_buffer_insert(gb, '\n');
+      gap_buffer_move_cursor(gb, 0);
+    }
+    *out = &d->command_prompt;
+    return true;
+  }
+
+  // Typical flow.
   if (d->page_mgr.pages.len == 0) {
     struct page cur_page;
     if (!page_init(&cur_page)) {
@@ -150,4 +165,5 @@ void display_get_page_dim(struct display *d, struct win *w, struct display_dim *
 void display_free(struct display* d) {
   free_char(&d->glyphs);
   page_manager_free(&d->page_mgr);
+  command_prompt_free(&d->command_prompt);
 }
