@@ -49,6 +49,7 @@ int main(int argc, char **argv) {
   win_init(&w);
   struct config config;
   config_init(&config);
+  parse_config(&config);
   struct display d;
   d.config = config;
   if (display_init(&d, &w) != 0) {

@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include "deps/array_template/array_template.h"
 
-#define CONFIG_FILENAME ".editlite"
+#define CONFIG_FILENAME "editlite.toml"
 
 generate_array_template(string, char*);
 
