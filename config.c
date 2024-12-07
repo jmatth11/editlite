@@ -1,8 +1,10 @@
-#include "config.h"
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
+
+#include "config.h"
 #include "deps/tomlc99/toml.h"
+#include "types/config_types.h"
 
 void config_init(struct config *c) {
   c->leader = '\\';

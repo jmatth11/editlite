@@ -1,12 +1,12 @@
-#include "find.h"
-#include "display.h"
-#include "plugins/find/draw.h"
-#include "plugins/find/search.h"
 #include <SDL2/SDL_rect.h>
 #include <SDL2/SDL_scancode.h>
-#include <page.h>
-#include <deps/array_template/array_template.h>
 #include <stdio.h>
+#include <types/display_type.h>
+#include <types/plugin_interface_types.h>
+
+#include "draw.h"
+#include "find.h"
+#include "search.h"
 
 const char *prompt = "find word";
 struct find_info op;
@@ -32,9 +32,9 @@ bool action(struct plugin_interface *pi) {
 bool render(struct display *d, struct display_dim *dim) {
   if (showMenu) {
     int winh, winw;
-    SDL_GetWindowSize(d->w.window, &winw, &winh);
+    SDL_GetWindowSize(d->state.w.window, &winw, &winh);
     const int menu_max_height = dim->row / 3.0f;
-    const int line_height = d->glyphs.height;
+    const int line_height = d->state.glyphs.scaled_size.height;
     const int menu_len = op.locs.len < menu_max_height ? op.locs.len : menu_max_height;
     op.height = op.locs.len <= menu_max_height ?
       (op.locs.len * line_height) :
@@ -90,7 +90,7 @@ bool event(SDL_Event *e, struct display *d, struct display_dim *dim) {
       new_pos.row = loc->line;
       new_pos.col = loc->beg;
       showMenu = false;
-      d->pi.dispatch(&d->pi, DISPATCH_UPDATE_CURSOR, &new_pos);
+      d->state.pi.dispatch(&d->state.pi, DISPATCH_UPDATE_CURSOR, &new_pos);
       d->mode = NORMAL;
     }
   } else {
@@ -103,7 +103,7 @@ bool event(SDL_Event *e, struct display *d, struct display_dim *dim) {
       op.visual_offset = 0;
       op.idx = 0;
     } else {
-      char input_c = d->glyphs.sanitize_character(e->key.keysym.sym);
+      char input_c = d->state.glyphs.sanitize_character(e->key.keysym.sym);
       if (input_c != '\0' && input_c != '\n' && input_c != '\t') {
         if (op.value_size < FIND_INFO_VALUE_SIZE) {
           op.value[op.value_size] = input_c;

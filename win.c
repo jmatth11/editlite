@@ -1,7 +1,7 @@
-#include "win.h"
 #include <SDL2/SDL_render.h>
-#include <SDL2/SDL_stdinc.h>
 #include <SDL2/SDL_surface.h>
+
+#include "types/win_types.h"
 
 int win_init(struct win *w) {
   w->window = SDL_CreateWindow("Editlite", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,

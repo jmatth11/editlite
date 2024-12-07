@@ -1,6 +1,8 @@
-#include "command_prompt.h"
-#include <stdlib.h>
 #include <dlfcn.h>
+#include <stdlib.h>
+
+#include "command_prompt.h"
+#include "types/command_types.h"
 
 bool command_init(struct command *cmd) {
   cmd->handler = NULL;

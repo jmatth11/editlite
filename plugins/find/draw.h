@@ -1,7 +1,9 @@
 #ifndef EDITLITE_FIND_DRAW_H
 #define EDITLITE_FIND_DRAW_H
 
-#include <display.h>
+#include <stddef.h>
+
+struct display;
 struct find_info;
 
 void draw_background(struct display *d, int x, int y, int w, int h);
