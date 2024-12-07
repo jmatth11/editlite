@@ -168,7 +168,7 @@ bool display_get_cur_page(struct display *d, struct page **out) {
         return false;
       }
     }
-    if (cur_page->fp == NULL && cur_page->file_name == NULL) {
+    if (cur_page->fp == NULL) {
       struct gap_buffer *gb = &cur_page->lines->value.chars;
       // ensure there is at least a newline in the gap buffer
       if (gap_buffer_get_len(gb) == 0) {
