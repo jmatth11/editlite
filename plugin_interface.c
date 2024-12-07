@@ -19,6 +19,15 @@ void pi_dispatch(
     case DISPATCH_EXIT:
       d->running = false;
       break;
+    case DISPATCH_SAVE: {
+      struct page *p;
+      display_get_cur_page(d, &p);
+      if (!d->page_mgr.write(p)) {
+        fprintf(stderr, "write failed for file \"%s\"\n", p->file_name);
+      }
+      d->mode = NORMAL;
+      break;
+    }
     default:
       fprintf(stderr, "not implemented dispatch call.\n");
       break;

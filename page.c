@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include "display.h"
 #include "glyph.h"
+#include "file_ops.h"
 
 #ifndef BUFSIZ
 #define BUFSIZ 8192
@@ -78,7 +79,7 @@ bool page_manager_open(struct page *buf) {
   }
   buf->fp = fopen(buf->file_name, "r+");
   if (buf->fp == NULL) {
-    return false;
+    buf->fp = fopen(buf->file_name, "w+");
   }
   fseek(buf->fp, 0L, SEEK_END);
   buf->file_size = ftell(buf->fp);
@@ -133,12 +134,40 @@ bool page_manager_read(struct page *buf) {
   return true;
 }
 
-bool page_write(struct page* buf) {
+bool page_manager_write(struct page* buf) {
   FILE *tmpFile = tmpfile();
-  char output_buffer[BUFSIZ];
-  // TODO think of if we want to write to a tmpFile or create a file to rename
-  // once we are done
-
+  // iterate through existing edited lines.
+  struct linked_list *cur_line = buf->lines;
+  while (cur_line != NULL) {
+    struct gap_buffer *cur_gb = &cur_line->value.chars;
+    const size_t cur_gb_len = gap_buffer_get_len(cur_gb);
+    for (int i = 0; i < cur_gb_len; ++i) {
+      char tmp = '?';
+      gap_buffer_get_char(cur_gb, i, &tmp);
+      fwrite(&tmp, sizeof(char), 1, tmpFile);
+    }
+    cur_line = cur_line->next;
+  }
+  // grab the position for our new file.
+  size_t fp_idx = ftell(tmpFile);
+  // copy the rest of the contents
+  copyFile(buf->fp, tmpFile);
+  // safety flush
+  fflush(tmpFile);
+  // close and reopen existing file to delete all prior content.
+  fclose(buf->fp);
+  buf->fp = fopen(buf->file_name, "w+");
+  // seek to beginning of tmpFile
+  fseek(tmpFile, 0, SEEK_SET);
+  // copy everything over
+  copyFile(tmpFile, buf->fp);
+  fflush(buf->fp);
+  // reset new size
+  buf->file_size = ftell(buf->fp);
+  // seek back to the end of our updates
+  fseek(buf->fp, 0, fp_idx);
+  // close and delete tmpFile
+  fclose(tmpFile);
   return true;
 }
 
@@ -174,6 +203,7 @@ int page_manager_init(struct page_manager *pm) {
   int err = init_page_array(&pm->pages, 1);
   pm->open = page_manager_open;
   pm->read = page_manager_read;
+  pm->write = page_manager_write;
   return err;
 }
 
