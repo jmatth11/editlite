@@ -1,0 +1,9 @@
+#!/bin/bash
+
+SELF=$(readlink -f "$0")
+HERE=${SELF%/*}
+LIB_PATH="${HERE}/lib"
+EXEC="${HERE}/usr/bin/editlite"
+export LD_LIBRARY_PATH="${HERE}/lib:${LD_LIBRARY_PATH}"
+exec "${EXEC}"
+
