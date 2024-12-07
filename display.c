@@ -85,13 +85,13 @@ void reset_cursor_screen_pos(struct display *d) {
   d->cursor.screen_pos = d->cursor.pos;
 }
 
-void draw_cursor(struct display *d, struct win *w, SDL_Rect *rect) {
+void draw_cursor(struct display *d, SDL_Rect *rect) {
   const SDL_Color c = d->config.cursor_color;
-  SDL_SetRenderDrawColor(w->renderer, c.r, c.g, c.b, c.a);
-  SDL_RenderFillRect(w->renderer, rect);
+  SDL_SetRenderDrawColor(d->w.renderer, c.r, c.g, c.b, c.a);
+  SDL_RenderFillRect(d->w.renderer, rect);
 }
 
-bool display_page_render(struct display *d, struct win *w) {
+bool display_page_render(struct display *d) {
   if (d->page_mgr.pages.len < 1) {
     return false;
   }
@@ -101,7 +101,7 @@ bool display_page_render(struct display *d, struct win *w) {
     return false;
   }
   struct display_dim dims;
-  display_get_page_dim(d, w, &dims);
+  display_get_page_dim(d, &dims);
   int width_offset=cur_page->x_offset;
   int height_offset=cur_page->y_offset;
   reset_cursor_screen_pos(d);
@@ -138,15 +138,15 @@ bool display_page_render(struct display *d, struct win *w) {
           glyph = handle_characters(d, '?');
         } else if (d->cursor.screen_pos.row == line_idx &&
           d->cursor.screen_pos.col == char_idx ) {
-          draw_cursor(d, w, &r);
+          draw_cursor(d, &r);
           continue;
         }
       }
       if (d->cursor.screen_pos.row == line_idx && d->cursor.screen_pos.col == char_idx) {
-        draw_cursor(d, w, &r);
+        draw_cursor(d, &r);
       }
       SDL_RenderCopy(
-        w->renderer,
+        d->w.renderer,
         glyph,
         NULL,
         &r
@@ -155,7 +155,7 @@ bool display_page_render(struct display *d, struct win *w) {
     }
     // this is for empty lines
     if (d->cursor.screen_pos.row == line_idx && d->cursor.screen_pos.col == char_len) {
-      draw_cursor(d, w, &r);
+      draw_cursor(d, &r);
     }
     width_offset = 0;
     height_offset += font_height;
@@ -200,9 +200,9 @@ bool display_get_cur_page(struct display *d, struct page **out) {
   return false;
 }
 
-void display_get_page_dim(struct display *d, struct win *w, struct display_dim *out) {
+void display_get_page_dim(struct display *d, struct display_dim *out) {
   int winh, winw;
-  SDL_GetWindowSize(w->window, &winw, &winh);
+  SDL_GetWindowSize(d->w.window, &winw, &winh);
   out->row = (int)winh / d->glyphs.height;
   out->col = ((int)winw / d->glyphs.width);
 }

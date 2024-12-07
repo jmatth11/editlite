@@ -43,9 +43,9 @@ struct display {
 int display_init(struct display* d);
 bool display_load_plugins(struct display* d);
 bool display_reload_plugins(struct display *d);
-bool display_page_render(struct display *d, struct win *w);
+bool display_page_render(struct display *d);
 bool display_get_cur_page(struct display *d, struct page **out);
-void display_get_page_dim(struct display *d, struct win *w, struct display_dim *out);
+void display_get_page_dim(struct display *d, struct display_dim *out);
 SDL_Texture * handle_characters(struct display *d, const char cur_char);
 struct plugin_interface display_plugin_interface(struct display *d);
 void display_free(struct display *d);

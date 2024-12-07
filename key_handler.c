@@ -10,18 +10,18 @@
 #include <SDL2/SDL_scancode.h>
 #include <SDL2/SDL_stdinc.h>
 
-void handle_keydown(struct display *d, struct win *w, SDL_Event *e) {
+void handle_keydown(struct display *d, SDL_Event *e) {
   switch(d->mode) {
     case NORMAL: {
-      handle_state_keypresses(d, w, e);
+      handle_state_keypresses(d, e);
       break;
     }
     case INSERT:{
-      handle_insert_mode(d, w, e);
+      handle_insert_mode(d, e);
       break;
     }
     case COMMAND:{
-      handle_command_mode(d, w, e);
+      handle_command_mode(d, e);
       break;
     }
     default:
@@ -42,9 +42,9 @@ void handle_jump_commands(struct display *d, struct display_dim dim) {
   cur_page->col_offset = MAX(offset, 0);
 }
 
-void handle_simple_keypresses(struct display *d, struct win *w, SDL_Event *e) {
+void handle_simple_keypresses(struct display *d, SDL_Event *e) {
   struct display_dim dims;
-  display_get_page_dim(d, w, &dims);
+  display_get_page_dim(d, &dims);
   switch (e->key.keysym.sym) {
     case SDLK_j:
     case SDLK_DOWN:
@@ -75,11 +75,11 @@ void handle_simple_keypresses(struct display *d, struct win *w, SDL_Event *e) {
       d->mode = NORMAL;
       break;
     case SDLK_i: {
-      prepare_insert_mode(d, w, INSERT_AT);
+      prepare_insert_mode(d, INSERT_AT);
       break;
     }
     case SDLK_a: {
-      prepare_insert_mode(d, w, INSERT_AFTER);
+      prepare_insert_mode(d, INSERT_AFTER);
       break;
     }
     case SDLK_g: {
@@ -90,9 +90,9 @@ void handle_simple_keypresses(struct display *d, struct win *w, SDL_Event *e) {
   }
 }
 
-void handle_state_keypresses(struct display *d, struct win *w, SDL_Event *e) {
+void handle_state_keypresses(struct display *d, SDL_Event *e) {
   struct display_dim dims;
-  display_get_page_dim(d, w, &dims);
+  display_get_page_dim(d, &dims);
   const Uint8* key_states = SDL_GetKeyboardState(NULL);
   const Uint8 shift = key_states[SDL_SCANCODE_LSHIFT] || key_states[SDL_SCANCODE_RSHIFT];
   const Uint8 ctrl = key_states[SDL_SCANCODE_LCTRL] || key_states[SDL_SCANCODE_RCTRL];
@@ -104,7 +104,7 @@ void handle_state_keypresses(struct display *d, struct win *w, SDL_Event *e) {
   const Uint8 ku = key_states[SDL_SCANCODE_U];
   const Uint8 colon = key_states[SDL_SCANCODE_SEMICOLON];
   if (!shift || !ctrl) {
-    handle_simple_keypresses(d, w, e);
+    handle_simple_keypresses(d, e);
   }
   if (shift) {
     if (k4) {
@@ -115,10 +115,10 @@ void handle_state_keypresses(struct display *d, struct win *w, SDL_Event *e) {
       // Will need to force a read of the file and then update row position.
     }
     if (ki) {
-      prepare_insert_mode(d, w, INSERT_BEGIN);
+      prepare_insert_mode(d, INSERT_BEGIN);
     }
     if (ka) {
-      prepare_insert_mode(d, w, INSERT_END);
+      prepare_insert_mode(d, INSERT_END);
     }
     if (colon) {
       d->mode = COMMAND;
