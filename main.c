@@ -87,11 +87,11 @@ int main(int argc, char **argv) {
     }
     SDL_SetRenderDrawColor(w.renderer, 0, 0, 0, 0xFF);
     SDL_RenderClear(w.renderer);
-    if (!display_page_render(&d, &w)) {
-      fprintf(stderr, "page render failed.\n");
-    }
     if (d.mode == COMMAND) {
       command_prompt_display(&d, &w);
+    }
+    if (!display_page_render(&d, &w)) {
+      fprintf(stderr, "page render failed.\n");
     }
     SDL_RenderPresent(w.renderer);
     double cur_exec_time = ((clock() - init) / (double)CLOCKS_PER_SEC);

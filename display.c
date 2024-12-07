@@ -49,8 +49,8 @@ bool display_page_render(struct display *d, struct win *w) {
   }
   struct display_dim dims;
   display_get_page_dim(d, w, &dims);
-  int width_offset=0;
-  int height_offset=0;
+  int width_offset=cur_page->x_offset;
+  int height_offset=cur_page->y_offset;
   reset_cursor_screen_pos(d);
   const int line_start = cur_page->row_offset;
   const int line_end = dims.row + cur_page->row_offset;
