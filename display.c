@@ -1,7 +1,8 @@
 #include <SDL2/SDL_render.h>
-#include "command_prompt.h"
+#include <string.h>
 #include "gap_buffer.h"
 #include "glyph.h"
+#include "menu.h"
 #include "page.h"
 #include "util.h"
 #include "display.h"
@@ -13,11 +14,32 @@ int display_init(struct display* d, const struct win *w) {
   d->cur_buf = 0;
   d->glyphs.color = d->config.font_color;
   d->glyphs.size = d->config.font_size;
+  if (!menu_init(&d->menu)) return 1;
+  d->running = true;
   int err = init_char(&d->glyphs, w, d->config.font_file);
   if (err != 0) return err;
   err = page_manager_init(&d->page_mgr);
   if (err != 0) return err;
+  err = init_command_array(&d->cmds, 1);
+  if (err != 0) return err;
+  if (!display_load_plugins(d)) return 1;
   return 0;
+}
+
+bool display_load_plugins(struct display* d) {
+  for (int i = 0; i < d->config.plugins.len; ++i) {
+    struct command cmd;
+    command_init(&cmd);
+    cmd.shared_library = d->config.plugins.string_data[i];
+    insert_command_array(&d->cmds, cmd);
+  }
+  for (int i = 0; i < d->cmds.len; ++i) {
+    struct command *cmd = &d->cmds.command_data[i];
+    if (!command_load(cmd)) {
+      fprintf(stderr, "failed command load.\n");
+    };
+  }
+  return true;
 }
 
 SDL_Texture * handle_characters(struct display *d, const char cur_char) {
@@ -78,11 +100,13 @@ bool display_page_render(struct display *d, struct win *w) {
         if (cur_char != 10 && cur_char != 13) {
           fprintf(stderr, "cur_char: %d\n", cur_char);
           fprintf(stderr, "glyph was null\n");
+          // display question mark for unknown chars
+          glyph = handle_characters(d, '?');
         } else if (d->cursor.screen_pos.row == line_idx &&
           d->cursor.screen_pos.col == char_idx ) {
           draw_cursor(d, w, &r);
+          continue;
         }
-        continue;
       }
       if (d->cursor.screen_pos.row == line_idx && d->cursor.screen_pos.col == char_idx) {
         draw_cursor(d, w, &r);
@@ -149,7 +173,56 @@ void display_get_page_dim(struct display *d, struct win *w, struct display_dim *
   out->col = ((int)winw / d->glyphs.max_width);
 }
 
+// TODO break out into a menu object
+bool display_command_prompt(struct display *d, struct win *w) {
+  int win_h, win_w;
+  SDL_GetWindowSize(w->window, &win_w, &win_h);
+  const int width = win_w - 50;
+  const int height = 60;
+  const int x_offset = (win_w / 2) - (width / 2);
+  const int y_offset = (win_h /2) - height;
+  SDL_Rect r = {
+    .x = x_offset,
+    .y = y_offset,
+    .h = height,
+    .w = width,
+  };
+  SDL_SetRenderDrawColor(w->renderer, 0x35, 0x35, 0x35, 0xff);
+  SDL_RenderFillRect(w->renderer, &r);
+  size_t cmd_len = d->cmds.len;
+  int width_offset = x_offset;
+  int height_offset = y_offset;
+  for (size_t i = 0; i < cmd_len; ++i) {
+    struct command *cmd = &d->cmds.command_data[i];
+    const char *prompt;
+    cmd->get_display_prompt(&prompt);
+    for (size_t char_idx = 0; char_idx < strlen(prompt); ++char_idx) {
+      SDL_Texture *glyph = handle_characters(d, prompt[char_idx]);
+      if (glyph == NULL) {
+        glyph = handle_characters(d, '?');
+      }
+      r = (SDL_Rect){
+        .x = width_offset,
+        .y = height_offset,
+        .w = d->glyphs.max_width,
+        .h = d->glyphs.max_height,
+      };
+      SDL_RenderCopy(
+        w->renderer,
+        glyph,
+        NULL,
+        &r
+      );
+      width_offset += d->glyphs.max_width;
+    }
+    height_offset += d->glyphs.max_height;
+    width_offset = x_offset;
+  }
+  return true;
+}
+
 void display_free(struct display* d) {
   free_char(&d->glyphs);
   page_manager_free(&d->page_mgr);
+  free_command_array(&d->cmds);
 }

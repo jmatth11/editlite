@@ -3,6 +3,9 @@
 
 #include <SDL2/SDL_pixels.h>
 #include <stddef.h>
+#include "deps/array_template/array_template.h"
+
+generate_array_template(string, char*);
 
 struct config {
   size_t font_size;
@@ -10,6 +13,7 @@ struct config {
   SDL_Color cursor_color;
   char leader;
   char *font_file;
+  string_array plugins;
 };
 
 void config_init(struct config *c);

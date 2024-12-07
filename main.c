@@ -12,6 +12,7 @@
 #include "command_prompt.h"
 #include "config.h"
 #include "key_handler.h"
+#include "menu.h"
 #include "page.h"
 #include "util.h"
 #include "win.h"
@@ -75,23 +76,23 @@ int main(int argc, char **argv) {
   d.page_mgr = pm;
 
   clock_t init;
-  SDL_Event e; int quit = 0;
-  while(!quit) {
+  SDL_Event e;;
+  while(d.running) {
     init = clock();
     while(SDL_PollEvent(&e)) {
       if (e.type == SDL_QUIT) {
-        quit = 1;
+        d.running = false;
       } else if (e.type == SDL_KEYDOWN) {
         handle_keydown(&d, &w, &e);
       }
     }
     SDL_SetRenderDrawColor(w.renderer, 0, 0, 0, 0xFF);
     SDL_RenderClear(w.renderer);
-    if (d.mode == COMMAND) {
-      command_prompt_display(&d, &w);
-    }
     if (!display_page_render(&d, &w)) {
       fprintf(stderr, "page render failed.\n");
+    }
+    if (d.mode == COMMAND) {
+      menu_display(&d, &w);
     }
     SDL_RenderPresent(w.renderer);
     double cur_exec_time = ((clock() - init) / (double)CLOCKS_PER_SEC);
