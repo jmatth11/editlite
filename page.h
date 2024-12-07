@@ -14,6 +14,7 @@ struct line {
 };
 
 int init_line(struct line *l);
+void free_line(struct line *l);
 
 generate_array_template(line, struct line)
 
@@ -24,6 +25,7 @@ struct page {
 };
 
 int init_page(struct page* p);
+void free_page(struct page* p);
 
 generate_array_template(page, struct page)
 
@@ -33,5 +35,6 @@ struct page_manager {
 };
 
 int init_page_manager(struct page_manager* pm);
+void free_page_manager(struct page_manager* pm);
 
 #endif
