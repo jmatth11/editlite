@@ -151,7 +151,7 @@ TODO
 - [ ] Implement some more basic vim motions.
     - [x] implement jumping with ctrl-d/u
     - [ ] jump between words
-- [ ] Prompt to add filename to unnamed pages.
+- [x] Prompt to add filename to unnamed pages.
 - [ ] Run in "memory limited" mode for memory constrained systems.
 - [ ] Support Windows
 - [ ] Update Makefile to make a release bundle
