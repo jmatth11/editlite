@@ -33,6 +33,7 @@ struct page_manager {
   page_array pages;
   bool (*open)(struct page* buf);
   bool (*read)(struct page* buf);
+  bool (*write)(struct page* buf);
 };
 
 int page_manager_init(struct page_manager* pm);

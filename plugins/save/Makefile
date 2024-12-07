@@ -1,5 +1,5 @@
 CC=gcc
-PLUGIN_NAME=quit
+PLUGIN_NAME=save
 SHARED_NAME=lib$(PLUGIN_NAME).so
 INCLUDES=-I../../
 

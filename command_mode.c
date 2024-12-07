@@ -22,6 +22,17 @@ void handle_command_mode(struct display *d, struct win *w, SDL_Event *e) {
     case SDLK_RETURN:
       execute_command(d);
       break;
+    case SDLK_j: {
+        size_t cmd_len = d->cmds.len;
+        ++d->menu.idx;
+        if (d->menu.idx >= cmd_len) d->menu.idx = cmd_len - 1;
+        break;
+    }
+    case SDLK_k: {
+        --d->menu.idx;
+        if (d->menu.idx < 0) d->menu.idx = 0;
+        break;
+    }
     case SDLK_r:
       display_reload_plugins(d);
       break;
