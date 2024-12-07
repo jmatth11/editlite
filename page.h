@@ -11,27 +11,28 @@ struct display;
 
 struct page {
   FILE *fp;
+  char *file_name;
   size_t file_offset_pos;
   size_t file_size;
   int col_offset;
   int row_offset;
+  bool (*handle_backspace)(struct page *p, struct display *d);
+  bool (*handle_keystroke)(struct page *p, struct display *d);
   struct linked_list *lines;
-  int (*handle_backspace)(struct page *p, struct display *d);
-  int (*handle_keystroke)(struct page *p, struct display *d);
 };
 
-int init_page(struct page* p);
-void free_page(struct page* p);
+bool page_init(struct page* p);
+void page_free(struct page* p);
 
 generate_array_template(page, struct page)
 
 struct page_manager {
   page_array pages;
-  int (*open)(struct page* buf, const char* file_name);
-  int (*read)(struct page* buf);
+  bool (*open)(struct page* buf);
+  bool (*read)(struct page* buf);
 };
 
-int init_page_manager(struct page_manager* pm);
-void free_page_manager(struct page_manager* pm);
+int page_manager_init(struct page_manager* pm);
+void page_manager_free(struct page_manager* pm);
 
 #endif

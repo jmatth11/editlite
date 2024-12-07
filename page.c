@@ -9,18 +9,22 @@
 
 static char buffer[BUFSIZ];
 
-int page_manager_open(struct page *buf, const char *file_name) {
-  buf->fp = fopen(file_name, "r+");
+bool page_manager_open(struct page *buf) {
+  if (buf->file_name == NULL) {
+    fprintf(stderr, "file name was null.\n");
+    return false;
+  }
+  buf->fp = fopen(buf->file_name, "r+");
   if (buf->fp == NULL) {
-    return 1;
+    return false;
   }
   fseek(buf->fp, 0L, SEEK_END);
   buf->file_size = ftell(buf->fp);
   fseek(buf->fp, 0L, SEEK_SET);
-  return 0;
+  return true;
 }
 
-int page_manager_read(struct page *buf) {
+bool page_manager_read(struct page *buf) {
   int done = 0;
   int char_idx = 0;
   struct linked_list *cur_line = linked_list_get_end(buf->lines);
@@ -64,34 +68,43 @@ int page_manager_read(struct page *buf) {
       done = 1;
     }
   }
-  return 0;
+  return true;
 }
 
-int init_page(struct page *p) {
+bool page_init(struct page *p) {
   p->lines = (struct linked_list*)malloc(sizeof(struct linked_list));
   int err = linked_list_init(p->lines);
   p->file_size = 0;
   p->file_offset_pos = 0;
   p->col_offset = 0;
   p->row_offset = 0;
+  p->file_name = NULL;
   p->fp = NULL;
-  return err;
+  return err == 0;
 }
 
-void free_page(struct page *p) {
+void page_free(struct page *p) {
   linked_list_free_all(p->lines);
+  if (p->file_name != NULL) {
+    free(p->file_name);
+    p->file_name = NULL;
+  }
+  if (p->fp != NULL) {
+    fclose(p->fp);
+    p->fp = NULL;
+  }
 }
 
-int init_page_manager(struct page_manager *pm) {
+int page_manager_init(struct page_manager *pm) {
   int err = init_page_array(&pm->pages, 1);
   pm->open = page_manager_open;
   pm->read = page_manager_read;
   return err;
 }
 
-void free_page_manager(struct page_manager *pm) {
+void page_manager_free(struct page_manager *pm) {
   for (int i = 0; i < pm->pages.len; ++i) {
-    free_page(&pm->pages.page_data[i]);
+    page_free(&pm->pages.page_data[i]);
   }
   free_page_array(&pm->pages);
 }
