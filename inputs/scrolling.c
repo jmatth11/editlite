@@ -1,4 +1,5 @@
 #include "components/display.h"
+#include "pages/page.h"
 #include "structures/linked_list.h"
 #include "scrolling.h"
 #include "states/state.h"
@@ -33,9 +34,9 @@ void handle_row_scroll(struct display *d, struct display_dim dim) {
   }
   if (c_row >= cur_page->page_offset.row + dim.row) {
     const int offset = c_row - (cur_page->page_offset.row + dim.row);
-    cur_page->page_offset.row += offset + 1;
+    page_set_offset_row(cur_page, cur_page->page_offset.row + offset + 1, d);
   } else if (c_row < cur_page->page_offset.row) {
-    cur_page->page_offset.row = c_row;
+    page_set_offset_row(cur_page, c_row, d);
   }
 }
 
@@ -61,9 +62,9 @@ void handle_col_scroll(struct display *d, struct display_dim dim) {
   const size_t c_col = cur_page->cursor.pos.col;
   if (c_col >= cur_page->page_offset.col + dim.col) {
     const int offset = c_col - (cur_page->page_offset.col + dim.col);
-    cur_page->page_offset.col += offset + 1;
+    page_set_offset_col(cur_page, cur_page->page_offset.col + offset + 1, d);
   } else if (c_col < cur_page->page_offset.col) {
-    cur_page->page_offset.col = c_col;
+    page_set_offset_col(cur_page, c_col, d);
   }
 }
 

@@ -25,16 +25,17 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    const utf8_lib = std.Build.LazyPath{
-        .cwd_relative = "../../deps/utf8-zig/src/",
-    };
-    lib.addIncludePath(utf8_lib);
+    // utf8 library
+    lib.addIncludePath(b.path("../../deps/utf8-zig/src/"));
 
     // allow editlite files to be included
-    const type_headers = std.Build.LazyPath{
-        .cwd_relative = "../../",
-    };
-    lib.addIncludePath(type_headers);
+    lib.addIncludePath(b.path("../../"));
+
+    // tree-sitter
+    //lib.addIncludePath("./tree-sitter/lib/include/");
+    //lib.addLibraryPath("./tree-sitter/");
+    //lib.linkLibrary("tree-sitter");
+
     // include lib c
     lib.linkLibC();
 
@@ -45,17 +46,17 @@ pub fn build(b: *std.Build) void {
 
     // Creates a step for unit testing. This only builds the test executable
     // but does not run it.
-    //const lib_unit_tests = b.addTest(.{
-    //    .root_source_file = b.path("src/root.zig"),
-    //    .target = target,
-    //    .optimize = optimize,
-    //});
+    const lib_unit_tests = b.addTest(.{
+        .root_source_file = b.path("src/test_root.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
 
-    //const run_lib_unit_tests = b.addRunArtifact(lib_unit_tests);
+    const run_lib_unit_tests = b.addRunArtifact(lib_unit_tests);
 
     // Similar to creating the run step earlier, this exposes a `test` step to
     // the `zig build --help` menu, providing a way for the user to request
     // running the unit tests.
-    //const test_step = b.step("test", "Run unit tests");
-    //test_step.dependOn(&run_lib_unit_tests.step);
+    const test_step = b.step("test", "Run unit tests");
+    test_step.dependOn(&run_lib_unit_tests.step);
 }

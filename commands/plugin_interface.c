@@ -92,7 +92,7 @@ void pi_dispatch(
         for (int i = 0; i < events.len; ++i) {
           page_change callback = events.page_change_func_data[i];
           if (callback != NULL) {
-            callback(d);
+            callback(d, NEW_PAGE);
           }
         }
       }
