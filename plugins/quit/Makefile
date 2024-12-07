@@ -7,3 +7,6 @@ all: quit.o
 
 quit.o: quit.c
 	gcc -c -fPIC $< $(INCLUDES)
+
+clean:
+	rm *.o *.so
