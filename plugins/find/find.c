@@ -40,7 +40,7 @@ bool render(struct display *d, struct display_dim *dim) {
     op.height += line_height;
     draw_background(d, 0, winh - op.height, winw, op.height);
     draw_textinput(d, op.value, op.value_size, 0, winh - op.height, winw, line_height);
-    draw_options(d, &op, 0, winh - (op.height * 2), winw, line_height);
+    draw_options(d, &op, 0, (winh - op.height) + line_height, winw, line_height);
     // TODO render find display
     // need to use popen to execute grep command and get output
   }
@@ -71,7 +71,6 @@ bool event(SDL_Event *e, struct display *d, struct display_dim *dim) {
         --op.value_size;
       }
     } else if (e->key.keysym.sym == SDLK_RETURN) {
-      printf("hitting return\n");
       search_word_options(d, dim, &op);
     } else {
       char input_c = d->glyphs.sanitize_character(e->key.keysym.sym);
