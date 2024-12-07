@@ -19,9 +19,53 @@ Currently supports:
 - some vim motions
 - configuration through toml file
 
+## Setup
+
+This project relies on SDL2 and a small toml library for config files.
+The setup is straight forward, run a script to install dependencies and then run the Makefile
+
+
+```bash
+./install_deps.sh
+make
+```
+
+## Running
+
+Run the program with no arguments or with a file to initially load in.
+```bash
+./bin/editlite
+```
+
+```bash
+# with a file
+./bin/editlite ./path/to/file.txt
+```
+
+## Usage
+
+I'm mainly reusing vim movements at the moment, but I only have a very small subset implemented.
+
+Supported movements:
+- h/j/k/l (left,down,up,right)
+- CTRL-d/u (down half page, up half page)
+- 0/$ (beginning of line, end of line)
+- i/a/I/A (insert at cursor, insert after cursor,insert beginning of line, insert at the end of the line)
+- : (command mode -- this is different from vim, it lists the plugins you have and hitting enter on one triggers it's action)
+- g (just a single g goes to top of file)
+
+- Within File Menu
+    - h/j/k/l
+    - enter to select file
+- Within Find Plugin
+    - Type to enter the word you want to find
+    - CTRL-n/p/y (navigate down the list, navigate up the list, confirm choice)
+
 ## Configuration
 
 Configuration is done with a toml file at `$HOME/.editlite.toml`
+
+The default location for plugins are located in `$HOME/.config/editlite/`
 
 Example file:
 ```toml
