@@ -27,7 +27,6 @@ struct display {
   size_t cur_buf;
   struct cursor cursor;
   struct glyphs glyphs;
-  struct page command_prompt;
   struct page_manager page_mgr;
   struct config config;
 };
