@@ -8,14 +8,14 @@ But I'd like to try and implement a "memory constrained" mode where it only load
 ## Functionality
 
 Currently supports:
-    - Viewing a file.
-    - Editing/saving files.
-    - incrementally loading a file that you are viewing (so it's not all in memory at once)
-    - file traversing to a different file.
-    - searching for text within the currently loaded file.
-    - plugins to add extra functionality.
-    - some vim motions
-    - configuration through toml file
+- Viewing a file.
+- Editing/saving files.
+- incrementally loading a file that you are viewing (so it's not all in memory at once)
+- file traversing to a different file.
+- searching for text within the currently loaded file.
+- plugins to add extra functionality.
+- some vim motions
+- configuration through toml file
 
 ## Configuration
 
