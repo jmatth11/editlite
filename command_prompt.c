@@ -23,6 +23,10 @@ bool command_load(struct command *cmd) {
     fprintf(stderr, "could not load shared library: \"%s\"\n", cmd->shared_library);
     return false;
   }
+  // these functions aren't necessary
+  cmd->setup = dlsym(handle, "setup");
+  cmd->cleanup = dlsym(handle, "cleanup");
+  // these functions are required
   cmd->action = dlsym(handle, "action");
   if (cmd->action == NULL) {
     fprintf(stderr,
