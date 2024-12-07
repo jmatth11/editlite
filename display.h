@@ -35,6 +35,7 @@ struct display {
   struct command_array cmds;
   struct page_manager page_mgr;
   struct config config;
+  struct plugin_interface pi;
 };
 
 int display_init(struct display* d, const struct win *w);
