@@ -1,0 +1,18 @@
+name: Build-Step
+
+on: push
+
+jobs:
+  build-step:
+    name: Perform Normal Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install Deps
+        run: ./install_deps.sh
+
+      - name: Build Project
+        run: make
+
