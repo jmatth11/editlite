@@ -23,6 +23,7 @@ bool action(struct plugin_interface *pi) {
   init_location_array(&op.locs, 1);
   op.idx = 0;
   op.value_size = 0;
+  op.visual_offset = 0;
   pi->dispatch(pi, DISPATCH_PLUGIN_INPUT, NULL);
   showMenu = true;
   return true;
@@ -34,6 +35,7 @@ bool render(struct display *d, struct display_dim *dim) {
     SDL_GetWindowSize(d->w.window, &winw, &winh);
     const int menu_max_height = dim->row / 3.0f;
     const int line_height = d->glyphs.height;
+    const int menu_len = op.locs.len < menu_max_height ? op.locs.len : menu_max_height;
     op.height = op.locs.len <= menu_max_height ?
       (op.locs.len * line_height) :
       (menu_max_height * line_height);
@@ -42,8 +44,9 @@ bool render(struct display *d, struct display_dim *dim) {
     size_t options_y_offset = (winh - op.height) + line_height;
     draw_background(d, 0, winh - op.height, winw, op.height);
     draw_textinput(d, op.value, op.value_size, 0, winh - op.height, winw, line_height);
-    draw_options(d, &op, 0, options_y_offset, winw, line_height);
-    size_t select_box_y_offset = (line_height * op.idx) + options_y_offset;
+    draw_options(d, &op, menu_len, 0, options_y_offset, winw, line_height);
+    size_t select_offset = op.idx < (menu_max_height-1) ? op.idx : (menu_max_height-1);
+    size_t select_box_y_offset = (line_height * select_offset) + options_y_offset;
     draw_select_box(d, 0, select_box_y_offset, winw, line_height);
   }
   return true;
@@ -55,6 +58,8 @@ bool event(SDL_Event *e, struct display *d, struct display_dim *dim) {
   }
   // only listen for keydown events
   if (e->type != SDL_KEYDOWN) return true;
+  // - 1 for the text input row
+  const int menu_max_height = (dim->row / 3.0f) - 1;
   const Uint8* key_states = SDL_GetKeyboardState(NULL);
   const Uint8 ctrl = key_states[SDL_SCANCODE_LCTRL] || key_states[SDL_SCANCODE_RCTRL];
   const Uint8 kn = key_states[SDL_SCANCODE_N];
@@ -68,6 +73,16 @@ bool event(SDL_Event *e, struct display *d, struct display_dim *dim) {
     if (kp) {
       --op.idx;
       if (op.idx < 0) op.idx = op.locs.len - 1;
+    }
+    if (op.idx > (op.visual_offset + menu_max_height) && op.locs.len >= menu_max_height) {
+      op.visual_offset = op.idx - menu_max_height;
+    }
+    if (op.idx < op.visual_offset) {
+      if (op.idx == 0) {
+        op.visual_offset = 0;
+      } else {
+        op.visual_offset = op.visual_offset - op.idx;
+      }
     }
     if (ky) {
       struct display_dim new_pos;
@@ -85,6 +100,8 @@ bool event(SDL_Event *e, struct display *d, struct display_dim *dim) {
       }
     } else if (e->key.keysym.sym == SDLK_RETURN) {
       search_word_options(d, dim, &op);
+      op.visual_offset = 0;
+      op.idx = 0;
     } else {
       char input_c = d->glyphs.sanitize_character(e->key.keysym.sym);
       if (input_c != '\0' && input_c != '\n' && input_c != '\t') {

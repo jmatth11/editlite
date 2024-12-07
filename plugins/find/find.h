@@ -26,6 +26,7 @@ generate_array_template(location, struct find_loc)
 
 struct find_info {
   int idx;
+  int visual_offset;
   int height;
   int value_size;
   char value[FIND_INFO_VALUE_SIZE];
