@@ -40,9 +40,9 @@ static SDL_Color color_for_path_type(uint8_t d_type) {
     case DT_REG:
       return (SDL_Color){255,255,255,255};
     case DT_DIR:
-      return (SDL_Color){30,30, 255, 255};
+      return (SDL_Color){17,123, 158, 255};
     case DT_LNK:
-      return (SDL_Color){30,255, 100, 255};
+      return (SDL_Color){19,156, 61, 255};
     default:
       return (SDL_Color){200,40, 0, 255};
   }
