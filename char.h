@@ -4,9 +4,12 @@
 #include <SDL2/SDL_ttf.h>
 #include "win.h"
 
+#define CHAR_START_RANGE 32
+#define CHAR_END_RANGE 127
+
 struct characters {
   TTF_Font *font;
-  SDL_Texture* glyphs[96];
+  SDL_Texture* glyphs[CHAR_END_RANGE - CHAR_START_RANGE];
   SDL_Color color;
   size_t size;
   size_t max_height;

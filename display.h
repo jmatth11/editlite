@@ -5,6 +5,12 @@
 #include "page.h"
 #include "config.h"
 
+enum display_mode {
+  NORMAL = 0,
+  INSERT,
+  COMMAND,
+};
+
 struct display_dim {
   int col;
   int row;
@@ -16,6 +22,7 @@ struct cursor {
 };
 
 struct display {
+  enum display_mode mode;
   size_t cur_buf;
   struct cursor cursor;
   struct characters glyphs;

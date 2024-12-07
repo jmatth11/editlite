@@ -9,7 +9,7 @@ Not sure how configurable I will allow it, but I will try to make it customizabl
 
 TODO
 - [x] navigating the document.
-- [ ] Loading more of the file in memory when navigating.
+- [x] Loading more of the file in memory when navigating.
 - [ ] Edit the document.
 - [ ] Searching through document.
 - [ ] Command to load another file.

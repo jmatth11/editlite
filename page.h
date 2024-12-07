@@ -21,6 +21,7 @@ generate_array_template(line, struct line)
 struct page {
   FILE *fp;
   size_t file_offset_pos;
+  size_t file_size;
   int col_offset;
   int row_offset;
   line_array lines;
@@ -33,7 +34,8 @@ generate_array_template(page, struct page)
 
 struct page_manager {
   page_array pages;
-  int (*read_file)(struct page* buf, const char* file_name);
+  int (*open)(struct page* buf, const char* file_name);
+  int (*read)(struct page* buf);
 };
 
 int init_page_manager(struct page_manager* pm);
