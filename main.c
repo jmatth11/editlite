@@ -10,16 +10,16 @@
 #include <string.h>
 #include <time.h>
 
-#include "config.h"
-#include "display.h"
-#include "key_handler.h"
-#include "menu.h"
-#include "page.h"
+#include "components/display.h"
+#include "components/menu.h"
+#include "components/win.h"
+#include "helpers/config.h"
+#include "inputs/key_handler.h"
+#include "pages/page.h"
 #include "types/config_types.h"
 #include "types/display_type.h"
 #include "types/win_types.h"
-#include "state.h"
-#include "win.h"
+#include "states/state.h"
 
 void init() {
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {

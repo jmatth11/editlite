@@ -1,7 +1,7 @@
 #ifndef EDITLITE_LINE_TYPES_H
 #define EDITLITE_LINE_TYPES_H
 
-#include "../gap_buffer.h"
+#include <structures/gap_buffer.h>
 
 struct line {
   size_t start_pos;

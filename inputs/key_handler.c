@@ -2,15 +2,15 @@
 #include <SDL2/SDL_scancode.h>
 #include <SDL2/SDL_stdinc.h>
 
-#include "display.h"
-#include "command_mode.h"
-#include "insert_mode.h"
+#include "components/display.h"
+#include "modes/command_mode.h"
+#include "modes/insert_mode.h"
 #include "key_handler.h"
-#include "linked_list.h"
+#include "structures/linked_list.h"
 #include "scrolling.h"
-#include "state.h"
+#include "states/state.h"
 #include "types/display_type.h"
-#include "util.h"
+#include "helpers/util.h"
 
 void handle_plugin_textinput_mode(struct display*d, SDL_Event*e) {
   switch (e->key.keysym.sym) {

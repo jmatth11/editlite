@@ -1,14 +1,14 @@
 #include <stdio.h>
 
+#include "components/display.h"
+#include "components/glyph.h"
+#include "helpers/file_ops.h"
 #include "line.h"
-#include "linked_list.h"
 #include "page.h"
+#include "structures/linked_list.h"
 #include "types/line_types.h"
 #include "types/size_types.h"
 #include "types/page_types.h"
-#include "display.h"
-#include "glyph.h"
-#include "file_ops.h"
 
 #ifndef BUFSIZ
 #define BUFSIZ 8192
