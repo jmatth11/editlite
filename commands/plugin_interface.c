@@ -1,11 +1,11 @@
 #include <string.h>
 
-#include "display.h"
-#include "menu.h"
-#include "page.h"
+#include "components/display.h"
+#include "components/menu.h"
+#include "pages/page.h"
 #include "plugin_interface.h"
-#include "scrolling.h"
-#include "state.h"
+#include "inputs/scrolling.h"
+#include "states/state.h"
 #include "types/display_type.h"
 #include "types/plugin_interface_types.h"
 #include "types/page_types.h"

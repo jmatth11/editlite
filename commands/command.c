@@ -1,7 +1,7 @@
 #include <dlfcn.h>
 #include <stdlib.h>
 
-#include "command_prompt.h"
+#include "command.h"
 #include "types/command_types.h"
 
 bool command_init(struct command *cmd) {

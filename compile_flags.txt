@@ -1,0 +1,8 @@
+-I.
+-Wall
+-std=c11
+-L./deps/tomlc99/
+-lSDL2
+-lSDL2_ttf
+-lm
+-l:libtoml.a

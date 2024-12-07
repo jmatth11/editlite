@@ -1,9 +1,9 @@
 #include <SDL2/SDL_keycode.h>
 #include "command_mode.h"
-#include "command_prompt.h"
-#include "display.h"
-#include "menu.h"
-#include "state.h"
+#include "commands/command.h"
+#include "components/display.h"
+#include "components/menu.h"
+#include "states/state.h"
 #include "types/display_type.h"
 
 bool execute_command(struct display *d, void *ctx) {

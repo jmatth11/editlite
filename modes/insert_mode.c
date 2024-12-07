@@ -2,12 +2,12 @@
 #include <stdbool.h>
 #include <SDL2/SDL_keycode.h>
 
-#include "display.h"
+#include "components/display.h"
 #include "insert_mode.h"
-#include "linked_list.h"
+#include "structures/linked_list.h"
 #include "types/display_type.h"
-#include "scrolling.h"
-#include "state.h"
+#include "inputs/scrolling.h"
+#include "states/state.h"
 
 void handle_insert_mode(struct display *d, SDL_Event *e) {
   if (e->key.keysym.sym == SDLK_ESCAPE) {
