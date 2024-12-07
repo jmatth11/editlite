@@ -9,13 +9,14 @@
 #include "display.h"
 
 int display_init(struct display* d, const struct win *w) {
+  // we do not initialize the menu in here because we initialize it on the fly
+  // when we enter command mode
   d->mode = NORMAL;
   d->cursor.pos = (struct display_dim){0, 0};
   d->cursor.screen_pos = d->cursor.pos;
   d->cur_buf = 0;
   d->glyphs.color = d->config.font_color;
   d->glyphs.size = d->config.font_size;
-  if (!menu_init(&d->menu)) return 1;
   d->running = true;
   int err = init_char(&d->glyphs, w, d->config.font_file);
   if (err != 0) return err;
