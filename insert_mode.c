@@ -30,7 +30,8 @@ void handle_insert_mode(struct display *d, struct win *w, SDL_Event *e) {
   handle_col_scroll(d, dim);
 }
 
-void prepare_insert_mode(struct display *d, struct win *w) {
+void prepare_insert_mode(struct display *d, struct win *w, enum insert_mode_t mode) {
+  d->mode = INSERT;
   struct page *cur_page;
   if (!display_get_cur_page(d, &cur_page)) {
     fprintf(stderr, "could not get current page for prepare_insert_mode.\n");
@@ -39,8 +40,31 @@ void prepare_insert_mode(struct display *d, struct win *w) {
   struct linked_list *cur_line = linked_list_get_pos(cur_page->lines, d->cursor.pos.row);
   struct gap_buffer *cur_gb = &cur_line->value.chars;
   const size_t cur_gb_len = gap_buffer_get_len(cur_gb);
+  switch (mode) {
+    case INSERT_AT: {
+      break;
+    }
+    case INSERT_BEGIN: {
+      d->cursor.pos.col = 0;
+      break;
+    }
+    case INSERT_END: {
+      d->cursor.pos.col = cur_gb_len;
+      break;
+    }
+    case INSERT_AFTER: {
+      ++d->cursor.pos.col;
+      break;
+    }
+  }
   if (d->cursor.pos.col >= cur_gb_len) {
-    d->cursor.pos.col = cur_gb_len - 1;
+    char tmp = ' ';
+    gap_buffer_get_char(cur_gb, cur_gb_len - 1, &tmp);
+    if (tmp == '\n') {
+      d->cursor.pos.col = cur_gb_len - 1;
+    } else {
+      d->cursor.pos.col = cur_gb_len;
+    }
   }
   gap_buffer_move_cursor(cur_gb, d->cursor.pos.col);
 }
