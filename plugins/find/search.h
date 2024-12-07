@@ -5,6 +5,6 @@
 
 struct find_info;
 
-void search_word_options(struct display *d, struct find_info *op);
+void search_word_options(struct display *d, struct display_dim *dim, struct find_info *op);
 
 #endif

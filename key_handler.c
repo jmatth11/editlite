@@ -16,12 +16,14 @@ void handle_plugin_textinput_mode(struct display*d, SDL_Event*e) {
       d->mode = NORMAL;
       break;
   }
+  struct display_dim dims;
+  display_get_page_dim(d, &dims);
   // handle plugin events after our events
   if (d->cmds.len > 0) {
     for (int i = 0; i < d->cmds.len; ++i) {
       struct command *cmd = &d->cmds.command_data[i];
       if (cmd->event != NULL) {
-        if (!cmd->event(e, d)) {
+        if (!cmd->event(e, d, &dims)) {
           const char *name;
           cmd->get_display_prompt(&name);
           fprintf(stderr, "command event failed: \"%s\"\n", name);

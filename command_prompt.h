@@ -18,7 +18,7 @@ struct command {
   bool (*action)(struct plugin_interface *);
   void (*get_display_prompt)(const char **out);
   bool (*render)(struct display *, struct display_dim *);
-  bool (*event)(SDL_Event *, struct display *);
+  bool (*event)(SDL_Event *, struct display *, struct display_dim *);
   bool (*cleanup)(struct plugin_interface *);
 };
 
