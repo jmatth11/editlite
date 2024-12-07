@@ -1,6 +1,8 @@
 #include "insert_mode.h"
+#include "display.h"
 #include "gap_buffer.h"
 #include "page.h"
+#include "scrolling.h"
 #include <SDL2/SDL_keycode.h>
 #include <ctype.h>
 #include <stdbool.h>
@@ -150,11 +152,15 @@ void handle_insert_mode(struct display *d, struct win *w, SDL_Event *e) {
   struct page *cur_page = &d->page_mgr.pages.page_data[d->cur_buf];
   struct line *cur_line = &cur_page->lines.line_data[d->cursor.pos.row];
   struct gap_buffer *cur_gb = &cur_line->chars;
+  struct display_dim dim;
+  get_page_dim(d, w, &dim);
 
   if (e->key.keysym.sym == SDLK_BACKSPACE) {
     if (d->cursor.pos.col > 0) {
       gap_buffer_delete(cur_gb);
       d->cursor.pos.col--;
+      handle_row_scroll(d, dim);
+      handle_col_scroll(d, dim);
     } else {
       // TODO handle merging with line above current
     }
@@ -163,8 +169,11 @@ void handle_insert_mode(struct display *d, struct win *w, SDL_Event *e) {
     if (received_char != '\0') {
       gap_buffer_insert(cur_gb, received_char);
       d->cursor.pos.col++;
+      handle_row_scroll(d, dim);
+      handle_col_scroll(d, dim);
     }
   }
+
 }
 
 void prepare_insert_mode(struct display *d, struct win *w) {
