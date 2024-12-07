@@ -19,6 +19,7 @@ generate_array_template(menu_item, struct menu_item);
 struct menu {
   int x, y, w, h;
   int idx;
+  int visual_offset;
   menu_item_array items;
 };
 
