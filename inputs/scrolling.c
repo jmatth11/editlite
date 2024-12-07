@@ -3,6 +3,7 @@
 #include "scrolling.h"
 #include "states/state.h"
 #include "types/display_type.h"
+#include "types/unicode_types.h"
 
 void handle_row_scroll(struct display *d, struct display_dim dim) {
   struct page *cur_page;
@@ -49,7 +50,7 @@ void handle_col_scroll(struct display *d, struct display_dim dim) {
   const int gap_buffer_len = gap_buffer_get_len(&cur_line->value.chars);
   if (cur_page->cursor.pos.col < 0) cur_page->cursor.pos.col = 0;
   if (cur_page->cursor.pos.col >= gap_buffer_len) {
-    char tmp = ' ';
+    code_point_t tmp = ' ';
     gap_buffer_get_char(&cur_line->value.chars, gap_buffer_len - 1, &tmp);
     if (tmp == '\n') {
       cur_page->cursor.pos.col = gap_buffer_len - 1;

@@ -1,3 +1,5 @@
+#include <SDL2/SDL_keycode.h>
+#include <stdint.h>
 #include <stdio.h>
 
 #include "components/display.h"
@@ -9,13 +11,15 @@
 #include "types/line_types.h"
 #include "types/size_types.h"
 #include "types/page_types.h"
+#include "types/unicode_types.h"
+#include "utf8.h"
 
 #ifndef BUFSIZ
 #define BUFSIZ 8192
 #endif
 #define BUFFER_LIMIT BUFSIZ * 4
 
-static char buffer[BUFSIZ];
+static uint8_t buffer[BUFSIZ];
 
 bool page_handle_backspace(struct page *p) {
   struct linked_list *cur_line = linked_list_get_pos(p->lines, p->cursor.pos.row);
@@ -31,7 +35,7 @@ bool page_handle_backspace(struct page *p) {
     gap_buffer_delete(prev_gb);
     size_t cur_gb_len = gap_buffer_get_len(cur_gb);
     for (int i = 0; i < cur_gb_len; ++i) {
-      char tmp = ' ';
+      code_point_t tmp = ' ';
       gap_buffer_get_char(cur_gb, i, &tmp);
       gap_buffer_insert(prev_gb, tmp);
     }
@@ -43,6 +47,32 @@ bool page_handle_backspace(struct page *p) {
   return true;
 }
 
+bool page_handle_newline(struct page *p) {
+  struct linked_list *cur_line = linked_list_get_pos(p->lines, p->cursor.pos.row);
+  struct gap_buffer *cur_gb = &cur_line->value.chars;
+  gap_buffer_insert(cur_gb, '\n');
+  p->cursor.pos.col++;
+  struct line new_line;
+  init_line(&new_line);
+  struct gap_buffer *next_gb = &new_line.chars;
+  gap_buffer_move_cursor(next_gb, 0);
+  size_t cur_col = p->cursor.pos.col;
+  size_t gb_len = gap_buffer_get_len(cur_gb);
+  for (; cur_col < gb_len; ++cur_col) {
+    code_point_t tmp = ' ';
+    gap_buffer_get_char(cur_gb, cur_col, &tmp);
+    gap_buffer_insert(next_gb, tmp);
+  }
+  cur_col = p->cursor.pos.col;
+  gap_buffer_move_cursor(cur_gb, gb_len - 1);
+  gap_buffer_delete_seq(cur_gb, gb_len - cur_col);
+  p->cursor.pos.col = 0;
+  p->cursor.pos.row++;
+  gap_buffer_move_cursor(next_gb, p->cursor.pos.col);
+  linked_list_insert(cur_line, 0, new_line);
+  return true;
+}
+
 void page_reset_screen_cursor(struct page *p) {
   p->cursor.screen_pos = p->cursor.pos;
 }
@@ -50,33 +80,10 @@ void page_reset_screen_cursor(struct page *p) {
 bool page_handle_keystroke(struct page *p, SDL_Event *e) {
   struct linked_list *cur_line = linked_list_get_pos(p->lines, p->cursor.pos.row);
   struct gap_buffer *cur_gb = &cur_line->value.chars;
-  const char received_char = sanitize_character(e->key.keysym.sym);
+  const code_point_t received_char = code_point_from_sdl_input(e);
   if (received_char != '\0') {
-    if (received_char == '\n') {
-      gap_buffer_insert(cur_gb, received_char);
-      p->cursor.pos.col++;
-      struct line new_line;
-      init_line(&new_line);
-      struct gap_buffer *next_gb = &new_line.chars;
-      gap_buffer_move_cursor(next_gb, 0);
-      size_t cur_col = p->cursor.pos.col;
-      size_t gb_len = gap_buffer_get_len(cur_gb);
-      for (; cur_col < gb_len; ++cur_col) {
-        char tmp = ' ';
-        gap_buffer_get_char(cur_gb, cur_col, &tmp);
-        gap_buffer_insert(next_gb, tmp);
-      }
-      cur_col = p->cursor.pos.col;
-      gap_buffer_move_cursor(cur_gb, gb_len - 1);
-      gap_buffer_delete_seq(cur_gb, gb_len - cur_col);
-      p->cursor.pos.col = 0;
-      p->cursor.pos.row++;
-      gap_buffer_move_cursor(next_gb, p->cursor.pos.col);
-      linked_list_insert(cur_line, 0, new_line);
-    } else {
-      gap_buffer_insert(cur_gb, received_char);
-      p->cursor.pos.col++;
-    }
+    gap_buffer_insert(cur_gb, received_char);
+    p->cursor.pos.col++;
   }
   return true;
 }
@@ -110,11 +117,11 @@ bool page_manager_read(struct page *buf, size_t limit) {
   bool create_new_line = false;
   size_t next_buffer_limit = buf->file_offset_pos + BUFFER_LIMIT;
   while (!done) {
-    size_t n = fread(buffer, sizeof(char), BUFSIZ, buf->fp);
+    size_t n = fread(buffer, sizeof(uint8_t), BUFSIZ, buf->fp);
     if (n < BUFSIZ) {
       done = true;
     }
-    for (int i = 0; i < n; ++i) {
+    for (int i = 0; i < n;) {
       // create new line entry on the next go so we don't have empty lines
       // at the end of the linked list
       if (create_new_line) {
@@ -126,13 +133,54 @@ bool page_manager_read(struct page *buf, size_t limit) {
         char_idx = 0;
         create_new_line = false;
       }
-      char cur_char = buffer[i];
-      gap_buffer_insert(&cur_line->value.chars, cur_char);
-      if (cur_char == '\n') {
+      // TODO refactor this to be cleaner
+      struct code_point point = utf8_next(buffer, n, i);
+      if (point.type == OCT_INVALID) {
+        const enum octet_type local_type = get_oct_type(buffer[i]);
+        if (local_type != OCT_INVALID && local_type != OCT_NEXT) {
+          const uint8_t byte_count = octet_type_count(local_type);
+          uint8_t overflow[4];
+          uint8_t overflow_idx = 0;
+          size_t buf_idx = i;
+          bool valid = true;
+          while (overflow_idx < byte_count && valid) {
+            if (buf_idx >= n) {
+              const size_t read_len = byte_count - overflow_idx;
+              const size_t read_len_n = fread(buffer, sizeof(uint8_t), read_len, buf->fp);
+              if (read_len_n != read_len) {
+                valid = false;
+                break;
+              }
+              n += read_len_n;
+              buf_idx = 0;
+            }
+            const uint8_t tmp = buffer[buf_idx];
+            const enum octet_type tmp_type = get_oct_type(tmp);
+            if (overflow_idx != 0 && tmp_type != OCT_NEXT) {
+              valid = false;
+            }
+            overflow[overflow_idx] = tmp;
+            overflow_idx++;
+            buf_idx++;
+          }
+          i += overflow_idx;
+          if (!valid) {
+            point.val = '?';
+          } else {
+            point = utf8_next(overflow, byte_count, 0);
+          }
+        } else {
+          point.val = '?';
+        }
+      } else {
+        i += octet_type_count(point.type);
+      }
+      gap_buffer_insert(&cur_line->value.chars, point.val);
+      if (point.val == '\n') {
         cur_line->value.load_pos = char_idx + buf->file_offset_pos;
         create_new_line = true;
       } else {
-        char_idx++;
+        char_idx += octet_type_count(point.type);
       }
     }
     buf->file_offset_pos += n;
@@ -151,9 +199,11 @@ bool page_manager_write(struct page* buf) {
     struct gap_buffer *cur_gb = &cur_line->value.chars;
     const size_t cur_gb_len = gap_buffer_get_len(cur_gb);
     for (int i = 0; i < cur_gb_len; ++i) {
-      char tmp = '?';
+      code_point_t tmp = '?';
       gap_buffer_get_char(cur_gb, i, &tmp);
-      fwrite(&tmp, sizeof(char), 1, tmpFile);
+      uint8_t buf[4];
+      const uint8_t byte_len = utf8_write_code_point(buf, 4, 0, tmp);
+      fwrite(buf, sizeof(uint8_t), byte_len, tmpFile);
     }
     cur_line = cur_line->next;
   }
@@ -199,6 +249,7 @@ bool page_init(struct page *p) {
   p->cursor.screen_pos = p->cursor.pos;
   p->handle_backspace = page_handle_backspace;
   p->handle_keystroke = page_handle_keystroke;
+  p->handle_newline = page_handle_newline;
   return err == 0;
 }
 

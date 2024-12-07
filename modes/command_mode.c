@@ -18,7 +18,7 @@ bool execute_command(struct display *d, void *ctx) {
 void handle_command_mode(struct display *d, SDL_Event *e) {
   switch (e->key.keysym.sym) {
     case SDLK_ESCAPE:
-      d->mode = NORMAL;
+      display_set_mode(d, NORMAL);
       break;
     case SDLK_RETURN: {
       struct menu_item *mi = &d->state.menu.items.menu_item_data[d->state.menu.idx];
@@ -56,6 +56,7 @@ void prepare_command_mode(struct display *d) {
     cmd->get_display_prompt(&mi.name);
     mi.ctx = cmd;
     mi.selected = execute_command;
+    mi.use_color = false;
     insert_menu_item_array(&d->state.menu.items, mi);
   }
 }

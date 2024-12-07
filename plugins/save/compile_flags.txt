@@ -1,4 +1,5 @@
 -I../../
+-I../../deps/utf8-zig/headers
 -Wall
 -Wpedantic
 

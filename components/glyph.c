@@ -1,13 +1,30 @@
+#include <SDL2/SDL_render.h>
 #include <ctype.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <SDL2/SDL_error.h>
 #include <SDL2/SDL_ttf.h>
+#include <unicode/uchar.h>
 
 #include "glyph.h"
+#include "structures/hash_map.h"
 #include "types/glyph_types.h"
+#include "types/unicode_types.h"
 #include "types/win_types.h"
+#include "utf8.h"
+
+static SDL_Texture* create_glyph_texture(struct glyphs *ch, const struct win *w, const code_point_t point) {
+  SDL_Surface *s = TTF_RenderGlyph32_Solid(ch->font, point, ch->color);
+  if (s == NULL) {
+    fprintf(stderr, "rendering TTF surface failed for code_point \"%d\". %s\n", point, SDL_GetError());
+    return NULL;
+  }
+  SDL_Texture* result = SDL_CreateTextureFromSurface(w->renderer, s);
+  SDL_FreeSurface(s);
+  return result;
+}
 
 int init_char(struct glyphs *ch, const struct win *w, const char* ttf_file) {
   ch->font = TTF_OpenFont(ttf_file, ch->point);
@@ -17,13 +34,16 @@ int init_char(struct glyphs *ch, const struct win *w, const char* ttf_file) {
     fprintf(stderr, "TTF font could not initialize.\n");
     exit(1);
   }
-  char glyph_buf[2];
-  glyph_buf[1] = '\0';
+  ch->glyphs = hash_map_create(1000);
+  if (ch->glyphs == NULL) {
+    fprintf(stderr, "Glyph map could not initialize.\n");
+    return 0;
+  }
   for (int i = CHAR_START_RANGE; i < CHAR_END_RANGE; ++i) {
-    glyph_buf[0] = i;
-    SDL_Surface *s = TTF_RenderText_Solid(ch->font, glyph_buf, ch->color);
+    SDL_Surface *s = TTF_RenderGlyph32_Solid(ch->font, i, ch->color);
     if (s == NULL) {
       fprintf(stderr, "rendering TTF surface failed. %s\n", SDL_GetError());
+      continue;
     }
     if (s->h > ch->unscaled_size.height) {
       ch->unscaled_size.height = s->h;
@@ -32,13 +52,32 @@ int init_char(struct glyphs *ch, const struct win *w, const char* ttf_file) {
       ch->unscaled_size.width = s->w;
     }
     SDL_Texture *new_glyph = SDL_CreateTextureFromSurface(w->renderer, s);
+    const struct glyph_info new_char = {
+      .point = i,
+      .glyph = new_glyph,
+    };
     if (new_glyph == NULL) {
-      ch->glyphs[i - CHAR_START_RANGE] = NULL;
       fprintf(stderr, "error with glyph: %s\n", SDL_GetError());
     } else {
-      ch->glyphs[i - CHAR_START_RANGE] = new_glyph;
+      if (!hash_map_set(ch->glyphs, i, new_char)) {
+        fprintf(stderr, "failed to insert new glyph: \"%c\".\n", i);
+        return 0;
+      }
     }
     SDL_FreeSurface(s);
+  }
+  SDL_Texture *new_glyph = create_glyph_texture(ch, w, replacement_character);
+  const struct glyph_info new_char = {
+    .point = replacement_character,
+    .glyph = new_glyph,
+  };
+  if (new_glyph == NULL) {
+    fprintf(stderr, "error with glyph: %s\n", SDL_GetError());
+  } else {
+    if (!hash_map_set(ch->glyphs, replacement_character, new_char)) {
+      fprintf(stderr, "failed to insert new glyph: \"%c\".\n", replacement_character);
+      return 0;
+    }
   }
   if (ch->scale <= 0) {
     ch->scale = 1;
@@ -46,163 +85,61 @@ int init_char(struct glyphs *ch, const struct win *w, const char* ttf_file) {
   ch->scaled_size.width = (double)ch->unscaled_size.width * ch->scale;
   ch->scaled_size.height = (double)ch->unscaled_size.height * ch->scale;
   ch->sanitize_character = sanitize_character;
+  ch->parse_sdl_input = code_point_from_sdl_input;
   return 0;
 }
 
-SDL_Texture* get_glyph(struct glyphs *ch, const char c) {
-  int idx = (int)c - CHAR_START_RANGE;
-  // TODO allow out of range character generation for unicode
-  if (idx >= 0 && idx < CHAR_END_RANGE - CHAR_START_RANGE) {
-    return ch->glyphs[idx];
+SDL_Texture* get_glyph(struct glyphs *ch, const struct win *w, const code_point_t c) {
+  glyph_array points;
+  points.len = 0;
+  if (!hash_map_get(ch->glyphs, c, &points)) {
+    const struct glyph_info new_glyph = {
+      .point = c,
+      .glyph = create_glyph_texture(ch, w, c),
+    };
+    if (new_glyph.glyph != NULL) {
+      if (!hash_map_set(ch->glyphs, c, new_glyph)) {
+        fprintf(stderr, "new glyph could not be inserted into hash map.\n");
+      }
+    }
+    return new_glyph.glyph;
+  }
+  const size_t len = points.len;
+  for (int i = 0; i < len; ++i) {
+    const struct glyph_info *info = &points.glyph_data[i];
+    if (info->point == c) {
+      return info->glyph;
+    }
+  }
+  if (c != replacement_character) {
+    return get_glyph(ch, w, replacement_character);
   }
   return NULL;
 }
 
 void free_char(struct glyphs *ch) {
-  for (int i = 0; i < (CHAR_END_RANGE - CHAR_START_RANGE); ++i) {
-    SDL_Texture *tmp = ch->glyphs[i];
-    if (tmp != NULL) {
-      SDL_DestroyTexture(tmp);
-    }
-  }
+  hash_map_destroy(ch->glyphs);
   TTF_CloseFont(ch->font);
 }
 
-char sanitize_character(SDL_Keycode keycode) {
-  // TODO look into SDL_TextInputEvent to see if that can replace this logic
-  char result = '\0';
-  if (keycode == SDLK_LSHIFT || keycode == SDLK_RSHIFT) return result;
-  const Uint8* key_states = SDL_GetKeyboardState(NULL);
-  bool is_upper = (key_states[SDL_SCANCODE_LSHIFT] || key_states[SDL_SCANCODE_RSHIFT]);
-  bool is_special_char = false;
-  if (keycode > 127) {
-    return result;
+code_point_t code_point_from_sdl_input(SDL_Event *e) {
+  code_point_t key = 0;
+  const struct code_point point = utf8_next((uint8_t*)e->text.text, 32, 0);
+  if (point.type != OCT_INVALID && (point.val != 0 && point.val != 1)) {
+    key = point.val;
+  } else {
+    key = e->key.keysym.sym;
   }
-  // force to char size
-  // TODO switch to using <unicode/uchar.h>
-  // u_isUAlphabetic, u_isalpha etc.
-  char c = (char)keycode;
-  switch (c) {
-    case SDLK_MINUS: {
-      result = c;
-      if (is_upper) {
-        result = '_';
-      }
-      is_special_char = true;
-      break;
-    }
-    case SDLK_EQUALS:{
-      result = c;
-      if (is_upper) {
-        result = '+';
-      }
-      is_special_char = true;
-      break;
-    }
-    case SDLK_LEFTBRACKET:{
-      result = c;
-      if (is_upper) {
-        result = '{';
-      }
-      is_special_char = true;
-      break;
-    }
-    case SDLK_RIGHTBRACKET:{
-      result = c;
-      if (is_upper) {
-        result = '}';
-      }
-      is_special_char = true;
-      break;
-    }
-    case SDLK_BACKSLASH:{
-      result = c;
-      if (is_upper) {
-        result = '|';
-      }
-      is_special_char = true;
-      break;
-    }
-    case SDLK_SEMICOLON:{
-      result = c;
-      if (is_upper) {
-        result = ':';
-      }
-      is_special_char = true;
-      break;
-    }
-    case SDLK_QUOTE:{
-      result = c;
-      if (is_upper) {
-        result = '"';
-      }
-      is_special_char = true;
-      break;
-    }
-    case SDLK_BACKQUOTE:{
-      result = c;
-      if (is_upper) {
-        result = '~';
-      }
-      is_special_char = true;
-      break;
-    }
-    case SDLK_COMMA:{
-      result = c;
-      if (is_upper) {
-        result = '<';
-      }
-      is_special_char = true;
-      break;
-    }
-    case SDLK_PERIOD:{
-      result = c;
-      if (is_upper) {
-        result = '>';
-      }
-      is_special_char = true;
-      break;
-    }
-    case SDLK_SLASH:{
-      result = c;
-      if (is_upper) {
-        result = '?';
-      }
-      is_special_char = true;
-      break;
-    }
-    case SDLK_ASTERISK:
-    case SDLK_PLUS:
-      result = c;
-      is_special_char = true;
-      break;
-  }
-  if (!is_special_char && isspace(c)) {
-    if (c == '\r' || c == '\n') {
+  return sanitize_character(key);
+}
+
+code_point_t sanitize_character(code_point_t keycode) {
+  code_point_t result = keycode;
+  if (u_isUWhiteSpace(keycode)) {
+    if (keycode == '\r' || keycode == '\n') {
       result = '\n';
     } else {
       result = ' ';
-    }
-  } else if (!is_special_char && isalpha(c)) {
-    result = c;
-    if (is_upper) {
-      result = toupper(result);
-    }
-  } else if (!is_special_char && isdigit(c)) {
-    result = c;
-    if (is_upper) {
-      switch (c) {
-        case '1': result = '!'; break;
-        case '2': result = '@'; break;
-        case '3': result = '#'; break;
-        case '4': result = '$'; break;
-        case '5': result = '%'; break;
-        case '6': result = '^'; break;
-        case '7': result = '&'; break;
-        case '8': result = '*'; break;
-        case '9': result = '('; break;
-        case '0': result = ')'; break;
-      }
     }
   }
   return result;
