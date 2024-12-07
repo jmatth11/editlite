@@ -23,7 +23,7 @@ struct menu {
 };
 
 bool menu_init(struct menu *);
-bool menu_display(struct display *, struct win *);
+bool menu_display(struct display *);
 void menu_free(struct menu *);
 
 #endif

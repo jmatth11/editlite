@@ -11,7 +11,7 @@ enum insert_mode_t {
   INSERT_END,
 };
 
-void handle_insert_mode(struct display *d, struct win *w, SDL_Event *e);
-void prepare_insert_mode(struct display *d, struct win *w, enum insert_mode_t);
+void handle_insert_mode(struct display *d, SDL_Event *e);
+void prepare_insert_mode(struct display *d, enum insert_mode_t);
 
 #endif

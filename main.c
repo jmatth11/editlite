@@ -84,25 +84,25 @@ int main(int argc, char **argv) {
       if (e.type == SDL_QUIT) {
         d.running = false;
       } else if (e.type == SDL_KEYDOWN) {
-        handle_keydown(&d, &d.w, &e);
+        handle_keydown(&d, &e);
       }
       // TODO setup to pass event to plugins that want event updates
     }
     SDL_SetRenderDrawColor(d.w.renderer, 0, 0, 0, 0xFF);
     SDL_RenderClear(d.w.renderer);
-    if (!display_page_render(&d, &d.w)) {
+    if (!display_page_render(&d)) {
       fprintf(stderr, "page render failed.\n");
     }
     if (d.mode == COMMAND) {
-      menu_display(&d, &d.w);
+      menu_display(&d);
     }
     if (d.cmds.len > 0) {
       struct display_dim dim;
-      display_get_page_dim(&d, &d.w, &dim);
+      display_get_page_dim(&d, &dim);
       for (int i = 0; i < d.cmds.len; ++i) {
         struct command *cmd = &d.cmds.command_data[i];
         if (cmd->render != NULL) {
-          if (!cmd->render(d.w.renderer, &d, &dim)) {
+          if (!cmd->render(&d, &dim)) {
             const char *name;
             cmd->get_display_prompt(&name);
             fprintf(stderr, "plugin render failed: \"%s\"\n", name);

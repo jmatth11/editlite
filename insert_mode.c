@@ -8,7 +8,7 @@
 #include <ctype.h>
 #include <stdbool.h>
 
-void handle_insert_mode(struct display *d, struct win *w, SDL_Event *e) {
+void handle_insert_mode(struct display *d, SDL_Event *e) {
   if (e->key.keysym.sym == SDLK_ESCAPE) {
     d->mode = NORMAL;
     return;
@@ -19,7 +19,7 @@ void handle_insert_mode(struct display *d, struct win *w, SDL_Event *e) {
     return;
   }
   struct display_dim dim;
-  display_get_page_dim(d, w, &dim);
+  display_get_page_dim(d, &dim);
 
   if (e->key.keysym.sym == SDLK_BACKSPACE) {
     cur_page->handle_backspace(cur_page, d);
@@ -30,7 +30,7 @@ void handle_insert_mode(struct display *d, struct win *w, SDL_Event *e) {
   handle_col_scroll(d, dim);
 }
 
-void prepare_insert_mode(struct display *d, struct win *w, enum insert_mode_t mode) {
+void prepare_insert_mode(struct display *d, enum insert_mode_t mode) {
   d->mode = INSERT;
   struct page *cur_page;
   if (!display_get_cur_page(d, &cur_page)) {
