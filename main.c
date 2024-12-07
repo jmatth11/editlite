@@ -86,7 +86,19 @@ int main(int argc, char **argv) {
       } else if (e.type == SDL_KEYDOWN) {
         handle_keydown(&d, &e);
       }
-      // TODO setup to pass event to plugins that want event updates
+      // handle plugin events after our events
+      if (d.cmds.len > 0) {
+        for (int i = 0; i < d.cmds.len; ++i) {
+          struct command *cmd = &d.cmds.command_data[i];
+          if (cmd->event != NULL) {
+            if (!cmd->event(&e, &d)) {
+              const char *name;
+              cmd->get_display_prompt(&name);
+              fprintf(stderr, "command event failed: \"%s\"\n", name);
+            }
+          }
+        }
+      }
     }
     SDL_SetRenderDrawColor(d.w.renderer, 0, 0, 0, 0xFF);
     SDL_RenderClear(d.w.renderer);
