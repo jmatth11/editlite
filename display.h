@@ -14,7 +14,7 @@ enum display_mode {
   NORMAL = 0,
   INSERT,
   COMMAND,
-  PLUGIN_TEXTINPUT,
+  PLUGIN_INPUT,
 };
 
 struct display_dim {
