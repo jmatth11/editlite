@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include "config.h"
 #include "display.h"
 #include "key_handler.h"
 #include "page.h"
@@ -29,8 +30,12 @@ void deinit() {
   SDL_Quit();
 }
 
-int main(int argc, char **arg) {
+int main(int argc, char **argv) {
   init();
+  char *file = "main.c";
+  if (argc > 1) {
+    file = argv[1];
+  }
   struct win w = {
     .window = NULL,
     .renderer = NULL,
@@ -38,7 +43,10 @@ int main(int argc, char **arg) {
     .width = 640
   };
   create_win(&w);
+  struct config config;
+  init_config(&config);
   struct display d;
+  d.config = config;
   if (init_display(&d, &w) != 0) {
     printf("Display could not initialize.\n");
     exit(1);
@@ -54,7 +62,7 @@ int main(int argc, char **arg) {
     exit(1);
   }
   insert_page_array(&pm.pages, test_buffer);
-  if (pm.read_file(&pm.pages.page_data[0], "main.c") != 0) {
+  if (pm.read_file(&pm.pages.page_data[0], file) != 0) {
     printf("Could not read file.\n");
     exit(1);
   }

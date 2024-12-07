@@ -4,13 +4,15 @@
 #include "page.h"
 #include "util.h"
 
-#define CHARACTER_PADDING 1
+#define CHARACTER_PADDING 0
 
 int init_display(struct display* d, const struct win *w) {
+  d->cursor.pos = (struct display_dim){0, 0};
+  d->cursor.screen_pos = d->cursor.pos;
   d->cur_buf = 0;
-  d->glyphs.color = (SDL_Color){ 255, 255, 255, 255 };
-  d->glyphs.size = 16;
-  int err = init_char(&d->glyphs, w, "resources/SourceCodePro-Regular.ttf");
+  d->glyphs.color = d->config.font_color;
+  d->glyphs.size = d->config.font_size;
+  int err = init_char(&d->glyphs, w, d->config.font_file);
   if (err != 0) return err;
   err = init_page_manager(&d->page_mgr);
   if (err != 0) return err;
@@ -26,6 +28,12 @@ SDL_Texture * handle_characters(struct display *d, const char cur_char) {
 
 void reset_cursor_screen_pos(struct display *d) {
   d->cursor.screen_pos = d->cursor.pos;
+}
+
+void draw_cursor(struct display *d, struct win *w, SDL_Rect *rect) {
+  const SDL_Color c = d->config.cursor_color;
+  SDL_SetRenderDrawColor(w->renderer, c.r, c.g, c.b, c.a);
+  SDL_RenderFillRect(w->renderer, rect);
 }
 
 int page_render(struct display *d, struct win *w) {
@@ -50,34 +58,24 @@ int page_render(struct display *d, struct win *w) {
     for (int char_idx = char_start; char_idx < char_len; ++char_idx) {
       char cur_char = tmp_line.chars.char_data[char_idx];
       SDL_Texture *glyph = handle_characters(d, cur_char);
+      SDL_Rect r = {
+        .x = width_offset,
+        .y = height_offset,
+        .w = d->glyphs.max_width,
+        .h = d->glyphs.max_height,
+      };
       if (glyph == NULL) {
         // ignore newline character
         if (cur_char != 10) {
           printf("cur_char: %d\n", cur_char);
           printf("glyph was null\n");
         } else if (d->cursor.screen_pos.row == line_idx && d->cursor.screen_pos.col == char_idx ) {
-          SDL_Rect boxFill = {
-            .x = width_offset,
-            .y = height_offset,
-            .w = d->glyphs.max_width,
-            .h = d->glyphs.max_height,
-          };
-          SDL_SetRenderDrawColor(w->renderer, 0xAA, 0xAA, 0xAA, 0x77);
-          SDL_RenderFillRect(w->renderer, &boxFill);
+          draw_cursor(d, w, &r);
         }
         continue;
       }
-      int outw, outh;
-      SDL_QueryTexture(glyph, NULL, NULL, &outw, &outh);
-      SDL_Rect r = {
-        .x = width_offset,
-        .y = height_offset,
-        .w = outw,
-        .h = outh
-      };
       if (d->cursor.screen_pos.row == line_idx && d->cursor.screen_pos.col == char_idx) {
-        SDL_SetRenderDrawColor(w->renderer, 0x77, 0x77, 0x77, 0x77);
-        SDL_RenderFillRect(w->renderer, &r);
+        draw_cursor(d, w, &r);
       }
       SDL_RenderCopy(
         w->renderer,
@@ -85,7 +83,7 @@ int page_render(struct display *d, struct win *w) {
         NULL,
         &r
       );
-      width_offset += outw + CHARACTER_PADDING;
+      width_offset += d->glyphs.max_width + CHARACTER_PADDING;
     }
     width_offset = 0;
     height_offset += d->glyphs.max_height + CHARACTER_PADDING;
@@ -97,8 +95,7 @@ void get_page_dim(struct display *d, struct win *w, struct display_dim *out) {
   int winh, winw;
   SDL_GetWindowSize(w->window, &winw, &winh);
   out->row = (int)winh / d->glyphs.max_height;
-  // TODO investigate why this is 7 off from what I think
-  out->col = ((int)winw / d->glyphs.max_width) - 7;
+  out->col = ((int)winw / d->glyphs.max_width);
 }
 
 void free_display(struct display* d) {

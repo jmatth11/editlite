@@ -7,8 +7,6 @@ I'd also like to have it dynamically load long lines and files so I don't have t
 
 Not sure how configurable I will allow it, but I will try to make it customizable with the basic features.
 
-Currently only displays text.
-
 TODO
 - [x] navigating the document.
 - [ ] Loading more of the file in memory when navigating.
