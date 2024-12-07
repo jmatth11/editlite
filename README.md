@@ -2,6 +2,9 @@
 
 A simple text editor for learning purposes.
 
+One of the main goals of this project is to make it easier to open large text files. Currently it incrementally loads an opened file as you scroll through it.
+But I'd like to try and implement a "memory constrained" mode where it only loads in a specified buffer length while doing operations on the file.
+
 ## Functionality
 
 Currently supports:
