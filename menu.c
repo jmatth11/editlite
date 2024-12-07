@@ -20,6 +20,7 @@ void draw_select(struct display *d, struct win *w, SDL_Rect *rect) {
 }
 
 bool menu_display(struct display *d, struct win *w) {
+  // TODO would love to clean up a lot of these variables/calulations
   int win_h, win_w;
   SDL_GetWindowSize(w->window, &win_w, &win_h);
   const int total_row_pixel_height = d->menu.items.len * d->glyphs.max_height;
@@ -30,7 +31,7 @@ bool menu_display(struct display *d, struct win *w) {
   const int rows_showing = ((double)height / (double)total_row_pixel_height) * d->menu.items.len;
   int row_offset = 0;
   if (rows_showing != d->menu.items.len && d->menu.idx >= rows_showing - 1) {
-    row_offset = MIN((d->menu.idx - rows_showing), (d->menu.items.len - 1));
+    row_offset = MIN((d->menu.idx - (rows_showing - 1)), (d->menu.items.len - 1));
   }
   SDL_Rect r = {
     .x = x_offset,
