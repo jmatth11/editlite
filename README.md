@@ -110,3 +110,4 @@ TODO
 - [ ] Prompt to add filename to unnamed pages.
 - [ ] Run in "memory limited" mode for memory constrained systems.
 - [ ] Support Windows
+- [ ] Update Makefile to make a release bundle
