@@ -173,54 +173,6 @@ void display_get_page_dim(struct display *d, struct win *w, struct display_dim *
   out->col = ((int)winw / d->glyphs.max_width);
 }
 
-// TODO break out into a menu object
-bool display_command_prompt(struct display *d, struct win *w) {
-  int win_h, win_w;
-  SDL_GetWindowSize(w->window, &win_w, &win_h);
-  const int width = win_w - 50;
-  const int height = 60;
-  const int x_offset = (win_w / 2) - (width / 2);
-  const int y_offset = (win_h /2) - height;
-  SDL_Rect r = {
-    .x = x_offset,
-    .y = y_offset,
-    .h = height,
-    .w = width,
-  };
-  SDL_SetRenderDrawColor(w->renderer, 0x35, 0x35, 0x35, 0xff);
-  SDL_RenderFillRect(w->renderer, &r);
-  size_t cmd_len = d->cmds.len;
-  int width_offset = x_offset;
-  int height_offset = y_offset;
-  for (size_t i = 0; i < cmd_len; ++i) {
-    struct command *cmd = &d->cmds.command_data[i];
-    const char *prompt;
-    cmd->get_display_prompt(&prompt);
-    for (size_t char_idx = 0; char_idx < strlen(prompt); ++char_idx) {
-      SDL_Texture *glyph = handle_characters(d, prompt[char_idx]);
-      if (glyph == NULL) {
-        glyph = handle_characters(d, '?');
-      }
-      r = (SDL_Rect){
-        .x = width_offset,
-        .y = height_offset,
-        .w = d->glyphs.max_width,
-        .h = d->glyphs.max_height,
-      };
-      SDL_RenderCopy(
-        w->renderer,
-        glyph,
-        NULL,
-        &r
-      );
-      width_offset += d->glyphs.max_width;
-    }
-    height_offset += d->glyphs.max_height;
-    width_offset = x_offset;
-  }
-  return true;
-}
-
 void display_free(struct display* d) {
   free_char(&d->glyphs);
   page_manager_free(&d->page_mgr);
