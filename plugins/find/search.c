@@ -13,6 +13,7 @@ bool check_and_add(struct display_dim *dim, const char *src, size_t src_len, con
   bool result = false;
   for (int i = 0; i<src_len; ++i) {
     if (found_idx == val_size) {
+      printf("size: %zu, str:\"%s\"\n", src_len, src);
       size_t val_start = i - val_size;
       size_t val_end = found_idx;
       size_t max_len = src_len;
@@ -71,12 +72,14 @@ void search_word_options(struct display *d, struct display_dim *dim, struct find
   }
   // break if file is fully in memory
   if (cur_page->file_offset_pos >= cur_page->file_size) return;
+  printf("opening file for read\n");
   // handle reading file that is still on disk
   FILE *fp = fopen(cur_page->file_name, "r");
   if (fp == NULL) {
     fprintf(stderr, "could not open file for find plugin: \"%s\"\n", cur_page->file_name);
     return;
   }
+  printf("seeking file\n");
   fseek(fp, cur_page->file_offset_pos, SEEK_SET);
   size_t n = 0;
   size_t total = 0;
@@ -91,18 +94,18 @@ void search_word_options(struct display *d, struct display_dim *dim, struct find
     for (int i = 0; i < n; ++i) {
       struct find_loc loc;
       ++line_len;
-      // TODO handle windows \r\n
       if (cur_buffer[i] == '\n') {
         if (check_and_add(dim, &cur_buffer[start_idx], line_len, op->value, op->value_size, &loc)) {
           loc.line = line_idx;
           insert_location_array(&op->locs, loc);
-          ++line_idx;
-          start_idx = i + 1;
         }
+        start_idx = i + 1;
+        ++line_idx;
+        line_len = 0;
       }
     }
     // if we didn't hit a newline at the end of our buffer,
-    // rewind to the last known newline, except if we filled the buffer then move on.
+    // rewind to the last known newline, except in the case of no newline.
     if (start_idx < n && (n - start_idx) != n) {
       total += start_idx;
       fseek(fp, cur_page->file_offset_pos + total, SEEK_SET);

@@ -70,7 +70,6 @@ bool event(SDL_Event *e, struct display *d, struct display_dim *dim) {
       if (op.idx < 0) op.idx = op.locs.len - 1;
     }
     if (ky) {
-      // TODO jump to line
       struct display_dim new_pos;
       struct find_loc *loc = &op.locs.location_data[op.idx];
       new_pos.row = loc->line;
