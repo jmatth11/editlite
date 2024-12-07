@@ -43,6 +43,7 @@ bool gap_buffer_init(struct gap_buffer *gb, size_t buf_size) {
   gb->cap = buf_size;
   gb->cursor_start = 0;
   gb->cursor_end = buf_size;
+  gb->get_str = gap_buffer_get_str;
   return true;
 }
 
@@ -119,6 +120,20 @@ bool gap_buffer_delete_seq(struct gap_buffer *gb, size_t n) {
   if (n > gb->cursor_start) return false;
   gb->cursor_start -= n;
   return true;
+}
+
+char *gap_buffer_get_str(struct gap_buffer *gb) {
+  size_t len = gap_buffer_get_len(gb);
+  if (len == 0) return NULL;
+  char *result = malloc(sizeof(char)*(len + 1));
+  for (int i = 0; i < len; ++i) {
+    char tmp = ' ';
+    gap_buffer_get_char(gb, i, &tmp);
+    result[i] = tmp;
+  }
+  // insert null-terminator
+  result[len] = '\0';
+  return result;
 }
 
 void gap_buffer_free(struct gap_buffer *gb) {
