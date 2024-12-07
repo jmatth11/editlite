@@ -2,6 +2,8 @@
 #include "page.h"
 #include "util.h"
 #include <SDL2/SDL_keycode.h>
+#include <SDL2/SDL_scancode.h>
+#include <SDL2/SDL_stdinc.h>
 
 void handle_row_scroll(struct display *d, struct display_dim dim) {
   struct page *cur_page = &d->page_mgr.pages.page_data[d->cur_buf];
@@ -34,11 +36,13 @@ void handle_col_scroll(struct display *d, struct display_dim dim) {
 void handle_jump_commands(struct display *d, struct display_dim dim) {
   struct page *cur_page = &d->page_mgr.pages.page_data[d->cur_buf];
   struct line *cur_line = &cur_page->lines.line_data[d->cursor.pos.row];
-  d->cursor.pos.col = cur_line->chars.len - 1;
-  cur_page->col_offset = (cur_line->chars.len - 1) - dim.col;
+  const int line_len = cur_line->chars.len - 1;
+  const int offset = line_len - dim.col;
+  d->cursor.pos.col = line_len;
+  cur_page->col_offset = MAX(offset, 0);
 }
 
-void keydown_handler(struct display *d, struct win *w, SDL_Event *e) {
+void handle_simple_keypresses(struct display *d, struct win *w, SDL_Event *e) {
   struct display_dim dims;
   get_page_dim(d, w, &dims);
   switch (e->key.keysym.sym) {
@@ -67,9 +71,18 @@ void keydown_handler(struct display *d, struct win *w, SDL_Event *e) {
       d->cursor.pos.col = 0;
       d->page_mgr.pages.page_data[d->cur_buf].col_offset = 0;
       break;
-    case SDLK_DOLLAR:
-      // TODO this isn't working, maybe need to handle this key combo differently
-      handle_jump_commands(d, dims);
-      break;
   }
 }
+
+void handle_state_keypresses(struct display *d, struct win *w, SDL_Event *e) {
+  struct display_dim dims;
+  get_page_dim(d, w, &dims);
+  const Uint8* key_states = SDL_GetKeyboardState(NULL);
+  const Uint8 lshift = key_states[SDL_SCANCODE_LSHIFT];
+  const Uint8 rshift =key_states[SDL_SCANCODE_RSHIFT];
+  const Uint8 k4 = key_states[SDL_SCANCODE_4];
+  if ((lshift || rshift) && k4) {
+    handle_jump_commands(d, dims);
+  }
+}
+
