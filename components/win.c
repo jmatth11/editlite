@@ -5,7 +5,7 @@
 
 int win_init(struct win *w) {
   w->window = SDL_CreateWindow("Editlite", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-                            w->width, w->height, SDL_WINDOW_SHOWN);
+                            w->width, w->height, SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
   if (w->window == NULL) {
     fprintf(stderr, "Window is null\n");
     return -1;
