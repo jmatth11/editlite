@@ -40,7 +40,7 @@ int init_char(struct glyphs *ch, const struct win *w, const char* ttf_file) {
     return 0;
   }
   for (int i = CHAR_START_RANGE; i < CHAR_END_RANGE; ++i) {
-    SDL_Surface *s = TTF_RenderGlyph32_Solid(ch->font, i, ch->color);
+    SDL_Surface *s = TTF_RenderGlyph32_Blended(ch->font, i, ch->color);
     if (s == NULL) {
       fprintf(stderr, "rendering TTF surface failed. %s\n", SDL_GetError());
       continue;
