@@ -1,14 +1,13 @@
 CC=gcc
 CFLAGS=-Wall -std=c11
-LIBS=-L./deps/tomlc99/ -L./deps/utf8-zig/zig-out/lib -lSDL2 -lSDL2_ttf -lm -l:libtoml.a -l:libutf8-zig.a -licuuc
-INCLUDES=-I./ -I./deps/utf8-zig/headers
+LIBS=-L./deps/tomlc99/ -L./deps/utf8-zig/zig-out/lib -L./deps/scribe/zig-out/lib -lSDL2 -lSDL2_ttf -lm -l:libtoml.a -l:libutf8-zig.a -l:libscribe.a -licuuc
+INCLUDES=-I./ -I./deps/utf8-zig/headers -I./deps/scribe/headers
 OBJ=obj
 BIN=bin
 SOURCES=$(shell find . -name '*.c' -not -path './plugins/*' -not -path './deps/*')
 OBJECTS=$(addprefix $(OBJ)/,$(SOURCES:%.c=%.o))
 DEBUG_OBJECTS=$(patsubst %.c, $(OBJ)/%-debug.o, $(SOURCES))
-UTF_DEP=./deps/utf8-zig
-DEPS=$(shell find . -name Makefile -printf '%h\n' | grep -v 'unittest' | grep -v '^.$$' | grep -v 'utf8-zig')
+DEPS=$(shell find . -maxdepth 3 -name Makefile -printf '%h\n' | grep -v 'unittest' | grep -v '^.$$')
 TARGET=editlite
 
 .PHONY: all
@@ -48,18 +47,14 @@ clean_deps:
 .PHONY: clean_all
 clean_all: clean clean_deps
 
-.PHONY: unicode_dep
-unicode_dep:
-	cd $(UTF_DEP) && $(MAKE) && cd -;\
-
 .PHONY: deps
-deps: unicode_dep
+deps:
 	@for i in $(DEPS); do\
 		cd $${i} && $(MAKE) && cd -;\
 	done
 
 .PHONY: deps_debug
-deps_debug: unicode_dep
+deps_debug:
 	@for i in $(DEPS); do\
 		cd $${i} && ($(MAKE) debug || $(MAKE)) && cd -;\
 	done
