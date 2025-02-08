@@ -12,6 +12,7 @@
 #include "plugin_interface_types.h"
 #include "types/registered_functions.h"
 #include "win_types.h"
+#include "scribe.h"
 
 struct app_state {
   struct config config;
@@ -20,6 +21,7 @@ struct app_state {
   struct plugin_interface pi;
   struct win w;
   struct registry registry;
+  struct Scribe_t scribe;
 
   struct command_array cmds;
   struct page_manager page_mgr;
