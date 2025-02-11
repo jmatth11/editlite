@@ -11,6 +11,7 @@
 #include "page_types.h"
 #include "plugin_interface_types.h"
 #include "types/registered_functions.h"
+#include "types/session_types.h"
 #include "win_types.h"
 #include "scribe.h"
 
@@ -25,6 +26,7 @@ struct app_state {
 
   struct command_array cmds;
   struct page_manager page_mgr;
+  struct session_array sessions;
 
   size_t cur_buf;
   bool running;

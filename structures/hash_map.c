@@ -1,7 +1,6 @@
 #include "deps/array_template/array_template.h"
 
 #include "hash_map.h"
-#include "types/array_types.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdlib.h>

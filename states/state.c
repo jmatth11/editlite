@@ -4,10 +4,12 @@
 #include "registry.h"
 #include "scribe.h"
 #include "state.h"
+#include "states/sessions.h"
 #include "structures/gap_buffer.h"
 #include "structures/linked_list.h"
 #include "types/command_types.h"
 #include "types/page_types.h"
+#include "types/session_types.h"
 #include "types/size_types.h"
 #include "types/state_types.h"
 #include "components/glyph.h"
@@ -17,20 +19,20 @@
 #include <stddef.h>
 #include <stdint.h>
 
-static int state_writer_at(void* ptr, uint32_t c, size_t row, size_t col) {
+static int state_writer_at(void* ptr, struct Edit e) {
   struct app_state* state = (struct app_state*)ptr;
   struct page *cur_page;
   if (!state_get_cur_page(state, &cur_page)) {
     fprintf(stderr, "could not get current page for handle_insert_mode.\n");
     return 0;
   }
-  if (c == SDLK_RETURN) {
-    if (!cur_page->handle_newline(cur_page, row, col)) {
+  if (e.character == SDLK_RETURN) {
+    if (!cur_page->handle_newline(cur_page, e.row, e.col)) {
       fprintf(stderr, "error with writer_at for newline\n");
       return 0;
     }
   } else {
-    if (!cur_page->handle_keystroke(cur_page, c, row, col)) {
+    if (!cur_page->handle_keystroke(cur_page, e.character, e.row, e.col)) {
       fprintf(stderr, "error with writer_at for keystroke\n");
       return 0;
     }
@@ -38,14 +40,14 @@ static int state_writer_at(void* ptr, uint32_t c, size_t row, size_t col) {
   return 1;
 }
 
-static int state_delete_at(void *ptr, size_t row, size_t col) {
+static int state_delete_at(void *ptr, struct Edit e) {
   struct app_state* state = (struct app_state*)ptr;
   struct page *cur_page;
   if (!state_get_cur_page(state, &cur_page)) {
     fprintf(stderr, "could not get current page for handle_insert_mode.\n");
     return 0;
   }
-  if (!cur_page->handle_backspace(cur_page, row, col)) {
+  if (!cur_page->handle_backspace(cur_page, e.row, e.col)) {
     fprintf(stderr, "error with deleter_at\n");
     return 0;
   }
@@ -78,6 +80,17 @@ bool state_init(struct app_state* state) {
   }
   if (!state_load_plugins(state)) {
     fprintf(stderr, "loading plugins failed\n");
+    return false;
+  }
+  if (!init_session_array(&state->sessions, 1)) {
+    fprintf(stderr, "sessions array init failed\n");
+    return false;
+  }
+  struct session og = {
+    .page_idx = 0,
+  };
+  if (!session_add(&state->sessions, og)) {
+    fprintf(stderr, "adding session failed\n");
     return false;
   }
   struct ScribeWriter writer = {

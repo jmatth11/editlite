@@ -29,7 +29,6 @@ bool page_handle_backspace(struct page *p, size_t row, size_t col) {
   struct linked_list *cur_line = linked_list_get_pos(p->lines, row);
   struct gap_buffer *cur_gb = &cur_line->value.chars;
   if (cur_gb->cursor_start != col) {
-    fprintf(stdout, "moving cursor: cursor_start:%zu, col:%zu\n", cur_gb->cursor_start, col);
     if (gap_buffer_move_cursor(cur_gb, col)) {
       fprintf(stderr, "move cursor failed in handle backspace\n");
       return false;
