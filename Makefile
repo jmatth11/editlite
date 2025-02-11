@@ -9,7 +9,6 @@ OBJECTS=$(addprefix $(OBJ)/,$(SOURCES:%.c=%.o))
 DEBUG_OBJECTS=$(patsubst %.c, $(OBJ)/%-debug.o, $(SOURCES))
 DEPS=$(shell find . -maxdepth 3 -name Makefile -printf '%h\n' | grep -v 'unittest' | grep -v '^.$$')
 TARGET=editlite
-CPATH=./:./deps/utf8-zig/headers:./deps/scribe/header
 
 .PHONY: all
 all: deps src
@@ -51,12 +50,12 @@ clean_all: clean clean_deps
 .PHONY: deps
 deps:
 	@for i in $(DEPS); do\
-		cd $${i} && (CPATH=$(CPATH) $(MAKE)) && cd -;\
+		cd $${i} && $(MAKE) && cd -;\
 	done
 
 .PHONY: deps_debug
 deps_debug:
 	@for i in $(DEPS); do\
-		cd $${i} && (CPATH=$(CPATH) $(MAKE) debug || CPATH=$(CPATH) $(MAKE)) && cd -;\
+		cd $${i} && ($(MAKE) debug || $(MAKE)) && cd -;\
 	done
 
