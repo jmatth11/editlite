@@ -1,5 +1,8 @@
 #include "commands/command.h"
+#include "commands/plugin_interface.h"
 #include "pages/page.h"
+#include "registry.h"
+#include "scribe.h"
 #include "state.h"
 #include "structures/gap_buffer.h"
 #include "structures/linked_list.h"
@@ -7,6 +10,108 @@
 #include "types/page_types.h"
 #include "types/size_types.h"
 #include "types/state_types.h"
+#include "components/glyph.h"
+#include "helpers/config.h"
+#include "components/win.h"
+#include <SDL2/SDL_keycode.h>
+#include <stddef.h>
+#include <stdint.h>
+
+static int state_writer_at(void* ptr, uint32_t c, size_t row, size_t col) {
+  struct app_state* state = (struct app_state*)ptr;
+  struct page *cur_page;
+  if (!state_get_cur_page(state, &cur_page)) {
+    fprintf(stderr, "could not get current page for handle_insert_mode.\n");
+    return 0;
+  }
+  if (c == SDLK_RETURN) {
+    if (!cur_page->handle_newline(cur_page, row, col)) {
+      fprintf(stderr, "error with writer_at for newline\n");
+      return 0;
+    }
+  } else {
+    if (!cur_page->handle_keystroke(cur_page, c, row, col)) {
+      fprintf(stderr, "error with writer_at for keystroke\n");
+      return 0;
+    }
+  }
+  return 1;
+}
+
+static int state_delete_at(void *ptr, size_t row, size_t col) {
+  struct app_state* state = (struct app_state*)ptr;
+  struct page *cur_page;
+  if (!state_get_cur_page(state, &cur_page)) {
+    fprintf(stderr, "could not get current page for handle_insert_mode.\n");
+    return 0;
+  }
+  if (!cur_page->handle_backspace(cur_page, row, col)) {
+    fprintf(stderr, "error with deleter_at\n");
+    return 0;
+  }
+  return 1;
+}
+
+bool state_init(struct app_state* state) {
+  state->cur_buf = 0;
+  state->glyphs.color = state->config.font_color;
+  state->glyphs.point = state->config.font_point;
+  state->glyphs.scale = state->config.font_scale;
+  state->running = true;
+  state->menu.items.menu_item_data = NULL;
+  state->menu.items.len = 0;
+  state->menu.items.cap = 0;
+  plugin_interface_init(&state->pi);
+  int err = init_char(&state->glyphs, &state->w, state->config.font_file);
+  if (err != 0) return false;
+  if (!page_manager_init(&state->page_mgr)) {
+    fprintf(stderr, "page manager failed to initialize\n");
+    return false;
+  }
+  if(!init_command_array(&state->cmds, 1)) {
+    fprintf(stderr, "command array init failed\n");
+    return false;
+  }
+  if (!registry_init(&state->registry)) {
+    fprintf(stderr, "error initializing registry.\n");
+    return false;
+  }
+  if (!state_load_plugins(state)) {
+    fprintf(stderr, "loading plugins failed\n");
+    return false;
+  }
+  struct ScribeWriter writer = {
+    .ptr = state,
+    .write_at = state_writer_at,
+    .delete_at = state_delete_at,
+  };
+  if (!scribe_init(&state->scribe, writer)) {
+    fprintf(stderr, "initializing scribe failed\n");
+    return false;
+  }
+  return true;
+}
+
+void state_free(struct app_state* state) {
+  for (int i = 0; i < state->cmds.len; ++i) {
+    struct command *cmd = &state->cmds.command_data[i];
+    if (cmd->cleanup != NULL) {
+      if (!cmd->cleanup(&state->pi)) {
+        const char *prompt;
+        cmd->get_display_prompt(&prompt);
+        fprintf(stderr, "clean up for command failed: \"%s\"\n", prompt);
+      }
+    }
+    free(cmd->shared_library);
+  }
+  config_free(&state->config);
+  free_command_array(&state->cmds);
+  registry_free(&state->registry);
+  free_char(&state->glyphs);
+  page_manager_free(&state->page_mgr);
+  free_command_array(&state->cmds);
+  win_free(&state->w);
+}
 
 bool state_load_plugins(struct app_state *state) {
   if (state->cmds.command_data == NULL) {

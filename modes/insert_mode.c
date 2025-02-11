@@ -4,11 +4,13 @@
 
 #include "components/display.h"
 #include "insert_mode.h"
+#include "scribe.h"
 #include "structures/linked_list.h"
 #include "types/display_type.h"
 #include "inputs/scrolling.h"
 #include "states/state.h"
 #include "types/unicode_types.h"
+#include "components/glyph.h"
 
 void handle_insert_mode(struct display *d, SDL_Event *e) {
   if (e->key.keysym.sym == SDLK_ESCAPE) {
@@ -24,9 +26,29 @@ void handle_insert_mode(struct display *d, SDL_Event *e) {
   state_get_page_dim(&d->state, &dim);
 
   if (e->key.keysym.sym == SDLK_BACKSPACE) {
-    cur_page->handle_backspace(cur_page);
+    struct Edit event_op = {
+      .event = SCRIBE_DELETE,
+      .character = 0,
+      .row = cur_page->cursor.pos.row,
+      .col = cur_page->cursor.pos.col,
+    };
+    enum ScribeErrors result = scribe_write(&d->state.scribe, event_op);
+    if (result != SCRIBE_SUCCESS) {
+      fprintf(stderr, "error with scribe write for backspace: %d\n", result);
+      return;
+    }
   } else if (e->key.keysym.sym == SDLK_RETURN) {
-    cur_page->handle_newline(cur_page);
+    struct Edit event_op = {
+      .event = SCRIBE_ADD,
+      .character = SDLK_RETURN,
+      .row = cur_page->cursor.pos.row,
+      .col = cur_page->cursor.pos.col,
+    };
+    enum ScribeErrors result = scribe_write(&d->state.scribe, event_op);
+    if (result != SCRIBE_SUCCESS) {
+      fprintf(stderr, "error with scribe write for newline: %d\n", result);
+      return;
+    }
   }
   handle_row_scroll(d, dim);
   handle_col_scroll(d, dim);
@@ -40,7 +62,18 @@ void handle_input_mode(struct display *d, SDL_Event *e) {
   }
   struct display_dim dim;
   state_get_page_dim(&d->state, &dim);
-  cur_page->handle_keystroke(cur_page, e);
+  const code_point_t code = code_point_from_sdl_input(e);
+  struct Edit event_op = {
+    .event = SCRIBE_ADD,
+    .character = code,
+    .row = cur_page->cursor.pos.row,
+    .col = cur_page->cursor.pos.col,
+  };
+  enum ScribeErrors result = scribe_write(&d->state.scribe, event_op);
+  if (result != SCRIBE_SUCCESS) {
+    fprintf(stderr, "error with scribe write for keystroke: %d\n", result);
+    return;
+  }
   handle_row_scroll(d, dim);
   handle_col_scroll(d, dim);
 }

@@ -43,34 +43,8 @@ int display_init(struct display* d) {
   d->mode = NORMAL;
   d->plugin_mode_name = NULL;
   d->switching_mode = false;
-  d->state.cur_buf = 0;
-  d->state.glyphs.color = d->state.config.font_color;
-  d->state.glyphs.point = d->state.config.font_point;
-  d->state.glyphs.scale = d->state.config.font_scale;
-  d->state.running = true;
-  d->state.menu.items.menu_item_data = NULL;
-  d->state.menu.items.len = 0;
-  d->state.menu.items.cap = 0;
-  plugin_interface_init(&d->state.pi);
   d->state.pi.__internal = d;
-  int err = init_char(&d->state.glyphs, &d->state.w, d->state.config.font_file);
-  if (err != 0) return err;
-  if (!page_manager_init(&d->state.page_mgr)) {
-    fprintf(stderr, "page manager failed to initialize\n");
-    return 1;
-  }
-  if(!init_command_array(&d->state.cmds, 1)) {
-    fprintf(stderr, "command array init failed\n");
-    return 1;
-  }
-  if (!registry_init(&d->state.registry)) {
-    fprintf(stderr, "error initializing registry.\n");
-    return 1;
-  }
-  if (!state_load_plugins(&d->state)) {
-    fprintf(stderr, "loading plugins failed\n");
-    return 1;
-  }
+  if (!state_init(&d->state)) return 1;
   d->texture_from_char = handle_characters;
   d->viewable_page_buffer = display_viewable_page_buffer;
   d->viewable_page_buffer_free = viewable_page_info_free;
@@ -283,22 +257,5 @@ struct viewable_page_info display_viewable_page_buffer(struct display *d, struct
 }
 
 void display_free(struct display* d) {
-  for (int i = 0; i < d->state.cmds.len; ++i) {
-    struct command *cmd = &d->state.cmds.command_data[i];
-    if (cmd->cleanup != NULL) {
-      if (!cmd->cleanup(&d->state.pi)) {
-        const char *prompt;
-        cmd->get_display_prompt(&prompt);
-        fprintf(stderr, "clean up for command failed: \"%s\"\n", prompt);
-      }
-    }
-    free(cmd->shared_library);
-  }
-  config_free(&d->state.config);
-  free_command_array(&d->state.cmds);
-  registry_free(&d->state.registry);
-  free_char(&d->state.glyphs);
-  page_manager_free(&d->state.page_mgr);
-  free_command_array(&d->state.cmds);
-  win_free(&d->state.w);
+  state_free(&d->state);
 }
