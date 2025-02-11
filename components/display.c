@@ -43,8 +43,8 @@ int display_init(struct display* d) {
   d->mode = NORMAL;
   d->plugin_mode_name = NULL;
   d->switching_mode = false;
-  if (!state_init(&d->state)) return 1;
   d->state.pi.__internal = d;
+  if (!state_init(&d->state)) return 1;
   d->texture_from_char = handle_characters;
   d->viewable_page_buffer = display_viewable_page_buffer;
   d->viewable_page_buffer_free = viewable_page_info_free;

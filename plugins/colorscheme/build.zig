@@ -27,6 +27,8 @@ pub fn build(b: *std.Build) void {
 
     // utf8 library
     lib.addIncludePath(b.path("../../deps/utf8-zig/src/"));
+    // scribe library
+    lib.addIncludePath(b.path("../../deps/scribe/header/"));
 
     // allow editlite files to be included
     lib.addIncludePath(b.path("../../"));

@@ -7,6 +7,7 @@
 #include "helpers/file_ops.h"
 #include "line.h"
 #include "page.h"
+#include "structures/gap_buffer.h"
 #include "structures/linked_list.h"
 #include "structures/unicode.h"
 #include "types/display_type.h"
@@ -24,13 +25,22 @@
 
 static uint8_t buffer[BUFSIZ];
 
-bool page_handle_backspace(struct page *p) {
-  struct linked_list *cur_line = linked_list_get_pos(p->lines, p->cursor.pos.row);
+bool page_handle_backspace(struct page *p, size_t row, size_t col) {
+  struct linked_list *cur_line = linked_list_get_pos(p->lines, row);
   struct gap_buffer *cur_gb = &cur_line->value.chars;
-  if (p->cursor.pos.col > 0) {
+  if (cur_gb->cursor_start != col) {
+    fprintf(stdout, "moving cursor: cursor_start:%zu, col:%zu\n", cur_gb->cursor_start, col);
+    if (gap_buffer_move_cursor(cur_gb, col)) {
+      fprintf(stderr, "move cursor failed in handle backspace\n");
+      return false;
+    }
+  }
+  if (col > 0) {
     gap_buffer_delete(cur_gb);
+    // TODO cursor -- need to think about how to handle this per user
+    // for pair programming
     p->cursor.pos.col--;
-  } else if (p->cursor.pos.row != 0) {
+  } else if (row != 0) {
     struct linked_list *prev_line = cur_line->prev;
     struct gap_buffer *prev_gb = &prev_line->value.chars;
     gap_buffer_move_cursor(prev_gb, gap_buffer_get_len(prev_gb));
@@ -42,6 +52,7 @@ bool page_handle_backspace(struct page *p) {
       gap_buffer_get_char(cur_gb, i, &tmp);
       gap_buffer_insert(prev_gb, tmp);
     }
+    // TODO cursor -- handle this for multiple users
     p->cursor.pos.row--;
     p->cursor.pos.col = gap_buffer_get_len(prev_gb) - cur_gb_len;
     gap_buffer_move_cursor(prev_gb, p->cursor.pos.col);
@@ -50,28 +61,34 @@ bool page_handle_backspace(struct page *p) {
   return true;
 }
 
-bool page_handle_newline(struct page *p) {
-  struct linked_list *cur_line = linked_list_get_pos(p->lines, p->cursor.pos.row);
+bool page_handle_newline(struct page *p, size_t row, size_t col) {
+  struct linked_list *cur_line = linked_list_get_pos(p->lines, row);
   struct gap_buffer *cur_gb = &cur_line->value.chars;
+  if (cur_gb->cursor_start != col) {
+    if (gap_buffer_move_cursor(cur_gb, col)) {
+      fprintf(stderr, "move cursor failed in handle backspace\n");
+      return false;
+    }
+  }
   gap_buffer_insert(cur_gb, '\n');
-  p->cursor.pos.col++;
+  size_t cur_col = col + 1;
   struct line new_line;
   init_line(&new_line);
   struct gap_buffer *next_gb = &new_line.chars;
   gap_buffer_move_cursor(next_gb, 0);
-  size_t cur_col = p->cursor.pos.col;
   size_t gb_len = gap_buffer_get_len(cur_gb);
   for (; cur_col < gb_len; ++cur_col) {
     code_point_t tmp = ' ';
     gap_buffer_get_char(cur_gb, cur_col, &tmp);
     gap_buffer_insert(next_gb, tmp);
   }
-  cur_col = p->cursor.pos.col;
+  cur_col = col + 1;
   gap_buffer_move_cursor(cur_gb, gb_len - 1);
   gap_buffer_delete_seq(cur_gb, gb_len - cur_col);
+  // TODO cursor -- change this handling
   p->cursor.pos.col = 0;
   p->cursor.pos.row++;
-  gap_buffer_move_cursor(next_gb, p->cursor.pos.col);
+  gap_buffer_move_cursor(next_gb, 0);
   linked_list_insert(cur_line, 0, new_line);
   return true;
 }
@@ -105,12 +122,21 @@ void page_set_offset_row(struct page *p, size_t row, struct display *d) {
   }
 }
 
-bool page_handle_keystroke(struct page *p, SDL_Event *e) {
-  struct linked_list *cur_line = linked_list_get_pos(p->lines, p->cursor.pos.row);
+bool page_handle_keystroke(struct page *p, code_point_t code, size_t row, size_t col) {
+  struct linked_list *cur_line = linked_list_get_pos(p->lines, row);
   struct gap_buffer *cur_gb = &cur_line->value.chars;
-  const code_point_t received_char = code_point_from_sdl_input(e);
-  if (received_char != '\0') {
-    gap_buffer_insert(cur_gb, received_char);
+  if (cur_gb->cursor_start != col) {
+    if (!gap_buffer_move_cursor(cur_gb, col)) {
+      fprintf(stderr, "error moving cursor\n");
+      return false;
+    }
+  }
+  if (code != '\0') {
+    if (!gap_buffer_insert(cur_gb, code)) {
+      fprintf(stderr, "error inserting into gap buffer for keystroke\n");
+      return false;
+    }
+    // TODO cursor -- handle for multiple users
     p->cursor.pos.col++;
   }
   return true;

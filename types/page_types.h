@@ -21,9 +21,9 @@ struct page {
   struct cursor cursor;
   struct display_dim page_offset;
   SDL_Point position_offset;
-  bool (*handle_backspace)(struct page *);
-  bool (*handle_keystroke)(struct page *, SDL_Event *e);
-  bool (*handle_newline)(struct page *);
+  bool (*handle_backspace)(struct page *, size_t row, size_t col);
+  bool (*handle_keystroke)(struct page *, code_point_t, size_t row, size_t col);
+  bool (*handle_newline)(struct page *, size_t row, size_t col);
   struct linked_list *lines;
 };
 

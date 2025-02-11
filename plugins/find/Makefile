@@ -3,7 +3,7 @@ PLUGIN_NAME=find
 SHARED_NAME=lib$(PLUGIN_NAME).so
 SOURCES=$(wildcard *.c)
 OBJECTS=$(SOURCES:%.c=%.o)
-INCLUDES=-I../../ -I../../deps/utf8-zig/headers
+INCLUDES=-I../../ -I../../deps/utf8-zig/headers -I../../deps/scribe/header
 LIBS=-L../../deps/utf8-zig/zig-out/lib -lSDL2 -lSDL2_ttf -lm -l:libutf8-zig.a
 
 .PHONY: all

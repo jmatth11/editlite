@@ -1,7 +1,7 @@
 CC=gcc
 CFLAGS=-Wall -std=c11
 LIBS=-L./deps/tomlc99/ -L./deps/utf8-zig/zig-out/lib -L./deps/scribe/zig-out/lib -lSDL2 -lSDL2_ttf -lm -l:libtoml.a -l:libutf8-zig.a -l:libscribe.a -licuuc
-INCLUDES=-I./ -I./deps/utf8-zig/headers -I./deps/scribe/headers
+INCLUDES=-I./ -I./deps/utf8-zig/headers -I./deps/scribe/header
 OBJ=obj
 BIN=bin
 SOURCES=$(shell find . -name '*.c' -not -path './plugins/*' -not -path './deps/*')
@@ -9,6 +9,7 @@ OBJECTS=$(addprefix $(OBJ)/,$(SOURCES:%.c=%.o))
 DEBUG_OBJECTS=$(patsubst %.c, $(OBJ)/%-debug.o, $(SOURCES))
 DEPS=$(shell find . -maxdepth 3 -name Makefile -printf '%h\n' | grep -v 'unittest' | grep -v '^.$$')
 TARGET=editlite
+CPATH=./:./deps/utf8-zig/headers:./deps/scribe/header
 
 .PHONY: all
 all: deps src
@@ -50,12 +51,12 @@ clean_all: clean clean_deps
 .PHONY: deps
 deps:
 	@for i in $(DEPS); do\
-		cd $${i} && $(MAKE) && cd -;\
+		cd $${i} && (CPATH=$(CPATH) $(MAKE)) && cd -;\
 	done
 
 .PHONY: deps_debug
 deps_debug:
 	@for i in $(DEPS); do\
-		cd $${i} && ($(MAKE) debug || $(MAKE)) && cd -;\
+		cd $${i} && (CPATH=$(CPATH) $(MAKE) debug || CPATH=$(CPATH) $(MAKE)) && cd -;\
 	done
 

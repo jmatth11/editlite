@@ -2,6 +2,7 @@
 #include "commands/plugin_interface.h"
 #include "pages/page.h"
 #include "registry.h"
+#include "scribe.h"
 #include "state.h"
 #include "structures/gap_buffer.h"
 #include "structures/linked_list.h"
@@ -12,6 +13,44 @@
 #include "components/glyph.h"
 #include "helpers/config.h"
 #include "components/win.h"
+#include <SDL2/SDL_keycode.h>
+#include <stddef.h>
+#include <stdint.h>
+
+static int state_writer_at(void* ptr, uint32_t c, size_t row, size_t col) {
+  struct app_state* state = (struct app_state*)ptr;
+  struct page *cur_page;
+  if (!state_get_cur_page(state, &cur_page)) {
+    fprintf(stderr, "could not get current page for handle_insert_mode.\n");
+    return 0;
+  }
+  if (c == SDLK_RETURN) {
+    if (!cur_page->handle_newline(cur_page, row, col)) {
+      fprintf(stderr, "error with writer_at for newline\n");
+      return 0;
+    }
+  } else {
+    if (!cur_page->handle_keystroke(cur_page, c, row, col)) {
+      fprintf(stderr, "error with writer_at for keystroke\n");
+      return 0;
+    }
+  }
+  return 1;
+}
+
+static int state_delete_at(void *ptr, size_t row, size_t col) {
+  struct app_state* state = (struct app_state*)ptr;
+  struct page *cur_page;
+  if (!state_get_cur_page(state, &cur_page)) {
+    fprintf(stderr, "could not get current page for handle_insert_mode.\n");
+    return 0;
+  }
+  if (!cur_page->handle_backspace(cur_page, row, col)) {
+    fprintf(stderr, "error with deleter_at\n");
+    return 0;
+  }
+  return 1;
+}
 
 bool state_init(struct app_state* state) {
   state->cur_buf = 0;
@@ -41,8 +80,15 @@ bool state_init(struct app_state* state) {
     fprintf(stderr, "loading plugins failed\n");
     return false;
   }
-  // TODO initialize scribe with a scribe writter pointing to the
-  // page manager
+  struct ScribeWriter writer = {
+    .ptr = state,
+    .write_at = state_writer_at,
+    .delete_at = state_delete_at,
+  };
+  if (!scribe_init(&state->scribe, writer)) {
+    fprintf(stderr, "initializing scribe failed\n");
+    return false;
+  }
   return true;
 }
 
