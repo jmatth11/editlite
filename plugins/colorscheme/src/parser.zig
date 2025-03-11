@@ -87,7 +87,7 @@ pub const parse_results = struct {
         const len: usize = self.results.items.len;
         while (idx < len) : (idx += 1) {
             var hi = self.results.pop();
-            hi.deinit();
+            hi.?.deinit();
         }
         self.parsed = false;
     }

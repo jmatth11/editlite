@@ -82,7 +82,7 @@ void prepare_insert_mode(struct display *d, enum insert_mode_t mode) {
   display_set_mode(d, INSERT);
   struct page *cur_page;
   if (!state_get_cur_page(&d->state, &cur_page)) {
-    fprintf(stderr, "could not get current page for prepare_insert_mode.\n");
+    fprintf(stderr, "could not get current page for handle_insert_mode.\n");
     return;
   }
   struct linked_list *cur_line = linked_list_get_pos(cur_page->lines, cur_page->cursor.pos.row);

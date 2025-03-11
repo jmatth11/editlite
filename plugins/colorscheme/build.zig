@@ -15,14 +15,17 @@ pub fn build(b: *std.Build) void {
     // set a preferred release mode, allowing the user to decide how to optimize.
     const optimize = b.standardOptimizeOption(.{});
 
-    const lib = b.addSharedLibrary(.{
-        .name = "colorscheme",
-        .pic = true,
-        // In this case the main source file is merely a path, however, in more
-        // complicated build scripts, this could be a generated file.
+    const linkage = b.option(std.builtin.LinkMode, "linkage", "Link mode for utf8-zig library") orelse .dynamic;
+    const libModules = b.addModule("colorscheme", .{
         .root_source_file = b.path("src/root.zig"),
+        .pic = true,
         .target = target,
         .optimize = optimize,
+    });
+    const lib = b.addLibrary(.{
+        .name = "colorscheme",
+        .root_module = libModules,
+        .linkage = linkage,
     });
 
     // utf8 library
