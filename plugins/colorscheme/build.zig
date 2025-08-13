@@ -36,6 +36,8 @@ pub fn build(b: *std.Build) void {
     // allow editlite files to be included
     lib.addIncludePath(b.path("../../"));
 
+    lib.linkSystemLibrary("SDL2");
+
     // tree-sitter
     //lib.addIncludePath("./tree-sitter/lib/include/");
     //lib.addLibraryPath("./tree-sitter/");
