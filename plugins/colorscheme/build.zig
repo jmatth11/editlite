@@ -36,6 +36,11 @@ pub fn build(b: *std.Build) void {
     // allow editlite files to be included
     lib.addIncludePath(b.path("../../"));
 
+    // include SDL2 dev files path.
+    lib.addSystemIncludePath(.{
+        .cwd_relative = "/usr/include/x86_64-linux-gnu/",
+    });
+
     // tree-sitter
     //lib.addIncludePath("./tree-sitter/lib/include/");
     //lib.addLibraryPath("./tree-sitter/");
@@ -51,10 +56,14 @@ pub fn build(b: *std.Build) void {
 
     // Creates a step for unit testing. This only builds the test executable
     // but does not run it.
-    const lib_unit_tests = b.addTest(.{
+    const tests_mod = b.createModule(.{
         .root_source_file = b.path("src/test_root.zig"),
         .target = target,
         .optimize = optimize,
+    });
+    const lib_unit_tests = b.addTest(.{
+        .name = "test",
+        .root_module = tests_mod,
     });
 
     const run_lib_unit_tests = b.addRunArtifact(lib_unit_tests);

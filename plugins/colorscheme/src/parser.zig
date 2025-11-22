@@ -30,15 +30,17 @@ pub const highlight_info = struct {
     }
 };
 
+const HighlightInfoList = std.array_list.Managed(highlight_info);
+
 pub const parse_results = struct {
     alloc: std.mem.Allocator,
-    results: std.ArrayList(highlight_info),
+    results: HighlightInfoList,
     parsed: bool,
 
     pub fn init(alloc: std.mem.Allocator) parse_results {
         return parse_results{
             .alloc = alloc,
-            .results = std.ArrayList(highlight_info).init(alloc),
+            .results = HighlightInfoList.init(alloc),
             .parsed = false,
         };
     }
