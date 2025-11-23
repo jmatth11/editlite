@@ -1,6 +1,7 @@
 #include <SDL2/SDL_keycode.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <assert.h>
 
 #include "components/display.h"
 #include "components/glyph.h"
@@ -123,8 +124,24 @@ void page_set_offset_row(struct page *p, size_t row, struct display *d) {
 }
 
 bool page_handle_keystroke(struct page *p, code_point_t code, size_t row, size_t col) {
+  if (p == NULL) {
+    fprintf(stderr, "page_handle_keystroke: page is null\n");
+    return false;
+  }
+  if (p->lines == NULL) {
+    fprintf(stderr, "page_handle_keystroke: page->lines is null\n");
+    return false;
+  }
   struct linked_list *cur_line = linked_list_get_pos(p->lines, row);
+  if (cur_line == NULL) {
+    fprintf(stderr, "page_handle_keystroke: cur_line is null\n row = %ld\n", row);
+    return false;
+  }
   struct gap_buffer *cur_gb = &cur_line->value.chars;
+  if (cur_gb == NULL) {
+    fprintf(stderr, "page_handle_keystroke: cur_gb is null\n");
+    return false;
+  }
   if (cur_gb->cursor_start != col) {
     if (!gap_buffer_move_cursor(cur_gb, col)) {
       fprintf(stderr, "error moving cursor\n");

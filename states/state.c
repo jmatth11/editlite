@@ -17,20 +17,24 @@
 #include <stddef.h>
 #include <stdint.h>
 
-static int state_writer_at(void* ptr, uint32_t c, size_t row, size_t col) {
+static int state_writer_at(void* ptr, struct Edit e) {
   struct app_state* state = (struct app_state*)ptr;
-  struct page *cur_page;
+  struct page *cur_page = NULL;
   if (!state_get_cur_page(state, &cur_page)) {
     fprintf(stderr, "could not get current page for handle_insert_mode.\n");
     return 0;
   }
-  if (c == SDLK_RETURN) {
-    if (!cur_page->handle_newline(cur_page, row, col)) {
+  if (cur_page == NULL) {
+    fprintf(stderr, "state_writer_at: cur_page is null.\n");
+    return 0;
+  }
+  if (e.character == SDLK_RETURN) {
+    if (!cur_page->handle_newline(cur_page, e.row, e.col)) {
       fprintf(stderr, "error with writer_at for newline\n");
       return 0;
     }
   } else {
-    if (!cur_page->handle_keystroke(cur_page, c, row, col)) {
+    if (!cur_page->handle_keystroke(cur_page, e.character, e.row, e.col)) {
       fprintf(stderr, "error with writer_at for keystroke\n");
       return 0;
     }
@@ -38,14 +42,14 @@ static int state_writer_at(void* ptr, uint32_t c, size_t row, size_t col) {
   return 1;
 }
 
-static int state_delete_at(void *ptr, size_t row, size_t col) {
+static int state_delete_at(void *ptr, struct Edit e) {
   struct app_state* state = (struct app_state*)ptr;
   struct page *cur_page;
   if (!state_get_cur_page(state, &cur_page)) {
     fprintf(stderr, "could not get current page for handle_insert_mode.\n");
     return 0;
   }
-  if (!cur_page->handle_backspace(cur_page, row, col)) {
+  if (!cur_page->handle_backspace(cur_page, e.row, e.col)) {
     fprintf(stderr, "error with deleter_at\n");
     return 0;
   }
