@@ -2,8 +2,9 @@
 FROM ubuntu:latest AS builder
 
 RUN apt update && \
-    apt upgrade && \
-    apt-get install -y gcc \
+    apt upgrade
+
+RUN apt-get install -y gcc \
       clang \
       cmake \
       make \
@@ -14,6 +15,9 @@ RUN apt update && \
       xz-utils \
       libicu-dev
 
+RUN mkdir -p /tmp/libicu
+RUN wget -O /tmp/libicu/icu_amd64.deb http://archive.ubuntu.com/ubuntu/pool/main/i/icu/libicu70_70.1-2_amd64.deb
+RUN dpkg -i /tmp/libicu/icu_amd64.deb
 
 WORKDIR /app
 RUN mkdir -p /tmp/zig

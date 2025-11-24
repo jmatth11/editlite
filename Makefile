@@ -1,6 +1,7 @@
 CC=gcc
 CFLAGS=-Wall -std=c11
-LIBS=-L./deps/tomlc99/ -L./deps/utf8-zig/zig-out/lib -L./deps/scribe/zig-out/lib -lSDL2 -lSDL2_ttf -lm -l:libtoml.a -l:libutf8-zig.a -l:libscribe.a -licuuc
+#CFLAGS+=-Wextra -pedantic -Wshadow -Wbad-function-cast
+LIBS=-L./deps/tomlc99/ -L./deps/utf8-zig/zig-out/lib -L./deps/scribe/zig-out/lib -lSDL2 -lSDL2_ttf -lm -l:libtoml.a -l:libutf8-zig.a -l:libscribe.a
 INCLUDES=-I./ -I./deps/utf8-zig/headers -I./deps/scribe/header
 OBJ=obj
 BIN=bin
@@ -15,7 +16,7 @@ all: deps src
 
 .PHONY: src
 src: $(OBJECTS)
-	$(CC) $^ -O2 $(CFLAGS) $(LIBS) -o $(BIN)/$(TARGET)
+	$(CC) $^ -O2 $(CFLAGS) -o $(BIN)/$(TARGET) $(LIBS)
 
 .PHONY: debug
 debug: deps_debug debugsrc

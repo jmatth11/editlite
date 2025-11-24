@@ -6,7 +6,6 @@
 #include <string.h>
 #include <SDL2/SDL_error.h>
 #include <SDL2/SDL_ttf.h>
-#include <unicode/uchar.h>
 
 #include "glyph.h"
 #include "structures/hash_map.h"
@@ -135,7 +134,7 @@ code_point_t code_point_from_sdl_input(SDL_Event *e) {
 
 code_point_t sanitize_character(code_point_t keycode) {
   code_point_t result = keycode;
-  if (u_isUWhiteSpace(keycode)) {
+  if (utf8_is_whitespace(keycode)) {
     if (keycode == '\r' || keycode == '\n') {
       result = '\n';
     } else {
