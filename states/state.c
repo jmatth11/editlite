@@ -123,11 +123,17 @@ bool state_load_plugins(struct app_state *state) {
       return false;
     }
   }
+  if (state->config.plugin_path == NULL) {
+    return false;
+  }
   size_t plugin_path_len = strlen(state->config.plugin_path);
   for (int i = 0; i < state->config.plugins.len; ++i) {
     struct command cmd;
     command_init(&cmd);
     const char *plugin_str = state->config.plugins.string_data[i];
+    if (plugin_str == NULL) {
+      return false;
+    }
     size_t plugin_len = strlen(plugin_str);
     cmd.shared_library = malloc(sizeof(char) * (plugin_path_len + plugin_len + 2));
     sprintf(cmd.shared_library, "%s%c%s", state->config.plugin_path, '/', plugin_str);
