@@ -4,7 +4,6 @@
 #include <assert.h>
 
 #include "components/display.h"
-#include "components/glyph.h"
 #include "helpers/file_ops.h"
 #include "line.h"
 #include "page.h"
