@@ -1,7 +1,7 @@
 CC=gcc
 PLUGIN_NAME=files
 SHARED_NAME=lib$(PLUGIN_NAME).so
-INCLUDES=-I../../src -I../../deps/scribe/header
+INCLUDES=-I../../src -I../../deps/scribe/header -I../../deps/array_template
 
 all: $(PLUGIN_NAME).o
 	gcc -shared -fPIC -o $(SHARED_NAME) $<

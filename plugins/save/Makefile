@@ -1,7 +1,7 @@
 CC=gcc
 PLUGIN_NAME=save
 SHARED_NAME=lib$(PLUGIN_NAME).so
-INCLUDES=-I../../src/ -I../../deps/utf8-zig/headers -I../../deps/scribe/header
+INCLUDES=-I../../src/ -I../../deps/utf8-zig/headers -I../../deps/scribe/header -I../../deps/array_template
 LIBS=-L../../deps/utf8-zig/zig-out/lib -l:libutf8-zig.a
 
 all: $(PLUGIN_NAME).o

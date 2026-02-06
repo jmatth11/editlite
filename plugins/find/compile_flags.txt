@@ -1,5 +1,7 @@
 -I../../
 -I../../deps/utf8-zig/headers/
+-I../../deps/scribe/header
+-I../../deps/array_template
 -Wall
 -Wpedantic
 

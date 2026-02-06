@@ -2,6 +2,20 @@ const std = @import("std");
 
 const alloc = std.heap.smp_allocator;
 
+// TODO finish implementation
+//fn build_plugins(
+//    b: *std.Build,
+//    optimize: std.builtin.OptimizeMode,
+//    target: std.Build.ResolvedTarget,
+//) !void {
+//    var arena: std.heap.ArenaAllocator = .init(alloc);
+//    const plugin_directory = try std.fs.cwd().openDir("plugins", .{ .iterate = true });
+//    var plugin_iterator = plugin_directory.iterate();
+//    while (try plugin_iterator.next()) |entry| {
+//        // TODO build plugins
+//    }
+//}
+
 fn createModule(
     b: *std.Build,
     optimize: std.builtin.OptimizeMode,
