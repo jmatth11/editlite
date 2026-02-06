@@ -32,9 +32,11 @@ pub fn build(b: *std.Build) void {
     lib.addIncludePath(b.path("../../deps/utf8-zig/src/"));
     // scribe library
     lib.addIncludePath(b.path("../../deps/scribe/header/"));
+    // add array template lib
+    lib.addIncludePath(b.path("../../deps/array_template/"));
 
     // allow editlite files to be included
-    lib.addIncludePath(b.path("../../"));
+    lib.addIncludePath(b.path("../../src/"));
 
     lib.linkSystemLibrary("SDL2");
 

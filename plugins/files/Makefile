@@ -1,7 +1,7 @@
 CC=gcc
 PLUGIN_NAME=files
 SHARED_NAME=lib$(PLUGIN_NAME).so
-INCLUDES=-I../../ -I../../deps/scribe/header
+INCLUDES=-I../../src -I../../deps/scribe/header
 
 all: $(PLUGIN_NAME).o
 	gcc -shared -fPIC -o $(SHARED_NAME) $<

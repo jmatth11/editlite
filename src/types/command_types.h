@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <SDL2/SDL_events.h>
 #include <SDL2/SDL_render.h>
-#include "../deps/array_template/array_template.h"
+#include "array_template.h"
 
 // forward declares
 struct display;

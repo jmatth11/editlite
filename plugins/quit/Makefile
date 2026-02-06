@@ -1,7 +1,7 @@
 CC=gcc
 PLUGIN_NAME=quit
 SHARED_NAME=lib$(PLUGIN_NAME).so
-INCLUDES=-I../../
+INCLUDES=-I../../src/
 
 all: $(PLUGIN_NAME).o
 	gcc -shared -fPIC -o $(SHARED_NAME) $<

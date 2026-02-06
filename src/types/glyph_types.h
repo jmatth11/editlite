@@ -1,7 +1,7 @@
 #ifndef EDITLITE_GLYPH_TYPES_H
 #define EDITLITE_GLYPH_TYPES_H
 
-#include "deps/array_template/array_template.h"
+#include "array_template.h"
 #include "size_types.h"
 #include "types/unicode_types.h"
 #include <SDL2/SDL_keycode.h>

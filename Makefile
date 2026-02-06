@@ -2,10 +2,10 @@ CC=gcc
 CFLAGS=-Wall -std=c11
 #CFLAGS+=-Wextra -pedantic -Wshadow -Wbad-function-cast
 LIBS=-L./deps/tomlc99/ -L./deps/utf8-zig/zig-out/lib -L./deps/scribe/zig-out/lib -lSDL2 -lSDL2_ttf -lm -l:libtoml.a -l:libutf8-zig.a -l:libscribe.a
-INCLUDES=-I./ -I./deps/utf8-zig/headers -I./deps/scribe/header
+INCLUDES=-I./src -I./deps/utf8-zig/headers -I./deps/scribe/header -I./deps/tomlc99 -I./deps/array_template
 OBJ=obj
 BIN=bin
-SOURCES=$(shell find . -name '*.c' -not -path './plugins/*' -not -path './deps/*')
+SOURCES=$(shell find ./src -name '*.c')
 OBJECTS=$(addprefix $(OBJ)/,$(SOURCES:%.c=%.o))
 DEBUG_OBJECTS=$(patsubst %.c, $(OBJ)/%-debug.o, $(SOURCES))
 DEPS=$(shell find . -maxdepth 3 -name Makefile -printf '%h\n' | grep -v 'unittest' | grep -v '^.$$')

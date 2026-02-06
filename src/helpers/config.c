@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 #include "config.h"
-#include "deps/tomlc99/toml.h"
+#include "toml.h"
 #include "types/config_types.h"
 
 void config_init(struct config *c) {

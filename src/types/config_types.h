@@ -3,7 +3,7 @@
 
 #include <SDL2/SDL_pixels.h>
 #include <stddef.h>
-#include "../deps/array_template/array_template.h"
+#include "array_template.h"
 
 #define EDITLITE_PLUGIN_PATH ".config/editlite\0"
 #define CONFIG_FILENAME ".editlite.toml\0"

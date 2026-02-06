@@ -2,7 +2,7 @@
 #define EDITLITE_FIND_PLUGIN_H
 
 #include "types/unicode_types.h"
-#include <deps/array_template/array_template.h>
+#include <array_template.h>
 #include <SDL2/SDL_events.h>
 #include <stdbool.h>
 #include <stddef.h>
