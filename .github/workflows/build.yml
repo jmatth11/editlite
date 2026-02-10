@@ -11,8 +11,11 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Deps
-        run: ./install_deps.sh
+        run: ./scripts/install_deps.sh
+
+      - name: Install System Deps
+        run: ./scripts/install_sys_deps.sh
 
       - name: Build Project
-        run: make
+        run: ./build.sh
 
