@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 #include "config.h"
-#include "deps/tomlc99/toml.h"
+#include "toml.h"
 #include "types/config_types.h"
 
 void config_init(struct config *c) {
@@ -18,11 +18,11 @@ void config_init(struct config *c) {
   c->font_color = (SDL_Color){0xFF,0xFF,0xFF,0xFF};
   c->font_file = "resources/RobotoMono-Regular.ttf";
   c->home_path = getenv("HOME");
-  if (!init_string_array(&c->plugins, 1)) {
+  if (!init_string_array(&c->plugins, 2)) {
     fprintf(stderr, "plugin array could not be initialized.\n");
   }
-  insert_string_array(&c->plugins, "plugins/save/libsave.so");
-  insert_string_array(&c->plugins, "plugins/quit/libquit.so");
+  (void)insert_string_array(&c->plugins, "libsave.so");
+  (void)insert_string_array(&c->plugins, "libquit.so");
 }
 
 void parse_config(struct config *c) {

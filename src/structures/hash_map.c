@@ -1,4 +1,4 @@
-#include "deps/array_template/array_template.h"
+#include "array_template.h"
 
 #include "hash_map.h"
 #include "types/array_types.h"

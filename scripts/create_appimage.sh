@@ -1,4 +1,6 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+# TODO see if this script still works.
 
 function clean_up {
   rm appimagetool-x86_64.AppImage 2> /dev/null

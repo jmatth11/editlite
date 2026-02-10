@@ -1,7 +1,7 @@
 #ifndef EDITLITE_REGISTERED_FUNCTIONS_H
 #define EDITLITE_REGISTERED_FUNCTIONS_H
 
-#include "deps/array_template/array_template.h"
+#include "array_template.h"
 #include <SDL2/SDL_events.h>
 #include <sys/cdefs.h>
 

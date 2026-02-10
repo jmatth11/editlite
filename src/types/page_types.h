@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <SDL2/SDL_events.h>
-#include "../deps/array_template/array_template.h"
+#include "array_template.h"
 #include "cursor_types.h"
 #include "size_types.h"
 #include "types/unicode_types.h"

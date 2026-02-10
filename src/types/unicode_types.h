@@ -1,7 +1,7 @@
 #ifndef EDITLITE_UNICODE_H
 #define EDITLITE_UNICODE_H
 
-#include "deps/array_template/array_template.h"
+#include "array_template.h"
 #include <stddef.h>
 #include <stdint.h>
 #include <sys/cdefs.h>

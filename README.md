@@ -22,24 +22,57 @@ Currently supports:
 ## Setup
 
 This project relies on SDL2 and a small toml library for config files.
-The setup is straight forward, run a script to install dependencies and then run the Makefile
-
+The setup is straight forward, run a script to install dependencies.
 
 ```bash
-./install_deps.sh
-make
+./scripts/install_deps.sh
 ```
+
+Install SDL2 and SDL2 TTF with your OS's package manager.
+If using debian based you can use the script:
+```bash
+./scripts/install_sys_deps.sh
+```
+
+## Build
+
+The easiest (and preferred) way to build the project is with the `build.sh` script.
+
+```bash
+./build.sh
+```
+
+This will use Zig as the build system. No need to worry if you don't have Zig
+already installed. The script will download a temporary Zig binary (if Zig is on
+your machine) to build the project.
+
+The executable will be generated under `zig-out/bin`.
 
 ## Running
 
+The run path depends on how you built it.
+
+### Zig Preferred
+
+If you built it with Zig, the executable is in `./zig-out/bin` and the plugins
+are located at `./zig-out/lib`.
+
+### Make
+
+If you built it with `make`, the executable is in `./bin` and the plugins
+are located at `./plugins/<plugin name>/`.
+
+### Starting application
+
 Run the program with no arguments or with a file to initially load in.
+
 ```bash
-./bin/editlite
+./editlite
 ```
 
 ```bash
 # with a file
-./bin/editlite ./path/to/file.txt
+./editlite ./path/to/file.txt
 ```
 
 ## Usage
@@ -78,8 +111,8 @@ font_scale=0.3
 cursor_color=[170,170,170,119]
 font_color=[255,255,255,255]
 font_file="/home/<username>/.config/editlite/resources/RobotoMono-Regular.ttf"
-plugin_path="/home/<username>/.config/editlite"
-plugins=["plugins/files/libfiles.so", "plugins/find/libfind.so"]
+plugin_path="/home/<username>/.config/editlite/plugins"
+plugins=["libfiles.so", "libfind.so"]
 ```
 
 ## Plugins

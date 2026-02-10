@@ -1,6 +1,8 @@
--I.
+-I./src
+-I./deps/array_template/
 -I./deps/utf8-zig/headers
 -I./deps/scribe/header
+-I./deps/tomlc99
 -Wall
 -std=c11
 -L./deps/tomlc99/

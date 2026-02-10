@@ -8,5 +8,5 @@ font_scale=0.3
 cursor_color=[170,170,170,119]
 font_color=[255,255,255,255]
 font_file="./resources/RobotoMono-Regular.ttf"
-plugins=["plugins/files/libfiles.so", "plugins/find/libfind.so"]
-plugin_path="./"
+plugins=["libfiles.so", "libfind.so"]
+plugin_path="./zig-out/lib"
