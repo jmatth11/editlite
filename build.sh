@@ -25,6 +25,7 @@ function build_proj() {
   mkdir /tmp/zig
   curl -o /tmp/zig/zig.tar.xz  "https://ziglang.org/download/$zig_version/zig-$local_arch-$local_os-$zig_version.tar.xz"
   tar -xf /tmp/zig/zig.tar.xz -C /tmp/zig/
+  ./scripts/install_deps.sh "/tmp/zig/zig-$local_arch-$local_os-$zig_version/zig"
   "/tmp/zig/zig-$local_arch-$local_os-$zig_version/zig" build -Doptimize=ReleaseSafe
   rm -rf /tmp/zig
 }
@@ -43,4 +44,5 @@ if [ "$zig_version" != "$local_version" ]; then
   exit 0
 fi
 
+./scripts/install_deps.sh
 zig build -Doptimize=ReleaseSafe

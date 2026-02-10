@@ -2,28 +2,42 @@ const std = @import("std");
 
 const alloc = std.heap.smp_allocator;
 
-// TODO finish implementation
-//fn build_plugins(
-//    b: *std.Build,
-//    optimize: std.builtin.OptimizeMode,
-//    target: std.Build.ResolvedTarget,
-//) !void {
-//    var arena: std.heap.ArenaAllocator = .init(alloc);
-//    const plugin_directory = try std.fs.cwd().openDir("plugins", .{ .iterate = true });
-//    var plugin_iterator = plugin_directory.iterate();
-//    while (try plugin_iterator.next()) |entry| {
-//        // TODO build plugins
-//    }
-//}
+fn build_plugins(
+    b: *std.Build,
+    optimize: std.builtin.OptimizeMode,
+    target: std.Build.ResolvedTarget,
+) !void {
+    var arena: std.heap.ArenaAllocator = .init(alloc);
+    defer arena.deinit();
+    const plugin_directory = try std.fs.cwd().openDir("plugins", .{ .iterate = true });
+    var plugin_iterator = plugin_directory.iterate();
+    while (try plugin_iterator.next()) |entry| {
+        if (entry.kind == .directory) {
+            const dir = try std.fmt.allocPrint(
+                arena.allocator(),
+                "plugins/{s}",
+                .{entry.name},
+            );
+            const lib = b.addLibrary(.{
+                .name = entry.name,
+                .root_module = try createModule(b, optimize, target, dir),
+                .linkage = .dynamic,
+            });
+            lib.linkLibC();
+            b.installArtifact(lib);
+        }
+    }
+}
 
 fn createModule(
     b: *std.Build,
     optimize: std.builtin.OptimizeMode,
     target: std.Build.ResolvedTarget,
+    dir: []const u8,
 ) !*std.Build.Module {
     var arena: std.heap.ArenaAllocator = .init(alloc);
     defer arena.deinit();
-    const src_dir = try std.fs.cwd().openDir("src", .{
+    const src_dir = try std.fs.cwd().openDir(dir, .{
         .iterate = true,
     });
     var walker = try src_dir.walk(arena.allocator());
@@ -34,7 +48,7 @@ fn createModule(
         if (entry.kind == .file) {
             if (std.mem.endsWith(u8, entry.basename, ".c")) {
                 const name = try std.fs.path.join(arena.allocator(), &.{
-                    "src",
+                    dir,
                     entry.path,
                 });
                 try files_array.append(name);
@@ -55,6 +69,9 @@ fn createModule(
         .optimize = optimize,
     });
     module.link_libc = true;
+    if (!std.mem.eql(u8, "src", dir)) {
+        module.addIncludePath(b.path(dir));
+    }
     module.addIncludePath(b.path("./src"));
     module.addIncludePath(b.path("./deps/utf8-zig/headers/"));
     module.addIncludePath(b.path("./deps/scribe/header/"));
@@ -78,8 +95,9 @@ pub fn build(b: *std.Build) !void {
     const nativeTarget = b.standardTargetOptions(.{});
     const nativeLib = b.addExecutable(.{
         .name = "editlite",
-        .root_module = try createModule(b, optimize, nativeTarget),
+        .root_module = try createModule(b, optimize, nativeTarget, "src"),
     });
     nativeLib.linkLibC();
     b.installArtifact(nativeLib);
+    try build_plugins(b, optimize, nativeTarget);
 }
